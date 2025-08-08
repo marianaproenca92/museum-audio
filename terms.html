@@ -121,7 +121,9 @@ const audio = document.getElementById("ritual-audio");
 
 // Unlock checkbox when scrolled to bottom
 termsBox.addEventListener("scroll", () => {
-  if (termsBox.scrollTop + termsBox.clientHeight >= termsBox.scrollHeight) {
+  const scrollPos = termsBox.scrollTop + termsBox.clientHeight;
+  const scrollEnd = termsBox.scrollHeight - 5; // 5px tolerance
+  if (scrollPos >= scrollEnd) {
     checkbox.disabled = false;
   }
 });
