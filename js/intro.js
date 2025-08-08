@@ -95,17 +95,18 @@ function matrixGlitchIntro(callback) {
   const textInterval = setInterval(randomFlashText, 500);
   
   function randomGlitchImage() {
-    const img = document.createElement("img");
-    img.src = glitchImages[Math.floor(Math.random() * glitchImages.length)];
-    img.style.position = "absolute";
-    img.style.maxWidth = "200px";
-    img.style.top = Math.random() * window.innerHeight + "px";
-    img.style.left = Math.random() * window.innerWidth + "px";
-    img.style.filter = "contrast(200%) hue-rotate(90deg)";
-    img.style.animation = "glitchPulse 0.15s infinite alternate";
-    img.style.zIndex = "3";
-    document.body.appendChild(img);
-    setTimeout(() => img.remove(), 300);
+      const img = document.createElement("img");
+      img.src = glitchImages[Math.floor(Math.random() * glitchImages.length)];
+      img.style.position = "absolute";
+      img.style.maxWidth = Math.floor(Math.random() * 150 + 80) + "px"; // 80–230px
+      img.style.top = Math.random() * window.innerHeight + "px";
+      img.style.left = Math.random() * window.innerWidth + "px";
+      img.style.filter = `contrast(${150 + Math.random() * 100}%) hue-rotate(${Math.floor(Math.random() * 360)}deg)`;
+      img.style.transform = `rotate(${Math.floor(Math.random() * 15) - 7}deg)`;
+      img.style.animation = "glitchPulse 0.15s infinite alternate";
+      img.style.zIndex = "3";
+      document.body.appendChild(img);
+      setTimeout(() => img.remove(), 300); // remove after 0.3s
   }
   const imgInterval = setInterval(randomGlitchImage, 1500);
 
