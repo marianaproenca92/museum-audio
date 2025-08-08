@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nó de Arquivo 23 — O Botão Fugitivo</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+  #runaway-btn {
+    position: absolute;
+    background: #111;
+    color: #0f0;
+    font-family: 'Cinzel', serif;
+    font-size: 5vw;
+    border: 1px solid #0f0;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+  #runaway-btn:hover {
+    background: #0f0;
+    color: #000;
+  }
+  audio {
+    margin-top: 2em;
+    width: 100%;
+    max-width: 400px;
+    display: none;
+  }
+</style>
+</head>
+<body>
+<div id="intro"></div>
+
+<div id="content">
+  <h1>Nó de Arquivo 23</h1>
+  <div class="subtitle">O Botão Fugitivo</div>
+
+  <button id="runaway-btn">Ativar Registo</button>
+
+  <audio id="ritual-audio" controls>
+    <source src="fugitivo.mp3" type="audio/mpeg">
+  </audio>
+</div>
+
+<script src="js/intro.js"></script>
+<script>
+runGlitchIntro(initRunawayButton);
+
+function initRunawayButton(){
+  const btn = document.getElementById("runaway-btn");
+  const audio = document.getElementById("ritual-audio");
+
+  // Position button initially
+  moveButton();
+
+  // Event: hover or touch moves the button
+  btn.addEventListener("mouseover", moveButton);
+  btn.addEventListener("touchstart", moveButton);
+
+  // Clicking the button plays audio
+  btn.addEventListener("click", () => {
+    btn.style.display = "none";
+    audio.style.display = "block";
+    audio.play();
+  });
+
+  function moveButton() {
+    const padding = 20;
+    const btnWidth = btn.offsetWidth;
+    const btnHeight = btn.offsetHeight;
+
+    const maxX = window.innerWidth - btnWidth - padding;
+    const maxY = window.innerHeight - btnHeight - padding;
+
+    const newX = Math.floor(Math.random() * maxX);
+    const newY = Math.floor(Math.random() * maxY);
+
+    btn.style.left = `${newX}px`;
+    btn.style.top = `${newY}px`;
+  }
+}
+</script>
+</body>
+</html>
