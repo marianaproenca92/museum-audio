@@ -102,7 +102,7 @@ function matrixGlitchIntro(callback) {
       const img = document.createElement("img");
       img.src = glitchImages[Math.floor(Math.random() * glitchImages.length)];
       img.style.position = "absolute";
-      img.style.maxWidth = Math.floor(Math.random() * 150 + 80) + "px"; // 80–230px
+      img.style.maxWidth = Math.floor(Math.random() * 200 + 120) + "px"; // 120–320px
       img.style.top = Math.random() * window.innerHeight + "px";
       img.style.left = Math.random() * window.innerWidth + "px";
       img.style.filter = `contrast(${150 + Math.random() * 100}%) hue-rotate(${Math.floor(Math.random() * 360)}deg)`;
