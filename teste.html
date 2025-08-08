@@ -14,10 +14,34 @@
     margin: 0;
     padding: 20px;
     text-align: center;
+    overflow: hidden;
+  }
+
+  /* Intro glitch text */
+  #intro {
+    font-size: 6vw;
+    white-space: pre-line;
+    color: #0f0;
+    text-shadow: 0 0 5px #0f0;
+    animation: flicker 1.5s infinite alternate;
+  }
+
+  @keyframes flicker {
+    0% { opacity: 1; }
+    20% { opacity: 0.8; }
+    40% { opacity: 1; }
+    60% { opacity: 0.5; }
+    80% { opacity: 1; }
+    100% { opacity: 0.9; }
+  }
+
+  /* Main content hidden until reveal */
+  #content {
+    display: none;
   }
 
   h1 {
-    font-size: 7vw; /* scales with screen width */
+    font-size: 7vw;
     margin-bottom: 0.5em;
   }
 
@@ -40,15 +64,39 @@
     color: #aaa;
     margin-top: 1.5em;
   }
+
+  /* Fade-in animation for content */
+  .fade-in {
+    animation: fadeIn 1.5s ease forwards;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 </style>
 </head>
 <body>
-  <h1>Archive Node 07</h1>
-  <div class="subtitle">SOCORRO — The First Act of Fear</div>
-  <audio controls autoplay>
-    <source src="socorro.mp3" type="audio/mpeg">
-    Your browser does not support the audio element.
-  </audio>
-  <p>The Divinity Machine remembers...</p>
+  <div id="intro">[ ACCESSING ARCHIVE NODE 07... ]</div>
+
+  <div id="content">
+    <h1>Archive Node 07</h1>
+    <div class="subtitle">SOCORRO — The First Act of Fear</div>
+    <audio controls autoplay>
+      <source src="socorro.mp3" type="audio/mpeg">
+      Your browser does not support the audio element.
+    </audio>
+    <p>The Divinity Machine remembers...</p>
+  </div>
+
+  <script>
+    // After 3 seconds, hide intro and show content
+    setTimeout(() => {
+      document.getElementById('intro').style.display = 'none';
+      const content = document.getElementById('content');
+      content.style.display = 'block';
+      content.classList.add('fade-in');
+    }, 3000);
+  </script>
 </body>
 </html>
