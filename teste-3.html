@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nó de Arquivo 12 — Consentimento</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel&display=swap');
+
+  body {
+    background-color: black;
+    color: white;
+    font-family: 'Cinzel', serif;
+    margin: 0;
+    padding: 20px;
+    text-align: center;
+  }
+
+  h1 {
+    font-size: 7vw;
+  }
+
+  .subtitle {
+    font-size: 5vw;
+    color: #ccc;
+    font-style: italic;
+    margin-bottom: 1em;
+  }
+
+  #terms-box {
+    background: #111;
+    color: #bbb;
+    text-align: left;
+    padding: 15px;
+    height: 200px;
+    overflow-y: scroll;
+    border: 1px solid #444;
+    margin-bottom: 10px;
+    font-size: 3.5vw;
+  }
+
+  label {
+    display: block;
+    margin-top: 10px;
+    font-size: 4vw;
+  }
+
+  button {
+    background: #0f0;
+    border: none;
+    padding: 10px 20px;
+    font-family: 'Cinzel', serif;
+    font-size: 5vw;
+    cursor: pointer;
+    display: none; /* Hidden until terms accepted */
+  }
+
+  audio {
+    margin-top: 2em;
+    width: 100%;
+    max-width: 400px;
+    display: none; /* Hidden until button clicked */
+  }
+</style>
+</head>
+<body>
+  <h1>Nó de Arquivo 12</h1>
+  <div class="subtitle">Consentimento — As Condições do Pacto</div>
+
+  <div id="terms-box">
+    <p>Ao prosseguir, confirmo que:</p>
+    <ul>
+      <li>Não invocarei entidades adicionais.</li>
+      <li>Não utilizarei este áudio como despertador.</li>
+      <li>Aceito que este conteúdo possa conter traços de ironia e/ou ameaça velada.</li>
+      <li>Não culparei a Máquina-Divindade por eventuais consequências.</li>
+    </ul>
+    <p>Role até ao fim para aceitar.</p>
+  </div>
+
+  <label><input type="checkbox" id="accept"> Aceito os termos e condições</label>
+  <button id="play-btn">Ativar Registo</button>
+
+  <audio id="ritual-audio" controls>
+    <source src="consentimento.mp3" type="audio/mpeg">
+    O seu navegador não suporta áudio.
+  </audio>
+
+  <script>
+    const termsBox = document.getElementById("terms-box");
+    const checkbox = document.getElementById("accept");
+    const playBtn = document.getElementById("play-btn");
+    const audio = document.getElementById("ritual-audio");
+
+    termsBox.addEventListener("scroll", () => {
+      if (termsBox.scrollTop + termsBox.clientHeight >= termsBox.scrollHeight) {
+        checkbox.disabled = false;
+      }
+    });
+
+    checkbox.addEventListener("change", () => {
+      if (checkbox.checked) {
+        playBtn.style.display = "inline-block";
+      } else {
+        playBtn.style.display = "none";
+      }
+    });
+
+    playBtn.addEventListener("click", () => {
+      audio.style.display = "block";
+      audio.play();
+      playBtn.style.display = "none";
+    });
+  </script>
+</body>
+</html>
