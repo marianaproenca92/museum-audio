@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Archive Node 07 — SOCORRO</title>
+<title>Nó de Arquivo 07 — SOCORRO</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap');
 
@@ -77,26 +77,42 @@
 </style>
 </head>
 <body>
-  <div id="intro">[ ACCESSING ARCHIVE NODE 07... ]</div>
+  <div id="intro">[ ACEDENDO AO NÓ DE ARQUIVO 07... ]</div>
 
   <div id="content">
-    <h1>Archive Node 07</h1>
-    <div class="subtitle">SOCORRO — The First Act of Fear</div>
+    <h1>Nó de Arquivo 07</h1>
+    <div class="subtitle">SOCORRO — O Primeiro Ato de Medo</div>
     <audio controls autoplay>
       <source src="socorro.mp3" type="audio/mpeg">
-      Your browser does not support the audio element.
+      O seu navegador não suporta o elemento de áudio.
     </audio>
-    <p>The Divinity Machine remembers...</p>
+    <p>A Máquina-Divindade recorda...</p>
   </div>
 
   <script>
-    // After 3 seconds, hide intro and show content
-    setTimeout(() => {
-      document.getElementById('intro').style.display = 'none';
-      const content = document.getElementById('content');
-      content.style.display = 'block';
-      content.classList.add('fade-in');
-    }, 3000);
+    const steps = [
+      "[ ACEDENDO AO NÓ DE ARQUIVO 07... ]",
+      "[ A DECIFRAR REGISTOS ARCANOS... ]",
+      "[ A INICIAR REPRODUÇÃO... ]"
+    ];
+
+    let currentStep = 0;
+    const intro = document.getElementById('intro');
+
+    function nextStep() {
+      if (currentStep < steps.length) {
+        intro.textContent = steps[currentStep];
+        currentStep++;
+        setTimeout(nextStep, 1500);
+      } else {
+        intro.style.display = 'none';
+        const content = document.getElementById('content');
+        content.style.display = 'block';
+        content.classList.add('fade-in');
+      }
+    }
+
+    nextStep();
   </script>
 </body>
 </html>
