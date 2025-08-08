@@ -2,26 +2,43 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Archive Node 07 — SOCORRO</title>
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap');
+
   body {
-    background-color: black;
-    color: white;
+    background-color: #000;
+    color: #fff;
     font-family: 'Cinzel', serif;
+    margin: 0;
+    padding: 20px;
     text-align: center;
-    padding-top: 50px;
   }
+
   h1 {
-    font-size: 2em;
-    margin-bottom: 10px;
+    font-size: 7vw; /* scales with screen width */
+    margin-bottom: 0.5em;
   }
-  audio {
-    margin-top: 20px;
-  }
+
   .subtitle {
-    font-size: 1.2em;
+    font-size: 5vw;
     color: #ccc;
     font-style: italic;
+    margin-bottom: 1.5em;
+  }
+
+  audio {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    display: block;
+  }
+
+  p {
+    font-size: 4vw;
+    color: #aaa;
+    margin-top: 1.5em;
   }
 </style>
 </head>
@@ -32,8 +49,6 @@
     <source src="socorro.mp3" type="audio/mpeg">
     Your browser does not support the audio element.
   </audio>
-  <p style="margin-top: 30px; font-size: 0.9em; color: #555;">
-    The Divinity Machine remembers...
-  </p>
+  <p>The Divinity Machine remembers...</p>
 </body>
 </html>
