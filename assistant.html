@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nó de Arquivo 18 — Assistente Virtual</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel&display=swap');
+  body { background-color: black; color: white; font-family: 'Cinzel', serif; text-align: center; padding: 20px; }
+  h1 { font-size: 7vw; }
+  .subtitle { font-size: 5vw; color: #ccc; margin-bottom: 1em; }
+  button { background: #0f0; color: black; font-family: 'Cinzel', serif; font-size: 5vw; border: none; padding: 10px 20px; margin: 5px; cursor: pointer; }
+  audio { margin-top: 2em; width: 100%; max-width: 400px; display: none; }
+</style>
+</head>
+<body>
+<h1>Nó de Arquivo 18</h1>
+<div class="subtitle">Assistente Virtual</div>
+<p>Olá! Eu sou o Assistente do Museu. Queres ajuda?</p>
+<button id="yesBtn">Sim</button>
+<button id="noBtn">Não</button>
+<audio id="ritual-audio" controls>
+  <source src="assistente.mp3" type="audio/mpeg">
+</audio>
+<script>
+const yesBtn = document.getElementById('yesBtn');
+const noBtn = document.getElementById('noBtn');
+const audio = document.getElementById('ritual-audio');
+let attempts = 0;
+
+function trollResponse() {
+  attempts++;
+  if (attempts < 3) {
+    alert("Hmm… Não tenho a certeza. Vamos tentar outra vez.");
+  } else {
+    alert("Ok… acho que consigo ajudar afinal.");
+    audio.style.display = 'block';
+    audio.play();
+  }
+}
+
+yesBtn.addEventListener('click', trollResponse);
+noBtn.addEventListener('click', trollResponse);
+</script>
+</body>
+</html>
