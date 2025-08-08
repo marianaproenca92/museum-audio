@@ -74,9 +74,13 @@ function matrixGlitchIntro(callback) {
     "[MEMÓRIA CORROMPIDA]", "[PRESENÇA DETETADA]",
     "[ERRO DE INTEGRAÇÃO]", "[ACESSO NÃO AUTORIZADO]", "[FRAGMENTO INSTÁVEL]"
   ];
-  const glitchImages = [
-    "img/glitch/glitch2.jpg"
-  ];
+  const glitchImages = fetch('img/glitch/images.json')
+  .then(res => res.json())
+  .then(data => {
+    glitchImages = data;
+    startMatrixGlitch(); // your intro start
+  });
+
   
   function randomFlashText() {
     const flash = document.createElement("div");
