@@ -75,7 +75,7 @@ function matrixGlitchIntro(callback) {
     "[ERRO DE INTEGRAÇÃO]", "[ACESSO NÃO AUTORIZADO]", "[FRAGMENTO INSTÁVEL]"
   ];
   const glitchImages = [
-    "img/glitch1.jpg", "img/glitch2.jpg"
+    "img/glitch/glitch2.jpg"
   ];
   
   function randomFlashText() {
