@@ -46,8 +46,16 @@ function matrixGlitchIntro(callback) {
   document.body.insertBefore(canvas, introDiv);
   const ctx = canvas.getContext("2d");
   const resize = () => {
-    canvas.width  = window.innerWidth;
-    canvas.height = window.innerHeight;
+    // Viewport width/height without scrolling UI
+    const vw = Math.min(window.innerWidth, document.documentElement.clientWidth);
+    const vh = Math.min(window.innerHeight, document.documentElement.clientHeight);
+
+    canvas.width  = vw;
+    canvas.height = vh;
+
+    // Recalculate columns when size changes
+    columns = Math.floor(canvas.width / fontSize);
+    drops = Array(columns).fill(1);
   };
   resize();
   window.addEventListener('resize', resize);
