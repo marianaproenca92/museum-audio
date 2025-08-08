@@ -3,114 +3,153 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nó de Arquivo 12 — Consentimento</title>
+<title>Nó de Arquivo 12 — O Juramento</title>
+<link rel="stylesheet" href="css/style.css">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Cinzel&display=swap');
-
-  body {
-    background-color: black;
-    color: white;
-    font-family: 'Cinzel', serif;
-    margin: 0;
-    padding: 20px;
-    text-align: center;
-  }
-
-  h1 {
-    font-size: 7vw;
-  }
-
-  .subtitle {
-    font-size: 5vw;
-    color: #ccc;
-    font-style: italic;
-    margin-bottom: 1em;
-  }
-
-  #terms-box {
-    background: #111;
-    color: #bbb;
+  #terms-container {
+    background: #f5f0dc url('https://www.transparenttextures.com/patterns/parchment.png') repeat;
+    color: #3b2f2f;
     text-align: left;
-    padding: 15px;
-    height: 200px;
+    padding: 20px;
+    height: 300px;
     overflow-y: scroll;
-    border: 1px solid #444;
-    margin-bottom: 10px;
+    border: 4px solid #5c3d2e;
+    margin: 20px auto;
+    max-width: 600px;
     font-size: 3.5vw;
+    line-height: 1.6em;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
   }
 
-  label {
-    display: block;
-    margin-top: 10px;
+  #accept-section {
+    margin-top: 20px;
     font-size: 4vw;
   }
 
-  button {
+  /* Wax seal */
+  #wax-seal {
+    display: none;
+    margin: 20px auto;
+    width: 100px;
+    height: 100px;
+    background: url('https://upload.wikimedia.org/wikipedia/commons/3/3a/Red_wax_seal.png') no-repeat center/cover;
+    animation: pulse 1.5s infinite alternate;
+  }
+
+  @keyframes pulse {
+    from { transform: scale(1); }
+    to { transform: scale(1.05); }
+  }
+
+  /* Break animation */
+  .break {
+    animation: crack 0.6s forwards;
+  }
+
+  @keyframes crack {
+    0% { transform: scale(1) rotate(0deg); opacity: 1; }
+    30% { transform: scale(1.1) rotate(-5deg); }
+    60% { transform: scale(0.9) rotate(5deg); opacity: 0.8; }
+    100% { transform: scale(0) rotate(15deg); opacity: 0; }
+  }
+
+  #play-btn {
     background: #0f0;
     border: none;
     padding: 10px 20px;
     font-family: 'Cinzel', serif;
     font-size: 5vw;
     cursor: pointer;
-    display: none; /* Hidden until terms accepted */
+    display: none;
+    margin-top: 10px;
   }
 
   audio {
-    margin-top: 2em;
-    width: 100%;
-    max-width: 400px;
-    display: none; /* Hidden until button clicked */
+    display: none;
+    margin-top: 20px;
   }
 </style>
 </head>
 <body>
-  <h1>Nó de Arquivo 12</h1>
-  <div class="subtitle">Consentimento — As Condições do Pacto</div>
+<div id="intro"></div>
 
-  <div id="terms-box">
-    <p>Ao prosseguir, confirmo que:</p>
-    <ul>
-      <li>Não invocarei entidades adicionais.</li>
-      <li>Não utilizarei este áudio como despertador.</li>
-      <li>Aceito que este conteúdo possa conter traços de ironia e/ou ameaça velada.</li>
-      <li>Não culparei a Máquina-Divindade por eventuais consequências.</li>
-    </ul>
-    <p>Role até ao fim para aceitar.</p>
+<div id="content">
+  <h1>Nó de Arquivo 12</h1>
+  <div class="subtitle">O Juramento</div>
+
+  <div id="terms-container">
+    <h2>Juramento do Guardião</h2>
+    <p>Ao aceitar este juramento, comprometo-me a cumprir e respeitar as antigas leis do Arquivo.</p>
+    <p>1. Não despertarei entidades esquecidas…</p>
+    <p>2. Não venderei, trocarei ou cozinharei artefactos do Museu.</p>
+    <p>3. Absterei-me de tentar compreender totalmente o conteúdo aqui presente.</p>
+    <p>4. Não usarei este áudio como música de fundo para festas infantis.</p>
+    <p>5. Evitarei olhar diretamente para o Olho de Bronze…</p>
+    <p>6. Declararei imediatamente qualquer fenómeno inexplicável.</p>
+    <p>7. Não cuspirei no chão do Museu.</p>
+    <p>8. Aceitarei que o Museu me recorde mais do que eu recordo o Museu.</p>
+    <p>9. Não alterarei o fluxo do tempo.</p>
+    <p>10. Manterei o segredo do que aqui testemunhei.</p>
+    <p>Este juramento é extenso de propósito. Continue a rolar…</p>
+    <p>[texto extra para rolar]</p>
+    <p>[texto extra para rolar]</p>
+    <p>[texto extra para rolar]</p>
+    <p>[texto extra para rolar]</p>
+    <p>[fim do juramento]</p>
   </div>
 
-  <label><input type="checkbox" id="accept"> Aceito os termos e condições</label>
-  <button id="play-btn">Ativar Registo</button>
+  <div id="accept-section">
+    <label><input type="checkbox" id="accept" disabled> Aceito os termos e condições</label>
+    <div id="wax-seal"></div>
+    <button id="play-btn">Ativar Registo</button>
+  </div>
 
   <audio id="ritual-audio" controls>
-    <source src="consentimento.mp3" type="audio/mpeg">
-    O seu navegador não suporta áudio.
+    <source src="juramento.mp3" type="audio/mpeg">
   </audio>
+</div>
 
-  <script>
-    const termsBox = document.getElementById("terms-box");
-    const checkbox = document.getElementById("accept");
-    const playBtn = document.getElementById("play-btn");
-    const audio = document.getElementById("ritual-audio");
+<script src="js/intro.js"></script>
+<script>
+runGlitchIntro();
 
-    termsBox.addEventListener("scroll", () => {
-      if (termsBox.scrollTop + termsBox.clientHeight >= termsBox.scrollHeight) {
-        checkbox.disabled = false;
-      }
-    });
+const termsBox = document.getElementById("terms-container");
+const checkbox = document.getElementById("accept");
+const playBtn = document.getElementById("play-btn");
+const waxSeal = document.getElementById("wax-seal");
+const audio = document.getElementById("ritual-audio");
 
-    checkbox.addEventListener("change", () => {
-      if (checkbox.checked) {
+// Unlock checkbox when scrolled to bottom
+termsBox.addEventListener("scroll", () => {
+  if (termsBox.scrollTop + termsBox.clientHeight >= termsBox.scrollHeight) {
+    checkbox.disabled = false;
+  }
+});
+
+// Show wax seal when checkbox is ticked
+checkbox.addEventListener("change", () => {
+  if (checkbox.checked) {
+    waxSeal.style.display = "block";
+    // Break the seal after short delay
+    setTimeout(() => {
+      waxSeal.classList.add("break");
+      setTimeout(() => {
+        waxSeal.style.display = "none";
         playBtn.style.display = "inline-block";
-      } else {
-        playBtn.style.display = "none";
-      }
-    });
+      }, 600); // matches crack animation
+    }, 800);
+  } else {
+    waxSeal.style.display = "none";
+    playBtn.style.display = "none";
+  }
+});
 
-    playBtn.addEventListener("click", () => {
-      audio.style.display = "block";
-      audio.play();
-      playBtn.style.display = "none";
-    });
-  </script>
+// Play audio when button clicked
+playBtn.addEventListener("click", () => {
+  audio.style.display = "block";
+  audio.play();
+  playBtn.style.display = "none";
+});
+</script>
 </body>
 </html>
