@@ -95,21 +95,37 @@ function matrixGlitchIntro(callback) {
   // Glitch images (start after JSON loads)
   let glitchImages = [];
   function startImageInterval() {
+
+    // Tweak these to taste
+    const MIN_PX = 260;   // was ~120
+    const MAX_PX = 520;   // was ~320
+    const LIFETIME_MS = 1200; // was 300
+
     return setInterval(() => {
       if (!glitchImages.length) return;
+      
       const img = document.createElement("img");
       img.className = "glitch-img";
       img.src = glitchImages[Math.floor(Math.random() * glitchImages.length)];
+      
+      const size = Math.floor(Math.random() * (MAX_PX - MIN_PX + 1)) + MIN_PX;
+      img.style.width = size + "px";
+
+      // Position & effect
       img.style.position = "absolute";
-      img.style.maxWidth = Math.floor(Math.random() * 200 + 120) + "px";
       img.style.top = Math.random() * window.innerHeight + "px";
       img.style.left = Math.random() * window.innerWidth + "px";
       img.style.filter = `contrast(${150 + Math.random() * 100}%) hue-rotate(${Math.floor(Math.random() * 360)}deg)`;
       img.style.transform = `rotate(${Math.floor(Math.random() * 15) - 7}deg)`;
-      img.style.animation = "glitchPulse 0.15s infinite alternate";
+      img.style.animation = "glitchPulse 0.2s infinite alternate"; // a tad slower looks nicer bigger
+      img.style.pointerEvents = "none";  // don't block clicks
+      img.style.userSelect = "none";
       img.style.zIndex = "3";
+
       document.body.appendChild(img);
-      setTimeout(() => img.remove(), 300);
+
+      // Keep them around a bit longer
+      setTimeout(() => img.remove(), LIFETIME_MS);
     }, 1500);
   }
   let imgInterval = null;
