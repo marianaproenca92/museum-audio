@@ -99,7 +99,7 @@ function matrixGlitchIntro(callback) {
     // Tweak these to taste
     const MIN_PX = 260;   // was ~120
     const MAX_PX = 520;   // was ~320
-    const LIFETIME_MS = 1200; // was 300
+    const LIFETIME_MS = 1500; // was 300
 
     return setInterval(() => {
       if (!glitchImages.length) return;
