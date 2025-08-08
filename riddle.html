@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nó de Arquivo 21 — O Enigma</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel&display=swap');
+  body { background-color: black; color: white; font-family: 'Cinzel', serif; text-align: center; padding: 20px; }
+  h1 { font-size: 7vw; }
+  .subtitle { font-size: 5vw; color: #ccc; margin-bottom: 1em; }
+  input { font-size: 5vw; padding: 5px; margin-top: 10px; }
+  button { background: #0f0; border: none; padding: 10px 20px; font-family: 'Cinzel', serif; font-size: 5vw; margin-top: 10px; cursor: pointer; }
+  audio { margin-top: 2em; width: 100%; max-width: 400px; display: none; }
+  #feedback { margin-top: 1em; font-size: 4vw; color: red; }
+</style>
+</head>
+<body>
+<h1>Nó de Arquivo 21</h1>
+<div class="subtitle">O Enigma</div>
+<p>Para aceder ao Arquivo, responde:</p>
+<p><em>O que quebra mas nunca sangra?</em></p>
+<input type="text" id="answer" placeholder="A tua resposta">
+<button id="submit">Responder</button>
+<div id="feedback"></div>
+<audio id="ritual-audio" controls>
+  <source src="enigma.mp3" type="audio/mpeg">
+</audio>
+<script>
+const submitBtn = document.getElementById('submit');
+const answerField = document.getElementById('answer');
+const feedback = document.getElementById('feedback');
+const audio = document.getElementById('ritual-audio');
+
+submitBtn.addEventListener('click', () => {
+  if (answerField.value.trim().toLowerCase() === "silêncio") {
+    feedback.style.color = "lime";
+    feedback.textContent = "Acesso concedido.";
+    audio.style.display = 'block';
+    audio.play();
+  } else {
+    feedback.textContent = "Resposta incorreta. Tenta outra vez.";
+  }
+});
+</script>
+</body>
+</html>
