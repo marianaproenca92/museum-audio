@@ -40,30 +40,30 @@ function basicGlitchIntro(callback) {
 function matrixGlitchIntro(callback) {
   const introDiv = document.getElementById('intro');
 
-  // Matrix canvas
+  // Create canvas
   const canvas = document.createElement("canvas");
   canvas.id = "matrixCanvas";
   document.body.insertBefore(canvas, introDiv);
   const ctx = canvas.getContext("2d");
+
+  // --- define BEFORE resize() ---
+  const letters = "アァイィウヴエェオカキクケコサシスセソタチツテトナニヌネノ0123456789#@*&%";
+  const fontSize = 14;
+  let columns = 0;
+  let drops = [];
+
   const resize = () => {
-    // Viewport width/height without scrolling UI
+    // clamp to visible viewport
     const vw = Math.min(window.innerWidth, document.documentElement.clientWidth);
     const vh = Math.min(window.innerHeight, document.documentElement.clientHeight);
-
     canvas.width  = vw;
     canvas.height = vh;
 
-    // Recalculate columns when size changes
     columns = Math.floor(canvas.width / fontSize);
     drops = Array(columns).fill(1);
   };
   resize();
   window.addEventListener('resize', resize);
-
-  const letters = "アァイィウヴエェオカキクケコサシスセソタチツテトナニヌネノ0123456789#@*&%";
-  const fontSize = 14;
-  let columns = Math.floor(canvas.width / fontSize);
-  let drops = Array(columns).fill(1);
 
   function drawMatrix() {
     ctx.fillStyle = "rgba(0,0,0,0.05)";
