@@ -105,9 +105,9 @@ function matrixGlitchIntro(callback) {
   function startImageInterval() {
 
     // Tweak these to taste
-    const MIN_PX = 260;   // was ~120
-    const MAX_PX = 520;   // was ~320
-    const LIFETIME_MS = 1500; // was 300
+    const MIN_PX = 200;  
+    const MAX_PX = 470;  
+    const LIFETIME_MS = 1500;
 
     return setInterval(() => {
       if (!glitchImages.length) return;
@@ -116,17 +116,27 @@ function matrixGlitchIntro(callback) {
       img.className = "glitch-img";
       img.src = glitchImages[Math.floor(Math.random() * glitchImages.length)];
       
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+
       const size = Math.floor(Math.random() * (MAX_PX - MIN_PX + 1)) + MIN_PX;
       img.style.width = size + "px";
 
-      // Position & effect
+      // Use center-based positioning
+      const margin = 8; // tweak
+      const cx = Math.floor(margin + Math.random() * (vw - margin*2));
+      const cy = Math.floor(margin + Math.random() * (vh - margin*2));
+      img.style.left = cx + "px";
+      img.style.top  = cy + "px";
+
+      // Anchor from the center so the midpoint is guaranteed visible
       img.style.position = "absolute";
-      img.style.top = Math.random() * window.innerHeight + "px";
-      img.style.left = Math.random() * window.innerWidth + "px";
+      img.style.transform = `translate(-50%, -50%) rotate(${Math.floor(Math.random()*15)-7}deg)`;
+
+      // (keep your other styles)
       img.style.filter = `contrast(${150 + Math.random() * 100}%) hue-rotate(${Math.floor(Math.random() * 360)}deg)`;
-      img.style.transform = `rotate(${Math.floor(Math.random() * 15) - 7}deg)`;
-      img.style.animation = "glitchPulse 0.2s infinite alternate"; // a tad slower looks nicer bigger
-      img.style.pointerEvents = "none";  // don't block clicks
+      img.style.animation = "glitchPulse 0.2s infinite alternate";
+      img.style.pointerEvents = "none";
       img.style.userSelect = "none";
       img.style.zIndex = "3";
 
