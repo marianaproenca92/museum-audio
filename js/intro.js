@@ -75,7 +75,7 @@ function matrixGlitchIntro(callback) {
     "[ERRO DE INTEGRAÇÃO]", "[ACESSO NÃO AUTORIZADO]", "[FRAGMENTO INSTÁVEL]"
   ];
   const glitchImages = [
-    "img/glitch1.jpeg"
+    "img/glitch1.jpg", "img/glitch2.jpg"
   ];
   
   function randomFlashText() {
@@ -127,8 +127,18 @@ function matrixGlitchIntro(callback) {
       clearInterval(matrixInterval);
       clearInterval(textInterval);
       clearInterval(imgInterval);
-      document.getElementById('intro').style.display = 'none';
+  
+      // Remove all glitch elements
+      canvas.remove();          // Matrix background
+      document.querySelectorAll(".flash-text, .glitch-img").forEach(el => el.remove());
+  
+      // Hide intro text
+      introDiv.style.display = 'none';
+  
+      // Show content immediately at top
       document.getElementById('content').style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'instant' });
+  
       if (typeof callback === "function") callback();
     }
   }
