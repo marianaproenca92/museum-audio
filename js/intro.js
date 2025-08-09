@@ -12,7 +12,7 @@ function runGlitchIntro(callback) {
 /* ===== Style 1: Basic Glitch Text ===== */
 function basicGlitchIntro(callback) {
   const glitchSets = [
-    ["[ ACEDENDO AO NÓ DE ARQUIVO... ]", "[ A DESCODIFICAR MEMÓRIAS ANTIGAS... ]", "[ A INICIAR SEQUÊNCIA... ]"],
+    ["[ ACEDENDO AO ARQUIVO... ]", "[ A DESCODIFICAR MEMÓRIAS ANTIGAS... ]", "[ A INICIAR SEQUÊNCIA... ]"],
     ["[ LIGANDO CIRCUITOS... ]", "[ SINCRONIZANDO COM O PASSADO... ]", "[ EXECUÇÃO ATIVADA... ]"],
     ["[ DETETADA PRESENÇA... ]", "[ A DESPERTAR REGISTOS DORMENTES... ]", "[ A GUARDAR ÚLTIMO SUSPIRO... ]"]
   ];
@@ -84,6 +84,7 @@ function matrixGlitchIntro(callback) {
     "[MEMÓRIA CORROMPIDA]", "[PRESENÇA DETETADA]",
     "[ERRO DE INTEGRAÇÃO]", "[ACESSO NÃO AUTORIZADO]", "[FRAGMENTO INSTÁVEL]"
   ];
+  
   function randomFlashText() {
     const flash = document.createElement("div");
     flash.className = "flash-text";
@@ -100,6 +101,28 @@ function matrixGlitchIntro(callback) {
   }
   const textInterval = setInterval(randomFlashText, 500);
 
+  function spawnGlitchImage(src, size, cx, cy, lifetime = 1500) {
+    // parent = centered & optionally rotated
+    const wrap = document.createElement("div");
+    wrap.className = "glitch-wrap";
+    wrap.style.left = cx + "px";
+    wrap.style.top  = cy + "px";
+    wrap.style.transform = `translate(-50%, -50%) rotate(${Math.floor(Math.random()*15)-7}deg)`;
+
+    // child = actual image + jitter
+    const img = document.createElement("img");
+    img.className = "glitch-img";
+    img.src = src;
+    img.style.width = size + "px";
+    img.style.filter = `contrast(${150 + Math.random()*100}%) hue-rotate(${Math.floor(Math.random()*360)}deg)`;
+    img.style.userSelect = "none";
+
+    wrap.appendChild(img);
+    document.body.appendChild(wrap);
+
+    setTimeout(() => wrap.remove(), lifetime);
+  }
+
   // Glitch images (start after JSON loads)
   let glitchImages = [];
   function startImageInterval() {
@@ -108,42 +131,22 @@ function matrixGlitchIntro(callback) {
     const MIN_PX = 200;  
     const MAX_PX = 470;  
     const LIFETIME_MS = 1500;
+    const EDGE_MARGIN = 12; // keeps center away from extreme edges / notches
 
     return setInterval(() => {
       if (!glitchImages.length) return;
-      
-      const img = document.createElement("img");
-      img.className = "glitch-img";
-      img.src = glitchImages[Math.floor(Math.random() * glitchImages.length)];
-      
+
       const vw = window.innerWidth;
       const vh = window.innerHeight;
 
       const size = Math.floor(Math.random() * (MAX_PX - MIN_PX + 1)) + MIN_PX;
-      img.style.width = size + "px";
 
-      // Use center-based positioning
-      const margin = 8; // tweak
-      const cx = Math.floor(margin + Math.random() * (vw - margin*2));
-      const cy = Math.floor(margin + Math.random() * (vh - margin*2));
-      img.style.left = cx + "px";
-      img.style.top  = cy + "px";
+      // pick a CENTER point guaranteed on-screen
+      const cx = Math.floor(EDGE_MARGIN + Math.random() * (vw - EDGE_MARGIN*2));
+      const cy = Math.floor(EDGE_MARGIN + Math.random() * (vh - EDGE_MARGIN*2));
 
-      // Anchor from the center so the midpoint is guaranteed visible
-      img.style.position = "absolute";
-      img.style.transform = `translate(-50%, -50%) rotate(${Math.floor(Math.random()*15)-7}deg)`;
-
-      // (keep your other styles)
-      img.style.filter = `contrast(${150 + Math.random() * 100}%) hue-rotate(${Math.floor(Math.random() * 360)}deg)`;
-      img.style.animation = "glitchPulse 0.2s infinite alternate";
-      img.style.pointerEvents = "none";
-      img.style.userSelect = "none";
-      img.style.zIndex = "3";
-
-      document.body.appendChild(img);
-
-      // Keep them around a bit longer
-      setTimeout(() => img.remove(), LIFETIME_MS);
+      const src = glitchImages[Math.floor(Math.random() * glitchImages.length)];
+      spawnGlitchImage(src, size, cx, cy, LIFETIME_MS);
     }, 1500);
   }
   let imgInterval = null;
@@ -165,26 +168,29 @@ function matrixGlitchIntro(callback) {
   ];
   let currentLine = 0;
 
+  function cleanupIntro() {
+    clearInterval(matrixInterval);
+    clearInterval(textInterval);
+    if (imgInterval) clearInterval(imgInterval);
+    window.removeEventListener('resize', resize);
+
+    canvas.remove();
+    document.querySelectorAll(".flash-text, .glitch-wrap").forEach(el => el.remove());
+
+    introDiv.style.display = 'none';
+    document.getElementById('content').style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'auto' });
+
+    if (typeof callback === "function") callback();
+  }
+
   function nextIntroLine() {
     if (currentLine < introLines.length) {
       introDiv.textContent = introLines[currentLine++];
       setTimeout(nextIntroLine, 1500);
-    } else {
-      clearInterval(matrixInterval);
-      clearInterval(textInterval);
-      if (imgInterval) clearInterval(imgInterval);
-      window.removeEventListener('resize', resize);
-
-      canvas.remove();
-      document.querySelectorAll(".flash-text, .glitch-img").forEach(el => el.remove());
-
-      introDiv.style.display = 'none';
-      document.getElementById('content').style.display = 'block';
-      window.scrollTo({ top: 0, behavior: 'auto' });
-
-      if (typeof callback === "function") callback();
-    }
+    } else cleanupIntro();
   }
+  
   nextIntroLine();
 }
 

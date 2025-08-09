@@ -8,7 +8,8 @@
 <style>
   
   #runaway-btn {
-    position: absolute;
+    position: fixed;                 /* instead of absolute */
+    z-index: 3;                      /* above canvas/content */
     background: #111;
     color: #0f0;
     font-family: 'Cinzel', serif;
@@ -17,7 +18,10 @@
     padding: 10px 20px;
     cursor: pointer;
     transition: transform 0.2s ease;
+    max-width: calc(100vw - 40px);   /* prevent overflowing the viewport width */
+    white-space: nowrap;             /* optional: keep it on one line */
   }
+
   #runaway-btn:hover {
     background: #0f0;
     color: #000;
@@ -33,7 +37,7 @@
 <body>
 <div id="intro"></div>
 
-<div id="content">
+<div id="content" style="display:none;">
   <h1>Nó de Arquivo 23</h1>
   <div class="subtitle">O Botão Fugitivo</div>
 
@@ -51,36 +55,97 @@ runGlitchIntro(initRunawayButton);
 function initRunawayButton(){
   const btn = document.getElementById("runaway-btn");
   const audio = document.getElementById("ritual-audio");
+  const PADDING = 20; // distance from edges
 
-  // Position button initially
-  moveButton();
+  // Make sure it's measurable
+  btn.style.visibility = "hidden";
+  btn.style.display = "block";
 
-  // Event: hover or touch moves the button
-  btn.addEventListener("mouseover", moveButton);
-  btn.addEventListener("touchstart", moveButton);
+  // place after layout paints
+  requestAnimationFrame(() => {
+    moveButton(true);
+    btn.style.visibility = "visible";
+  });
 
-  // Clicking the button plays audio
+  // Events
+  btn.addEventListener("mouseover", () => moveButton(), { passive: true });
+  btn.addEventListener("touchstart", () => moveButton(), { passive: true });
+
   btn.addEventListener("click", () => {
     btn.style.display = "none";
     audio.style.display = "block";
     audio.play();
   });
 
-  function moveButton() {
-    const padding = 20;
-    const btnWidth = btn.offsetWidth;
-    const btnHeight = btn.offsetHeight;
+  // Keep it clamped on resize/orientation
+  window.addEventListener("resize", () => clampToViewport());
+  window.addEventListener("orientationchange", () => setTimeout(clampToViewport, 200));
 
-    const maxX = window.innerWidth - btnWidth - padding;
-    const maxY = window.innerHeight - btnHeight - padding;
+  function viewportSize() {
+    // visible viewport (helps on mobile address bar)
+    const vw = Math.min(window.innerWidth, document.documentElement.clientWidth || window.innerWidth);
+    const vh = Math.min(window.innerHeight, document.documentElement.clientHeight || window.innerHeight);
+    return { vw, vh };
+  }
 
-    const newX = Math.floor(Math.random() * maxX);
-    const newY = Math.floor(Math.random() * maxY);
+  function measure() {
+    // if not measurable yet, use conservative defaults
+    const rect = btn.getBoundingClientRect();
+    const w = rect.width  || btn.offsetWidth  || 200;
+    const h = rect.height || btn.offsetHeight || 60;
+    return { w, h };
+  }
+
+  function clampToViewport() {
+    const { vw, vh } = viewportSize();
+    const { w, h } = measure();
+
+    const minX = PADDING;
+    const minY = PADDING;
+    const maxX = Math.max(PADDING, vw - w - PADDING);
+    const maxY = Math.max(PADDING, vh - h - PADDING);
+
+    // current position
+    const rect = btn.getBoundingClientRect();
+    let x = rect.left;
+    let y = rect.top;
+
+    // clamp
+    x = Math.min(Math.max(x, minX), maxX);
+    y = Math.min(Math.max(y, minY), maxY);
+
+    btn.style.left = `${x}px`;
+    btn.style.top  = `${y}px`;
+  }
+
+  function moveButton(initial = false) {
+    const { vw, vh } = viewportSize();
+    const { w, h } = measure();
+
+    const minX = PADDING;
+    const minY = PADDING;
+    const maxX = Math.max(PADDING, vw - w - PADDING);
+    const maxY = Math.max(PADDING, vh - h - PADDING);
+
+    // If the button is too big (tiny screens), it will still fit due to max-width CSS,
+    // but just in case, anchor it to top-left safe zone:
+    if (maxX <= minX || maxY <= minY) {
+      btn.style.left = `${minX}px`;
+      btn.style.top  = `${minY}px`;
+      return;
+    }
+
+    const newX = Math.round(minX + Math.random() * (maxX - minX));
+    const newY = Math.round(minY + Math.random() * (maxY - minY));
 
     btn.style.left = `${newX}px`;
-    btn.style.top = `${newY}px`;
+    btn.style.top  = `${newY}px`;
+
+    // On first placement, ensure clamped after paint
+    if (initial) requestAnimationFrame(clampToViewport);
   }
 }
+
 </script>
 </body>
 </html>
