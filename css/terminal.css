@@ -1,0 +1,222 @@
+/* ===========================
+   Terminal Theme — Fallout Green
+   =========================== */
+
+/* Color tokens */
+:root {
+  --term-bg: #000000;          /* deep black */
+  --term-fg: #9efc6a;          /* fallout phosphor green */
+  --term-fg-dim: #7ed15a;      /* dimmed text */
+  --term-accent: #ff3b30;      /* alert red */
+  --term-border: #7ed15a;      /* border green */
+  --term-shadow: #00ff8a33;    /* glow */
+  --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+
+  /* Sizing */
+  --container-max: 960px;
+  --space-1: 6px;
+  --space-2: 10px;
+  --space-3: 16px;
+  --radius: 2px;
+}
+
+/* Base page */
+html, body {
+  margin: 0;
+  background: var(--term-bg);
+  color: var(--term-fg);
+  font: 14px/1.45 var(--mono);
+}
+
+/* Layout */
+.wrap {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: var(--space-3);
+}
+
+/* Terminal card (clean — no overlay/scanlines) */
+.terminal {
+  position: relative;
+  border: 1px solid var(--term-border);
+  border-radius: var(--radius);
+  padding: var(--space-2);
+  background: #000;
+  box-shadow:
+    0 0 14px var(--term-shadow),
+    inset 0 0 30px #00ff8a0d;
+  overflow: hidden;
+}
+
+/* OPTIONAL: add scanlines/vignette by toggling .crt */
+.terminal.crt::before {
+  content: "";
+  position: absolute; inset: 0;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0 2px,
+      rgba(10, 34, 10, 0.18) 2px 4px
+    );
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+.terminal.crt::after {
+  content: "";
+  position: absolute; inset: -2%;
+  pointer-events: none;
+  background:
+    radial-gradient(100% 100% at 50% 50%, transparent 60%, #000 100%),
+    linear-gradient(90deg, #0f06 0%, transparent 20%, transparent 80%, #0f06 100%);
+}
+
+/* Headings & helpers */
+h1, h2, h3 {
+  margin: var(--space-1) 0;
+  letter-spacing: .5px;
+  line-height: 1.2;
+}
+h1 { font-size: 18px; }
+.subtitle { opacity: .9; margin-bottom: var(--space-2); }
+.help { color: var(--term-fg-dim); }
+
+.blink::after { content: "▌"; animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+/* UI bits */
+.pill {
+  display: inline-block;
+  border: 1px solid var(--term-border);
+  padding: 6px 10px;
+  margin-right: var(--space-2);
+  border-radius: var(--radius);
+}
+.btn {
+  border: 1px solid var(--term-border);
+  background: #000;
+  color: var(--term-fg);
+  padding: 6px 10px;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+.btn:hover { background: var(--term-fg); color: #000; }
+
+/* Board frame for galleries/games */
+.board{
+    position:relative; border:1px dashed var(--fg); margin-top:10px; overflow:hidden;
+    filter: drop-shadow(0 0 8px #00ff8a44) contrast(1.02) saturate(1.02);
+}
+
+/* Swipe gallery — scroll-snap, fits any image */
+.gallery{
+      display:flex; gap:0;
+      overflow-x:auto; -webkit-overflow-scrolling:touch;
+      scroll-snap-type:x mandatory;
+      width:100%;
+      background:#010;
+    }
+.slide{
+      position:relative;
+      flex:0 0 100%;
+      scroll-snap-align:center;
+      aspect-ratio: 3/4;         /* mobile-friendly default; adjusts on wide screens */
+      display:grid; place-items:center;
+      background:#020;
+    }
+@media (min-width:700px){ .slide{ aspect-ratio: 16/9; } }
+
+ .slide img{
+      width:100%; height:100%;
+      object-fit: contain;       /* key: FIT to frame */
+      image-rendering:auto;
+      transform: translateZ(0);  /* avoid blurring on mobile */
+    }
+/* Toast */
+.toast {
+  position: fixed; left: 50%; top: 16px; transform: translateX(-50%);
+  background: #081108; border: 1px solid var(--term-border);
+  padding: 8px 12px; box-shadow: 0 0 10px var(--term-shadow);
+  z-index: 9; opacity: 0; transition: opacity .2s;
+}
+.toast.show { opacity: 1; }
+
+/* Audio */
+audio { width: 100%; max-width: 420px; display: none; margin-top: var(--space-2); }
+
+/* Utilities */
+.mt-1 { margin-top: var(--space-1); }
+.mt-2 { margin-top: var(--space-2); }
+.mt-3 { margin-top: var(--space-3); }
+
+/* ====== GLITCH PACK ====== */
+
+/* RGB split layers */
+.board.glitch::before,
+.board.glitch::after{
+  content:"";
+  position:absolute; inset:0;
+  pointer-events:none; mix-blend-mode:screen; opacity:.9;
+  background: inherit;
+  filter: blur(.5px) saturate(1.2) contrast(1.05);
+}
+.board.glitch::before{ transform: translateX(-1px); box-shadow: 0 0 0 9999px rgba(0,255,255,.03) inset; }
+.board.glitch::after { transform: translateX( 1px); box-shadow: 0 0 0 9999px rgba(255,0,0,.03) inset; }
+
+/* quick shake/jitter */
+.board.glitch{
+  animation: g-jitter 140ms steps(2) 4;
+}
+@keyframes g-jitter{
+  0%{transform:translate(0,0) skewX(0deg)}
+  25%{transform:translate(-1px,0) skewX(.2deg)}
+  50%{transform:translate(1px,0)  skewX(-.3deg)}
+  75%{transform:translate(0,0)   skewX(.1deg)}
+  100%{transform:translate(0,0)  skewX(0deg)}
+}
+
+/* tearing lines */
+.board.glitch .gallery{
+  position:relative;
+  overflow:visible; /* we draw slices on top */
+}
+.board.glitch .gallery::after{
+  content:"";
+  position:absolute; left:-4%; right:-4%; top:-2%;
+  height:104%;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(0,0,0,0) 0 6px,
+      rgba(0,255,128,.05) 6px 7px,
+      rgba(0,0,0,0) 7px 28px
+    );
+  animation: g-tear 260ms linear 1;
+  pointer-events:none;
+  mix-blend-mode:overlay;
+}
+@keyframes g-tear{
+  from{ transform: translateY(-6%); }
+  to  { transform: translateY( 6%); }
+}
+
+/* phosphor flicker (apply to the whole terminal if you like) */
+.terminal.flicker{
+  animation: g-flicker 900ms linear 1;
+}
+@keyframes g-flicker{
+  0%,100%{ filter:none; }
+  12%{ filter:brightness(1.2) contrast(1.05); }
+  18%{ filter:brightness(.82) contrast(1.1) }
+  32%{ filter:brightness(1.25) hue-rotate(2deg); }
+  55%{ filter:brightness(.9)   saturate(1.1) }
+}
+
+/* color roll / desync for images */
+.board.glitch img{
+  animation: g-roll 220ms steps(2) 1;
+}
+@keyframes g-roll{
+  0%{ transform: translateY(0); }
+  45%{ transform: translateY(-1px); }
+  100%{ transform: translateY(0); }
+}

@@ -3,103 +3,19 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
-  <title>Nó de Arquivo — Diferenças (Terminal CRT)</title>
+  <title>Arquivo - </title>
+  <link rel="stylesheet" href="css/terminal.css">
+  <link rel="stylesheet" href="css/text-glitcher.css">
   <style>
-    :root{
-      --bg: #000;
-      --fg: #b7ffb7;      /* phosphor green */
-      --scan: #0a220a;    /* scanline tint */
-      --acc: #ff3b30;     /* alert red */
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-    }
-    html,body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.45 var(--mono)}
-    .wrap{max-width:960px;margin:0 auto;padding:16px}
-    .terminal{
-      position:relative;
-      border:1px solid var(--fg);
-      padding:12px;
-      box-shadow:0 0 14px #00ff8a33, inset 0 0 40px #00ff8a0d;
-      background:
-        radial-gradient(120% 80% at 50% 0%, #001a00 0%, #000 60%),
-        #000;
-      overflow:hidden;
-    }
-    /* CRT scanlines + vignette + subtle chromatic aberration */
-    /*.terminal::before{
-      content:"";
-      position:absolute; inset:0;
-      background:
-        repeating-linear-gradient(to bottom, transparent 0 2px, rgba(10, 34, 10, .18) 2px 4px);
-      mix-blend-mode:overlay;
-      pointer-events:none;
-    }
-    .terminal::after{
-      content:"";
-      position:absolute; inset:-2%;
-      pointer-events:none;
-      background:
-        radial-gradient(100% 100% at 50% 50%, transparent 60%, #000 100%),
-        linear-gradient(90deg, #0f06 0%, transparent 20%, transparent 80%, #0f06 100%);
-    }*/
-    h1{margin:6px 0 2px;font-size:18px;letter-spacing:.5px}
-    .subtitle{opacity:.9;margin-bottom:8px}
-    .help{opacity:.85}
-    .pill{border:1px solid var(--fg);padding:6px 10px;display:inline-block;margin-right:8px}
-    .btn{border:1px solid var(--fg);padding:6px 10px;background:#000;color:var(--fg);cursor:pointer}
-    .btn:hover{background:var(--fg);color:#000}
-    .blink::after{content:"▌"; animation:blink 1s steps(1) infinite}
-    @keyframes blink{50%{opacity:0}}
-
-    /* Board (CRT frame) */
-    .board{
-      position:relative; border:1px dashed var(--fg); margin-top:10px; overflow:hidden;
-      filter: drop-shadow(0 0 8px #00ff8a44) contrast(1.02) saturate(1.02);
-    }
-
-    /* Swipe gallery (no libs): scroll-snap */
-    .gallery{
-      display:flex; gap:0;
-      overflow-x:auto; -webkit-overflow-scrolling:touch;
-      scroll-snap-type:x mandatory;
-      width:100%;
-      background:#010;
-    }
-    .slide{
-      position:relative;
-      flex:0 0 100%;
-      scroll-snap-align:center;
-      aspect-ratio: 3/4;         /* mobile-friendly default; adjusts on wide screens */
-      display:grid; place-items:center;
-      background:#020;
-    }
-    @media (min-width:700px){ .slide{ aspect-ratio: 16/9; } }
-
-    /* Images scale to frame without cropping */
-    .slide img{
-      width:100%; height:100%;
-      object-fit: contain;       /* key: FIT to frame */
-      image-rendering:auto;
-      transform: translateZ(0);  /* avoid blurring on mobile */
-    }
-
     /* Overlay hotspots (tap to mark differences) */
     .overlay{ pointer-events:none; position:absolute; inset:0; }
     .hotspot{
-      position:absolute; border:2px solid var(--acc); border-radius:10px;
+      position:absolute; border:2px solid var(--term-accent); border-radius:10px;
       box-shadow:0 0 10px #ff3b3044; opacity:0; transition:opacity .2s;
       pointer-events:auto;                   /* enable hit-test */
       backdrop-filter:contrast(1.6) saturate(1.2);
     }
     .hotspot.found{ opacity:1 !important; }
-
-    /* Toast + audio */
-    .toast{
-      position:fixed; left:50%; top:16px; transform:translateX(-50%);
-      background:#081108; border:1px solid var(--fg); padding:8px 12px;
-      box-shadow:0 0 10px #00ff8a33; z-index:9; opacity:0; transition:opacity .2s
-    }
-    .toast.show{opacity:1}
-    audio{width:100%;max-width:420px;display:none;margin-top:8px}
   </style>
 </head>
 <body>
@@ -108,12 +24,12 @@
 
   <div id="content" class="wrap">
     <div class="terminal">
-      <h1>Nó de Arquivo 09</h1>
-      <div class="subtitle">«Diferenças por Deslize — Moldura CRT»</div>
-      <div class="help" style="margin-bottom:8px">
-        [O MUSEU]: Registo instável. Desliza ⟷ para comparar.  
-        Existem <strong id="need">N</strong> discrepâncias. Assinala-as — e eu falo.
-        <span class="blink"></span>
+      <h1 class="glx-scan"> <span id="t-ttl">Arquivo 09</span> </h1>
+      <div class="subtitle">«<span id="t-sub">Diferenças por Deslize</span> — Moldura CRT»</div>
+
+      <div class="help">
+        <span id="t-sys">[O MUSEU]: Registo instável. Desliza ⟷ para alinhar memórias.</span>
+        Existem <strong id="need">N</strong> discrepâncias. Assinala-as. <span class="blink"></span>
       </div>
 
       <div class="pill">Encontradas: <span id="found">0</span>/<span id="total">0</span></div>
@@ -128,129 +44,46 @@
         <div class="overlay" id="overlay" aria-hidden="true"></div>
       </div>
 
-      <div class="terminal" style="margin-top:10px">
+     <div class="terminal" style="margin-top:10px">
         <strong>Dados do Arquivo</strong><br>
         &gt; Assunto: Retrato lúdico (noiva/noivo)<br>
-        &gt; Nota: Interferência confirmada — presença de corvos e… piscina de bolas?
+        &gt; Nota: Interferência confirmada — sinais de corvos e… rumores de piscina de bolas.
       </div>
 
       <audio id="voice">
         <source src="audio/nodo09.mp3" type="audio/mpeg"/>
       </audio>
-      <div id="post" class="help" style="display:none;margin-top:8px">[O MUSEU]: Verificação completa. A memória abriu-se.</div>
+      <div id="post" class="help" style="display:none;margin-top:8px">
+        <span class="glitch" data-text="[O MUSEU]: Verificação completa. A memória reabriu.">
+          [O MUSEU]: Verificação completa. A memória reabriu.
+        </span>
+      </div>
     </div>
   </div>
 
   <div class="toast" id="toast"></div>
-
+  <script src="js/text-glitcher.js"></script>
+  <script src="js/differences_game.js"></script>
+  <script src="js/screen_glitch.js"></script>
   <script>
-    // ===== CONFIG =====
-    const IMG_A = "img/diffs/base.jpg";  // original
-    const IMG_B = "img/diffs/diff.jpg";  // edit with funny differences
-    // Differences as [x%, y%, w%, h%] relative to the board frame
-    const DIFFS = [
-      [15, 18, 12, 14],  // horns
-      [62, 32, 10, 12],  // boutonnière color swap
-      [78, 84, 10, 10],  // shoe detail
-      [35, 74, 12, 10]   // ring hand
-    ];
-
-    // If you have a glitch intro function from your site, call it. Otherwise, show content immediately.
-    if (typeof runGlitchIntro === "function") {
-      document.getElementById('intro').style.display = 'block';
-      runGlitchIntro(()=> document.getElementById('content').scrollIntoView({behavior:'smooth'}));
-    }
-
-    // ===== INIT =====
-    const imgA = document.getElementById('imgA');
-    const imgB = document.getElementById('imgB');
-    const overlay = document.getElementById('overlay');
-    const board   = document.getElementById('board');
-    const toast   = document.getElementById('toast');
-    const audio   = document.getElementById('voice');
-    const post    = document.getElementById('post');
-    const foundEl = document.getElementById('found');
-    const totalEl = document.getElementById('total');
-    const needEl  = document.getElementById('need');
-
-    imgA.src = IMG_A; imgB.src = IMG_B;
-    totalEl.textContent = DIFFS.length;
-    needEl.textContent  = DIFFS.length;
-
-    const state = { found: new Array(DIFFS.length).fill(false) };
-
-    // Create hotspots (percentage-based → responsive)
-    DIFFS.forEach((_, i) => {
-      const hs = document.createElement('div');
-      hs.className = 'hotspot';
-      hs.dataset.index = i;
-      overlay.appendChild(hs);
+    // Pick safe, non-spoilery targets (titles / system lines)
+    const gl = TextGlitcher.init({
+      targets: ['#t-ttl', '#t-sub', '#t-sys', '#post .glx'], // add or remove per page
+      auto: true,                                            // background random glitches
+      autoOptions: { tickMs: 1200, chance: 0.18, scrambleChance: 0.6 }
     });
 
-    function layoutHotspots(){
-      const r = board.getBoundingClientRect();
-      const W = r.width, H = r.height;
-      [...overlay.children].forEach((el, i) => {
-        const [px, py, pw, ph] = DIFFS[i];
-        el.style.left = (px/100 * W) + 'px';
-        el.style.top  = (py/100 * H) + 'px';
-        el.style.width  = (pw/100 * W) + 'px';
-        el.style.height = (ph/100 * H) + 'px';
-        el.style.opacity = state.found[i] ? 1 : 0;   // visible after found
-      });
+    // Optional: trigger a stronger pulse on your own events
+    // e.g., when a diff is found:
+    if (typeof window.markFound === 'function'){
+      const old = window.markFound;
+      window.markFound = (i)=>{
+        old(i);
+        gl.pulse(document.querySelector('#t-sys'));
+        gl.scramble(document.querySelector('#t-sys'));
+      };
     }
-    new ResizeObserver(layoutHotspots).observe(board);
-    window.addEventListener('load', layoutHotspots);
-
-    function markFound(i){
-      if (i < 0 || state.found[i]) return;
-      state.found[i] = true;
-      overlay.querySelector(`.hotspot[data-index="${i}"]`).classList.add('found');
-      flash(`[FRAGMENTO ${i+1} RECUPERADO]`);
-      updateCount();
-      if (state.found.every(Boolean)) unlock();
-    }
-    function updateCount(){
-      foundEl.textContent = state.found.filter(Boolean).length;
-    }
-    function unlock(){
-      audio.style.display = 'block';
-      audio.play().catch(()=>{});
-      post.style.display = 'block';
-      flash('[MEMÓRIA REABERTA — REPRODUÇÃO INICIADA]');
-    }
-    function flash(msg){
-      toast.textContent = msg;
-      toast.classList.add('show');
-      setTimeout(()=>toast.classList.remove('show'), 900);
-    }
-
-    // Hit test (tap/click anywhere over overlay)
-    function hit(x, y){
-      const b = board.getBoundingClientRect();
-      const ox = x - b.left, oy = y - b.top;
-      let idx = -1;
-      [...overlay.children].forEach(hs=>{
-        const r = hs.getBoundingClientRect();
-        const hx = r.left - b.left, hy = r.top - b.top;
-        if (ox >= hx && ox <= hx + r.width && oy >= hy && oy <= hy + r.height) idx = parseInt(hs.dataset.index,10);
-      });
-      return idx;
-    }
-    board.addEventListener('click', e => { const i = hit(e.clientX, e.clientY); if (i>=0) markFound(i); });
-    board.addEventListener('touchstart', e => {
-      const t = e.changedTouches[0]; const i = hit(t.clientX, t.clientY);
-      if (i>=0){ e.preventDefault(); markFound(i); }
-    }, {passive:false});
-
-    // Hint reveals one unfound rect briefly
-    document.getElementById('hint').addEventListener('click', ()=>{
-      const i = state.found.indexOf(false);
-      if (i === -1) return;
-      const hs = overlay.querySelector(`.hotspot[data-index="${i}"]`);
-      const old = hs.style.opacity; hs.style.opacity = 1;
-      setTimeout(()=>{ if (!state.found[i]) hs.style.opacity = old; }, 2000);
-    });
   </script>
+
 </body>
 </html>

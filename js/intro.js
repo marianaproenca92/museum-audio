@@ -49,7 +49,7 @@ function matrixGlitchIntro(callback) {
   const ctx = canvas.getContext("2d");
 
   // --- define BEFORE resize() ---
-  const letters = "アァイィウヴエェオカキクケコサシスセソタチツテトナニヌネノ0123456789#@*&%";
+  const letters = "01";//"アァイィウヴエェオカキクケコサシスセソタチツテトナニヌネノ0123456789#@*&%";
   const fontSize = 14;
   let columns = 0;
   let drops = [];
