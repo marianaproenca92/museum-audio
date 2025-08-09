@@ -1,6 +1,8 @@
 function runGlitchIntro(callback) {
   // ===== Available intro styles =====
-  const introStyles = [basicGlitchIntro, matrixGlitchIntro];
+  const introStyles = [//basicGlitchIntro, 
+    matrixGlitchIntro
+  ];
   
   // Pick a random one
   const chosenIntro = introStyles[Math.floor(Math.random() * introStyles.length)];
