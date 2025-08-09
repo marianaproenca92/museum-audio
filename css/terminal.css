@@ -48,27 +48,6 @@ html, body {
   overflow: hidden;
 }
 
-/* OPTIONAL: add scanlines/vignette by toggling .crt */
-.terminal.crt::before {
-  content: "";
-  position: absolute; inset: 0;
-  background:
-    repeating-linear-gradient(
-      to bottom,
-      transparent 0 2px,
-      rgba(10, 34, 10, 0.18) 2px 4px
-    );
-  mix-blend-mode: overlay;
-  pointer-events: none;
-}
-.terminal.crt::after {
-  content: "";
-  position: absolute; inset: -2%;
-  pointer-events: none;
-  background:
-    radial-gradient(100% 100% at 50% 50%, transparent 60%, #000 100%),
-    linear-gradient(90deg, #0f06 0%, transparent 20%, transparent 80%, #0f06 100%);
-}
 
 /* Headings & helpers */
 h1, h2, h3 {

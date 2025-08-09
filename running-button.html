@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Nó de Arquivo 23 — O Botão Fugitivo</title>
-<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/terminal.css">
 <style>
   
   #runaway-btn {
@@ -26,125 +26,61 @@
     background: #0f0;
     color: #000;
   }
-  audio {
-    margin-top: 2em;
-    width: 100%;
-    max-width: 400px;
-    display: none;
-  }
+
 </style>
 </head>
 <body>
-<div id="intro"></div>
+<div id="intro" class="wrap terminal" style="display:none"></div>
 
-<div id="content" style="display:none;">
-  <h1>Nó de Arquivo 23</h1>
-  <div class="subtitle">O Botão Fugitivo</div>
+<div id="content" class="wrap">
+  <div class="terminal crt">
+    <h1 data-glitch>Arquivo 23</h1>
+    <div class="subtitle" data-glitch>«O Botão Fugitivo»</div>
+    <div class="help mt-1" data-glitch>
+      [O MUSEU]: Objeto instável detetado. Aproxima-te com cuidado… se conseguires.
+      <span class="blink"></span>
+    </div>
 
-  <button id="runaway-btn">Ativar Registo</button>
+    <button id="runaway-btn" aria-label="Ativar Registo">Ativar Registo</button>
 
-  <audio id="ritual-audio" controls>
-    <source src="fugitivo.mp3" type="audio/mpeg">
-  </audio>
+    <audio id="ritual-audio" controls>
+      <source src="audio/fugitivo.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="help mt-2" id="post" style="display:none" data-glitch>
+      [O MUSEU]: Registo localizado. Mantém-te por perto.
+    </div>
+  </div>
 </div>
 
+<div class="toast" id="toast"></div>
+
 <script src="js/intro.js"></script>
+<script src="js/running-button.js"></script>
+<script src="js/text-glitcher.js"></script>
 <script>
-runGlitchIntro(initRunawayButton);
+    const start = () => {
+      if (window.GlitchText && typeof GlitchText.attach === 'function') {
+        GlitchText.attach('[data-glitch]', { probability: 0.06, burstMs: 1100 });
+      }
+      initRunawayButton({
+        btn: '#runaway-btn',
+        audio: '#ritual-audio',
+        padding: 16,
+        onPlay: () => { document.getElementById('post').style.display = 'block'; }
+      });
+    };
 
-function initRunawayButton(){
-  const btn = document.getElementById("runaway-btn");
-  const audio = document.getElementById("ritual-audio");
-  const PADDING = 20; // distance from edges
-
-  // Make sure it's measurable
-  btn.style.visibility = "hidden";
-  btn.style.display = "block";
-
-  // place after layout paints
-  requestAnimationFrame(() => {
-    moveButton(true);
-    btn.style.visibility = "visible";
-  });
-
-  // Events
-  btn.addEventListener("mouseover", () => moveButton(), { passive: true });
-  btn.addEventListener("touchstart", () => moveButton(), { passive: true });
-
-  btn.addEventListener("click", () => {
-    btn.style.display = "none";
-    audio.style.display = "block";
-    audio.play();
-  });
-
-  // Keep it clamped on resize/orientation
-  window.addEventListener("resize", () => clampToViewport());
-  window.addEventListener("orientationchange", () => setTimeout(clampToViewport, 200));
-
-  function viewportSize() {
-    // visible viewport (helps on mobile address bar)
-    const vw = Math.min(window.innerWidth, document.documentElement.clientWidth || window.innerWidth);
-    const vh = Math.min(window.innerHeight, document.documentElement.clientHeight || window.innerHeight);
-    return { vw, vh };
-  }
-
-  function measure() {
-    // if not measurable yet, use conservative defaults
-    const rect = btn.getBoundingClientRect();
-    const w = rect.width  || btn.offsetWidth  || 200;
-    const h = rect.height || btn.offsetHeight || 60;
-    return { w, h };
-  }
-
-  function clampToViewport() {
-    const { vw, vh } = viewportSize();
-    const { w, h } = measure();
-
-    const minX = PADDING;
-    const minY = PADDING;
-    const maxX = Math.max(PADDING, vw - w - PADDING);
-    const maxY = Math.max(PADDING, vh - h - PADDING);
-
-    // current position
-    const rect = btn.getBoundingClientRect();
-    let x = rect.left;
-    let y = rect.top;
-
-    // clamp
-    x = Math.min(Math.max(x, minX), maxX);
-    y = Math.min(Math.max(y, minY), maxY);
-
-    btn.style.left = `${x}px`;
-    btn.style.top  = `${y}px`;
-  }
-
-  function moveButton(initial = false) {
-    const { vw, vh } = viewportSize();
-    const { w, h } = measure();
-
-    const minX = PADDING;
-    const minY = PADDING;
-    const maxX = Math.max(PADDING, vw - w - PADDING);
-    const maxY = Math.max(PADDING, vh - h - PADDING);
-
-    // If the button is too big (tiny screens), it will still fit due to max-width CSS,
-    // but just in case, anchor it to top-left safe zone:
-    if (maxX <= minX || maxY <= minY) {
-      btn.style.left = `${minX}px`;
-      btn.style.top  = `${minY}px`;
-      return;
+   if (typeof runGlitchIntro === 'function') {
+      document.getElementById('intro').style.display = 'block';
+      runGlitchIntro(() => {
+        // make sure the overlay is gone before enabling the button
+        document.getElementById('intro').style.display = 'none';
+        start();
+      });
+    } else {
+      start();
     }
-
-    const newX = Math.round(minX + Math.random() * (maxX - minX));
-    const newY = Math.round(minY + Math.random() * (maxY - minY));
-
-    btn.style.left = `${newX}px`;
-    btn.style.top  = `${newY}px`;
-
-    // On first placement, ensure clamped after paint
-    if (initial) requestAnimationFrame(clampToViewport);
-  }
-}
 
 </script>
 </body>
