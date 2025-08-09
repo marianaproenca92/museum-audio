@@ -11,41 +11,27 @@ function runGlitchIntro(callback) {
   chosenIntro(callback);
 }
 
-/* ===== Style 1: Basic Glitch Text ===== */
-function basicGlitchIntro(callback) {
-  const glitchSets = [
-    ["[ ACEDENDO AO ARQUIVO... ]", "[ A DESCODIFICAR MEMÓRIAS ANTIGAS... ]", "[ A INICIAR SEQUÊNCIA... ]"],
-    ["[ LIGANDO CIRCUITOS... ]", "[ SINCRONIZANDO COM O PASSADO... ]", "[ EXECUÇÃO ATIVADA... ]"],
-    ["[ DETETADA PRESENÇA... ]", "[ A DESPERTAR REGISTOS DORMENTES... ]", "[ A GUARDAR ÚLTIMO SUSPIRO... ]"]
-  ];
-  
-  const introMessages = glitchSets[Math.floor(Math.random() * glitchSets.length)];
-  let step = 0;
-  const introDiv = document.getElementById('intro');
-  
-  function nextGlitch() {
-    if (step < introMessages.length) {
-      introDiv.textContent = introMessages[step];
-      step++;
-      setTimeout(nextGlitch, 1500);
-    } else {
-      introDiv.style.display = 'none';
-      document.getElementById('content').style.display = 'block';
-      if (typeof callback === "function") callback();
-    }
-  }
-  
-  nextGlitch();
-}
-
 /* ===== Style 2: Matrix Glitch ===== */
 function matrixGlitchIntro(callback) {
   const introDiv = document.getElementById('intro');
+
+  document.body.classList.add('lock');
+  // Optionally hide content beneath to avoid flashes
+  const content = document.getElementById('content');
+  if (content) content.style.visibility = 'hidden';
+
 
   // Create canvas
   const canvas = document.createElement("canvas");
   canvas.id = "matrixCanvas";
   document.body.insertBefore(canvas, introDiv);
+
+  // Make it a true fullscreen overlay background
+  canvas.style.position = 'fixed';
+  canvas.style.inset = '0';
+  canvas.style.zIndex = '9998';
+  canvas.style.pointerEvents = 'none';
+
   const ctx = canvas.getContext("2d");
 
   // --- define BEFORE resize() ---
@@ -91,7 +77,7 @@ function matrixGlitchIntro(callback) {
     const flash = document.createElement("div");
     flash.className = "flash-text";
     flash.textContent = glitchPhrases[Math.floor(Math.random() * glitchPhrases.length)];
-    flash.style.position = "absolute";
+    flash.style.position = "fixed";
     flash.style.top = Math.random() * window.innerHeight + "px";
     flash.style.left = Math.random() * window.innerWidth + "px";
     flash.style.color = "red";
@@ -106,6 +92,10 @@ function matrixGlitchIntro(callback) {
   function spawnGlitchImage(src, size, cx, cy, lifetime = 1500) {
     // parent = centered & optionally rotated
     const wrap = document.createElement("div");
+    wrap.style.position = 'fixed';    // not static!
+    wrap.style.zIndex = '9999';       // just under/over intro text as you prefer
+    wrap.style.pointerEvents = 'none';
+
     wrap.className = "glitch-wrap";
     wrap.style.left = cx + "px";
     wrap.style.top  = cy + "px";
@@ -174,14 +164,24 @@ function matrixGlitchIntro(callback) {
     clearInterval(matrixInterval);
     clearInterval(textInterval);
     if (imgInterval) clearInterval(imgInterval);
-    window.removeEventListener('resize', resize);
 
-    canvas.remove();
+    // remove the matrix canvas
+    const c = document.getElementById('matrixCanvas');
+    if (c) c.remove();
+
+    // remove any transient glitch nodes
     document.querySelectorAll(".flash-text, .glitch-wrap").forEach(el => el.remove());
 
-    introDiv.style.display = 'none';
-    document.getElementById('content').style.display = 'block';
-    window.scrollTo({ top: 0, behavior: 'auto' });
+    // hide intro, unlock scroll, reveal content
+    const introDiv = document.getElementById('intro');
+    if (introDiv) introDiv.style.display = 'none';
+    document.body.classList.remove('lock');
+
+    const content = document.getElementById('content');
+    if (content) {
+      content.style.visibility = 'visible';
+      content.style.display = 'block';
+    }
 
     if (typeof callback === "function") callback();
   }

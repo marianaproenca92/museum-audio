@@ -1,157 +1,132 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-PT">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nó de Arquivo 12 — O Juramento</title>
-<link rel="stylesheet" href="css/style.css">
-<style>
-  #terms-container {
-    background: #f5f0dc url('https://www.transparenttextures.com/patterns/parchment.png') repeat;
-    color: #3b2f2f;
-    text-align: left;
-    padding: 20px;
-    height: 300px;
-    overflow-y: scroll;
-    border: 4px solid #5c3d2e;
-    margin: 20px auto;
-    max-width: 600px;
-    font-size: 3.5vw;
-    line-height: 1.6em;
-    box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nó de Arquivo 12 — O Juramento</title>
 
-  #accept-section {
-    margin-top: 20px;
-    font-size: 4vw;
-  }
+  <!-- styles -->
+  <link rel="stylesheet" href="css/intro.css">
+  <link rel="stylesheet" href="css/terminal.css">
+  <link rel="stylesheet" href="css/text-glitcher.css">
+  <style>
+    #terms-container {
+      background: var(--term-bg);
+      color: var(--term-fg);
+      font-family: var(--mono);
+      border: 1px solid var(--term-border);
+      box-shadow:
+        0 0 14px var(--term-shadow),
+        inset 0 0 30px #00ff8a0d;
+      padding: var(--space-3);
+      height: 45vh;
+      overflow-y: auto;
+      max-width: var(--container-max);
+      line-height: 1.6;
+    }
 
-  /* Wax seal */
-  #wax-seal {
-    display: none;
-    margin: 20px auto;
-    width: 100px;
-    height: 100px;
-    background: url('https://upload.wikimedia.org/wikipedia/commons/3/3a/Red_wax_seal.png') no-repeat center/cover;
-    animation: pulse 1.5s infinite alternate;
-  }
+    #terms-container h2,
+    #terms-container p {
+      margin: var(--space-2) 0;
+    }
 
-  @keyframes pulse {
-    from { transform: scale(1); }
-    to { transform: scale(1.05); }
-  }
+    #terms-container::-webkit-scrollbar {
+      width: 8px;
+    }
+    #terms-container::-webkit-scrollbar-thumb {
+      background: var(--term-fg-dim);
+    }
+    #terms-container::-webkit-scrollbar-track {
+      background: #010;
+    }
 
-  /* Break animation */
-  .break {
-    animation: crack 0.6s forwards;
-  }
-
-  @keyframes crack {
-    0% { transform: scale(1) rotate(0deg); opacity: 1; }
-    30% { transform: scale(1.1) rotate(-5deg); }
-    60% { transform: scale(0.9) rotate(5deg); opacity: 0.8; }
-    100% { transform: scale(0) rotate(15deg); opacity: 0; }
-  }
-
-  #play-btn {
-    background: #0f0;
-    border: none;
-    padding: 10px 20px;
-    font-family: 'Cinzel', serif;
-    font-size: 5vw;
-    cursor: pointer;
-    display: none;
-    margin-top: 10px;
-  }
-
-  audio {
-    display: none;
-    margin-top: 20px;
-  }
-</style>
+    #accept-section {
+      margin: 24px auto 0;
+      text-align: center;
+      font-size: clamp(16px, 3.6vw, 22px);
+      max-width: 680px;
+    }
+    #wax-seal {
+      display: none;
+      margin: 16px auto 0;
+      width: 110px;
+      height: 110px;
+      background: url("https://upload.wikimedia.org/wikipedia/commons/3/3a/Red_wax_seal.png")
+        no-repeat center/cover;
+      animation: pulse 1.5s infinite alternate;
+      will-change: transform, opacity;
+    }
+    @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.05); } }
+    .break { animation: crack 0.6s forwards; }
+    @keyframes crack {
+      0% { transform: scale(1) rotate(0deg); opacity: 1; }
+      30% { transform: scale(1.1) rotate(-5deg); }
+      60% { transform: scale(0.9) rotate(5deg); opacity: 0.8; }
+      100% { transform: scale(0) rotate(15deg); opacity: 0; }
+    }
+    audio { display: none; width: 100%; max-width: 680px; margin: 16px auto 0; }
+    @media (prefers-reduced-motion: reduce) { #wax-seal, .break { animation: none !important; } }
+  </style>
 </head>
 <body>
-<div id="intro"></div>
+  <!-- Intro overlay -->
+  <div id="intro" class="wrap terminal" style="display:none"></div>
 
-<div id="content">
-  <h1>Nó de Arquivo 12</h1>
-  <div class="subtitle">O Juramento</div>
+  <div id="content" class="wrap" style="display:none">
+    <div class="terminal crt">
+      <h1 data-glitch>Arquivo 12</h1>
+      <div class="subtitle" data-glitch>O Juramento</div>
+    </div>
 
-  <div id="terms-container">
-    <h2>Juramento do Guardião</h2>
-    <p>Ao aceitar este juramento, comprometo-me a cumprir e respeitar as antigas leis do Arquivo.</p>
-    <p>1. Não despertarei entidades esquecidas…</p>
-    <p>2. Não venderei, trocarei ou cozinharei artefactos do Museu.</p>
-    <p>3. Absterei-me de tentar compreender totalmente o conteúdo aqui presente.</p>
-    <p>4. Não usarei este áudio como música de fundo para festas infantis.</p>
-    <p>5. Evitarei olhar diretamente para o Olho de Bronze…</p>
-    <p>6. Declararei imediatamente qualquer fenómeno inexplicável.</p>
-    <p>7. Não cuspirei no chão do Museu.</p>
-    <p>8. Aceitarei que o Museu me recorde mais do que eu recordo o Museu.</p>
-    <p>9. Não alterarei o fluxo do tempo.</p>
-    <p>10. Manterei o segredo do que aqui testemunhei.</p>
-    <p>Este juramento é extenso de propósito. Continue a rolar…</p>
-    <p>[texto extra para rolar]</p>
-    <p>[texto extra para rolar]</p>
-    <p>[texto extra para rolar]</p>
-    <p>[texto extra para rolar]</p>
-    <p>[fim do juramento]</p>
+    <div id="board" class="board">
+      <div id="terms-container" tabindex="0" aria-label="Termos do Juramento (role até ao fim para aceitar)">
+        <h2>Juramento do Guardião</h2>
+        <p>Ao aceitar este juramento, comprometo-me a cumprir e respeitar as antigas leis do Arquivo.</p>
+        <p>1. Não despertarei entidades esquecidas…</p>
+        <p>2. Não venderei, trocarei ou cozinharei artefactos do Museu.</p>
+        <p>3. Absterei-me de tentar compreender totalmente o conteúdo aqui presente.</p>
+        <p>4. Não usarei este áudio como música de fundo para festas infantis.</p>
+        <p>5. Evitarei olhar diretamente para o Olho de Bronze…</p>
+        <p>6. Declararei imediatamente qualquer fenómeno inexplicável.</p>
+        <p>7. Não cuspirei no chão do Museu.</p>
+        <p>8. Aceitarei que o Museu me recorde mais do que eu recordo o Museu.</p>
+        <p>9. Não alterarei o fluxo do tempo.</p>
+        <p>10. Manterei o segredo do que aqui testemunhei.</p>
+        <p>Este juramento é extenso de propósito. Continue a rolar…</p>
+        <p>[texto extra para rolar]</p>
+        <p>[texto extra para rolar]</p>
+        <p>[texto extra para rolar]</p>
+        <p>[texto extra para rolar]</p>
+        <p>[fim do juramento]</p>
+      </div>
+    </div>
+
+    <div id="accept-section">
+      <label>
+        <input type="checkbox" id="accept" disabled />
+        Aceito os termos e condições
+      </label>
+
+      <div id="wax-seal" aria-hidden="true"></div>
+      <button id="standard-btn" aria-controls="ritual-audio">Ativar Registo</button>
+    </div>
+
+    <audio id="ritual-audio" preload="none" controls>
+      <source src="juramento.mp3" type="audio/mpeg" />
+      O seu navegador não suporta áudio.
+    </audio>
   </div>
 
-  <div id="accept-section">
-    <label><input type="checkbox" id="accept" disabled> Aceito os termos e condições</label>
-    <div id="wax-seal"></div>
-    <button id="play-btn">Ativar Registo</button>
-  </div>
-
-  <audio id="ritual-audio" controls>
-    <source src="juramento.mp3" type="audio/mpeg">
-  </audio>
-</div>
-
-<script src="js/intro.js"></script>
-<script>
-runGlitchIntro();
-
-const termsBox = document.getElementById("terms-container");
-const checkbox = document.getElementById("accept");
-const playBtn = document.getElementById("play-btn");
-const waxSeal = document.getElementById("wax-seal");
-const audio = document.getElementById("ritual-audio");
-
-// Unlock checkbox when scrolled to bottom
-termsBox.addEventListener("scroll", () => {
-  const scrollPos = termsBox.scrollTop + termsBox.clientHeight;
-  const scrollEnd = termsBox.scrollHeight - 5; // 5px tolerance
-  if (scrollPos >= scrollEnd) {
-    checkbox.disabled = false;
-  }
-});
-
-// Show wax seal when checkbox is ticked
-checkbox.addEventListener("change", () => {
-  if (checkbox.checked) {
-    waxSeal.style.display = "block";
-    // Break the seal after short delay
-    setTimeout(() => {
-      waxSeal.classList.add("break");
-      setTimeout(() => {
-        waxSeal.style.display = "none";
-        playBtn.style.display = "inline-block";
-      }, 600); // matches crack animation
-    }, 800);
-  } else {
-    waxSeal.style.display = "none";
-    playBtn.style.display = "none";
-  }
-});
-
-// Play audio when button clicked
-playBtn.addEventListener("click", () => {
-  audio.style.display = "block";
-  audio.play();
-  playBtn.style.display = "none";
-});
-</script>
+  <!-- scripts (all auto-start; no inline logic needed) -->
+  <script src="js/intro.js"></script>
+  <script src="js/intro-runner.js"></script>
+  <script src="js/text-glitcher.js"></script>
+  <script src="js/terms-flow.js"></script>
+  <script>
+    // start intro once, then reveal content
+    runIntro(() => {
+      document.getElementById('content').style.display = 'block';
+    });
+  </script>
 </body>
 </html>

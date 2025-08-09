@@ -4,30 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Nó de Arquivo 23 — O Botão Fugitivo</title>
-<link rel="stylesheet" href="css/terminal.css">
-<style>
-  
-  #runaway-btn {
-    position: fixed;                 /* instead of absolute */
-    z-index: 3;                      /* above canvas/content */
-    background: #111;
-    color: #0f0;
-    font-family: 'Cinzel', serif;
-    font-size: 5vw;
-    border: 1px solid #0f0;
-    padding: 10px 20px;
-    cursor: pointer;
-    transition: transform 0.2s ease;
-    max-width: calc(100vw - 40px);   /* prevent overflowing the viewport width */
-    white-space: nowrap;             /* optional: keep it on one line */
-  }
-
-  #runaway-btn:hover {
-    background: #0f0;
-    color: #000;
-  }
-
-</style>
+<link rel="stylesheet" href="css/intro.css">
+  <link rel="stylesheet" href="css/terminal.css">
+  <link rel="stylesheet" href="css/text-glitcher.css">
 </head>
 <body>
 <div id="intro" class="wrap terminal" style="display:none"></div>
@@ -41,7 +20,7 @@
       <span class="blink"></span>
     </div>
 
-    <button id="runaway-btn" aria-label="Ativar Registo">Ativar Registo</button>
+    <button id="standard-btn" aria-label="Ativar Registo">Ativar Registo</button>
 
     <audio id="ritual-audio" controls>
       <source src="audio/fugitivo.mp3" type="audio/mpeg">
@@ -54,34 +33,26 @@
 </div>
 
 <div class="toast" id="toast"></div>
+  <script src="js/intro.js"></script>
+  <script src="js/intro-runner.js"></script>
+  <script src="js/running-button.js"></script>
+  <script src="js/screen_glitch.js"></script>
+  <script src="js/text-glitcher.js"></script>
+  <script>
+   runIntro(() => {
+    const content = document.getElementById('content');
+    if (content) content.style.display = 'block';
 
-<script src="js/intro.js"></script>
-<script src="js/running-button.js"></script>
-<script src="js/text-glitcher.js"></script>
-<script>
-    const start = () => {
-      if (window.GlitchText && typeof GlitchText.attach === 'function') {
-        GlitchText.attach('[data-glitch]', { probability: 0.06, burstMs: 1100 });
-      }
+    // init the runaway button ONLY after intro ends
+    if (typeof initRunawayButton === 'function') {
       initRunawayButton({
         btn: '#runaway-btn',
         audio: '#ritual-audio',
         padding: 16,
-        onPlay: () => { document.getElementById('post').style.display = 'block'; }
+        onPlay: () => document.getElementById('post').style.display = 'block'
       });
-    };
-
-   if (typeof runGlitchIntro === 'function') {
-      document.getElementById('intro').style.display = 'block';
-      runGlitchIntro(() => {
-        // make sure the overlay is gone before enabling the button
-        document.getElementById('intro').style.display = 'none';
-        start();
-      });
-    } else {
-      start();
     }
-
+  });
 </script>
 </body>
 </html>

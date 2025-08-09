@@ -1,96 +1,95 @@
-/*! TextGlitcher v1.0 – reusable text glitch & scrambler (PT-PT safe copy) */
-(function (root) {
-  const rnd = (a,b)=> Math.floor(Math.random()*(b-a+1))+a;
+// Tiny Text Glitch — non-destructive, no DOM rewriting
+// Usage: add [data-glitch] to any element. This script auto-primes and runs subtle bursts.
+// Also exposes window.gl.pulse(el) for manual pulses and wraps markFound() to pulse #t-sys.
 
-  function ensureDataText(el){
-    // Keep data-text in sync so ::before/::after show the same content
-    if (!el) return;
-    el.dataset.text = el.textContent.trim();
-  }
-
-  function pulse(el){
-    if (!el) return;
-    el.classList.add('glx-slice','glx-flicker');
-    setTimeout(()=> el.classList.remove('glx-slice','glx-flicker'), 320);
-  }
-
-  // Letter scrambler – short, recover original, spoiler-safe
-  function scramble(el, opts={}){
-    if (!el || el.dataset.scrambling === '1') return;
-    const duration = opts.duration ?? rnd(150, 300);
-    const density  = opts.density  ?? 0.4;   // how much to scramble initially
-    const charset  = opts.charset  ?? "!#%&*+?@/\\|[]{}<>-_=~";
-    const original = el.textContent;
-    let t = 0; el.dataset.scrambling = '1';
-
-    const tick = ()=>{
-      const out = original.split('').map((ch)=>{
-        if (ch === ' ') return ' ';
-        if (t < duration*0.6 && Math.random() < density)  return charset[rnd(0, charset.length-1)];
-        if (t < duration && Math.random() < 0.15)         return charset[rnd(0, charset.length-1)];
-        return ch;
-      }).join('');
-      el.textContent = out; ensureDataText(el);
-      t += 30;
-      if (t < duration) requestAnimationFrame(tick);
-      else { el.textContent = original; ensureDataText(el); el.dataset.scrambling = '0'; }
-    };
-    tick();
-  }
-
-  // Auto loop that randomly glitches provided targets
-  function startAutoLoop(targets, options={}){
-    const tickMs = options.tickMs ?? 1200;
-    const chance = options.chance ?? 0.18;
-    const scramChance = options.scrambleChance ?? 0.6;
-
-    // keep data-text mirrored
-    const sync = ()=> targets.forEach(ensureDataText);
-    sync();
-    const mo = new MutationObserver(sync);
-    targets.forEach(el => mo.observe(el, { characterData:true, subtree:true, childList:true }));
-
-    const id = setInterval(()=>{
-      if (targets.length === 0) return;
-      if (Math.random() < chance){
-        const el = targets[rnd(0, targets.length-1)];
-        pulse(el);
-        if (Math.random() < scramChance) scramble(el);
+(function () {
+  // Copy each [data-glitch] element’s visible text into data-text (for ::before/::after mirrors)
+  function primeGlitchTargets(root = document) {
+    const els = root.querySelectorAll('[data-glitch]');
+    els.forEach(el => {
+      if (!el.hasAttribute('data-text')) {
+        el.setAttribute('data-text', el.textContent.trim());
       }
-    }, tickMs);
-    return ()=> clearInterval(id);
-  }
-
-  function markTargets(selectors){
-    // Add .glx and data-text to each match
-    const nodes = [];
-    selectors.forEach(sel=>{
-      document.querySelectorAll(sel).forEach(el=>{
-        if (!el.classList.contains('glx')) el.classList.add('glx');
-        ensureDataText(el);
-        nodes.push(el);
-      });
     });
-    return nodes;
+    return els;
   }
 
-  // Public API
-  const API = {
-    init(opts={}){
-      // opts.targets: CSS selectors to target (array or string)
-      // opts.auto: start auto loop (boolean)
-      // opts.autoOptions: { tickMs, chance, scrambleChance }
-      const sel = Array.isArray(opts.targets) ? opts.targets : (opts.targets ? [opts.targets] : []);
-      const targets = markTargets(sel);
-      let stop = null;
-      if (opts.auto) stop = startAutoLoop(targets, opts.autoOptions || {});
-      return { targets, stop, pulse, scramble };
-    },
-    pulse,
-    scramble,
-    markTargets,
-    startAutoLoop
-  };
+  // Briefly add/remove the .glitching class
+  function pulse(el, dur = 320) {
+    if (!el) return;
+    el.classList.add('glitching');
+    setTimeout(() => el.classList.remove('glitching'), dur);
+  }
 
-  root.TextGlitcher = API;
-})(window);
+  // Random ambient bursts within a scope container
+  function startBursts(scope = document, { chance = 0.18, min = 800, max = 1600, dur = 320 } = {}) {
+    const targets = Array.from(scope.querySelectorAll('[data-glitch]'));
+    if (!targets.length) return { stop() {} };
+
+    let stopFlag = false;
+    (function tick() {
+      if (stopFlag) return;
+      if (Math.random() < chance) pulse(targets[(Math.random() * targets.length) | 0], dur);
+      setTimeout(tick, min + Math.random() * (max - min));
+    })();
+
+    return { stop: () => (stopFlag = true) };
+  }
+
+  // Respect reduced motion
+  function prefersReducedMotion() {
+    return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
+  // Public shim (so other scripts can trigger pulses)
+  const gl = {
+    pulse,
+    scramble: () => {} // no-op: we don't mutate letters
+  };
+  window.gl = gl;
+
+  function startAll() {
+    if (prefersReducedMotion()) return;
+
+    // Prime and start inside #content (avoids intro overlays)
+    const content = document.getElementById('content') || document;
+    primeGlitchTargets(content);
+    startBursts(content, { chance: 0.18, min: 800, max: 1600, dur: 320 });
+
+    // Nice UX: flicker when hovering any [data-glitch]
+    document.addEventListener('pointerenter', (e) => {
+      const el = e.target.closest && e.target.closest('[data-glitch]');
+      if (el) pulse(el, 280);
+    }, { passive: true });
+
+    // If the differences game defines markFound, wrap it to pulse the system line
+    const tryWrap = () => {
+      if (typeof window.markFound === 'function') {
+        const old = window.markFound;
+        window.markFound = function wrappedMarkFound(idx) {
+          old.call(this, idx);
+          const sys = document.querySelector('#t-sys');
+          if (sys) pulse(sys, 320);
+        };
+        return true;
+      }
+      return false;
+    };
+
+    // Wrap immediately if available; otherwise retry a few times (game script may load first anyway)
+    if (!tryWrap()) {
+      let attempts = 0;
+      const id = setInterval(() => {
+        attempts++;
+        if (tryWrap() || attempts > 10) clearInterval(id);
+      }, 200);
+    }
+  }
+
+  // Run after DOM is ready (and after differences_game.js since it's included before this file)
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', startAll);
+  } else {
+    startAll();
+  }
+})();

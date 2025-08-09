@@ -3,9 +3,12 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
-  <title>Arquivo - </title>
+  <title>Arquivo 09 — Diferenças por Deslize</title>
+
+  <link rel="stylesheet" href="css/intro.css">
   <link rel="stylesheet" href="css/terminal.css">
   <link rel="stylesheet" href="css/text-glitcher.css">
+
   <style>
     /* Overlay hotspots (tap to mark differences) */
     .overlay{ pointer-events:none; position:absolute; inset:0; }
@@ -19,16 +22,16 @@
   </style>
 </head>
 <body>
-  <!-- Optional intro (will run if you already include your glitch intro JS elsewhere) -->
+  <!-- Optional intro (only shows if your intro runs elsewhere) -->
   <div id="intro" class="wrap terminal" style="display:none"></div>
 
   <div id="content" class="wrap">
     <div class="terminal">
-      <h1 class="glx-scan"> <span id="t-ttl">Arquivo 09</span> </h1>
-      <div class="subtitle">«<span id="t-sub">Diferenças por Deslize</span> — Moldura CRT»</div>
+      <h1 data-glitch>Arquivo 09</h1>
+      <div class="subtitle" data-glitch>«<span id="t-sub">Diferenças por Deslize</span> — Moldura CRT»</div>
 
       <div class="help">
-        <span id="t-sys">[O MUSEU]: Registo instável. Desliza ⟷ para alinhar memórias.</span>
+        <span id="t-sys" data-glitch>[O MUSEU]: Registo instável. Desliza ⟷ para alinhar memórias.</span>
         Existem <strong id="need">N</strong> discrepâncias. Assinala-as. <span class="blink"></span>
       </div>
 
@@ -44,7 +47,7 @@
         <div class="overlay" id="overlay" aria-hidden="true"></div>
       </div>
 
-     <div class="terminal" style="margin-top:10px">
+      <div class="terminal" style="margin-top:10px">
         <strong>Dados do Arquivo</strong><br>
         &gt; Assunto: Retrato lúdico (noiva/noivo)<br>
         &gt; Nota: Interferência confirmada — sinais de corvos e… rumores de piscina de bolas.
@@ -53,37 +56,23 @@
       <audio id="voice">
         <source src="audio/nodo09.mp3" type="audio/mpeg"/>
       </audio>
+
       <div id="post" class="help" style="display:none;margin-top:8px">
-        <span class="glitch" data-text="[O MUSEU]: Verificação completa. A memória reabriu.">
-          [O MUSEU]: Verificação completa. A memória reabriu.
-        </span>
+        <span id="t-post" data-glitch>[O MUSEU]: Verificação completa. A memória reabriu.</span>
       </div>
     </div>
   </div>
 
   <div class="toast" id="toast"></div>
-  <script src="js/text-glitcher.js"></script>
+  <script src="js/intro.js"></script>
+  <script src="js/intro-runner.js"></script>
   <script src="js/differences_game.js"></script>
   <script src="js/screen_glitch.js"></script>
+  <script src="js/text-glitcher.js"></script>
   <script>
-    // Pick safe, non-spoilery targets (titles / system lines)
-    const gl = TextGlitcher.init({
-      targets: ['#t-ttl', '#t-sub', '#t-sys', '#post .glx'], // add or remove per page
-      auto: true,                                            // background random glitches
-      autoOptions: { tickMs: 1200, chance: 0.18, scrambleChance: 0.6 }
+    runIntro(() => {
+      document.getElementById('content').style.display = 'block';
     });
-
-    // Optional: trigger a stronger pulse on your own events
-    // e.g., when a diff is found:
-    if (typeof window.markFound === 'function'){
-      const old = window.markFound;
-      window.markFound = (i)=>{
-        old(i);
-        gl.pulse(document.querySelector('#t-sys'));
-        gl.scramble(document.querySelector('#t-sys'));
-      };
-    }
   </script>
-
 </body>
 </html>

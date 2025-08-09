@@ -62,6 +62,27 @@ h1 { font-size: 18px; }
 .blink::after { content: "▌"; animation: blink 1s steps(1) infinite; }
 @keyframes blink { 50% { opacity: 0; } }
 
+#standard-btn {
+    position: fixed;                 /* instead of absolute */
+    z-index: 3;                      /* above canvas/content */
+    background: #111;
+    color: #0f0;
+    font-family: 'Cinzel', serif;
+    font-size: 5vw;
+    border: 1px solid #0f0;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    max-width: calc(100vw - 40px);   /* prevent overflowing the viewport width */
+    white-space: nowrap;             /* optional: keep it on one line */
+  }
+
+  #standard-btn:hover {
+    background: #0f0;
+    color: #000;
+  }
+
+
 /* UI bits */
 .pill {
   display: inline-block;
@@ -82,34 +103,36 @@ h1 { font-size: 18px; }
 
 /* Board frame for galleries/games */
 .board{
-    position:relative; border:1px dashed var(--fg); margin-top:10px; overflow:hidden;
-    filter: drop-shadow(0 0 8px #00ff8a44) contrast(1.02) saturate(1.02);
+  position:relative; 
+  border:1px dashed var(--fg); 
+  margin-top:10px; overflow:hidden;
+  filter: drop-shadow(0 0 8px #00ff8a44) contrast(1.02) saturate(1.02);
 }
 
 /* Swipe gallery — scroll-snap, fits any image */
 .gallery{
-      display:flex; gap:0;
-      overflow-x:auto; -webkit-overflow-scrolling:touch;
-      scroll-snap-type:x mandatory;
-      width:100%;
-      background:#010;
-    }
+  display:flex; gap:0;
+  overflow-x:auto; -webkit-overflow-scrolling:touch;
+  scroll-snap-type:x mandatory;
+  width:100%;
+  background:#010;
+}
 .slide{
-      position:relative;
-      flex:0 0 100%;
-      scroll-snap-align:center;
-      aspect-ratio: 3/4;         /* mobile-friendly default; adjusts on wide screens */
-      display:grid; place-items:center;
-      background:#020;
-    }
+  position:relative;
+  flex:0 0 100%;
+  scroll-snap-align:center;
+  aspect-ratio: 3/4;         /* mobile-friendly default; adjusts on wide screens */
+  display:grid; place-items:center;
+  background:#020;
+}
 @media (min-width:700px){ .slide{ aspect-ratio: 16/9; } }
 
- .slide img{
-      width:100%; height:100%;
-      object-fit: contain;       /* key: FIT to frame */
-      image-rendering:auto;
-      transform: translateZ(0);  /* avoid blurring on mobile */
-    }
+.slide img{
+    width:100%; height:100%;
+    object-fit: contain;       /* key: FIT to frame */
+    image-rendering:auto;
+    transform: translateZ(0);  /* avoid blurring on mobile */
+  }
 /* Toast */
 .toast {
   position: fixed; left: 50%; top: 16px; transform: translateX(-50%);
@@ -126,6 +149,7 @@ audio { width: 100%; max-width: 420px; display: none; margin-top: var(--space-2)
 .mt-1 { margin-top: var(--space-1); }
 .mt-2 { margin-top: var(--space-2); }
 .mt-3 { margin-top: var(--space-3); }
+
 
 /* ====== GLITCH PACK ====== */
 
