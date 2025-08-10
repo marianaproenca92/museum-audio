@@ -87,26 +87,7 @@
     </div>
 
     <div id="board" class="board">
-      <div id="terms-container" tabindex="0" aria-label="Termos do Juramento (role até ao fim para aceitar)">
-        <h2>Juramento do Guardião</h2>
-        <p>Ao aceitar este juramento, comprometo-me a cumprir e respeitar as antigas leis do Arquivo.</p>
-        <p>1. Não despertarei entidades esquecidas…</p>
-        <p>2. Não venderei, trocarei ou cozinharei artefactos do Museu.</p>
-        <p>3. Absterei-me de tentar compreender totalmente o conteúdo aqui presente.</p>
-        <p>4. Não usarei este áudio como música de fundo para festas infantis.</p>
-        <p>5. Evitarei olhar diretamente para o Olho de Bronze…</p>
-        <p>6. Declararei imediatamente qualquer fenómeno inexplicável.</p>
-        <p>7. Não cuspirei no chão do Museu.</p>
-        <p>8. Aceitarei que o Museu me recorde mais do que eu recordo o Museu.</p>
-        <p>9. Não alterarei o fluxo do tempo.</p>
-        <p>10. Manterei o segredo do que aqui testemunhei.</p>
-        <p>Este juramento é extenso de propósito. Continue a rolar…</p>
-        <p>[texto extra para rolar]</p>
-        <p>[texto extra para rolar]</p>
-        <p>[texto extra para rolar]</p>
-        <p>[texto extra para rolar]</p>
-        <p>[fim do juramento]</p>
-      </div>
+      <div id="terms-container" tabindex="0" aria-label="Termos do Juramento"></div>
     </div>
 
     <div id="accept-section">
@@ -135,6 +116,14 @@
     runIntro(() => {
       document.getElementById('content').style.display = 'block';
     });
+  </script>
+  <script>
+    fetch('terms-content.html')
+      .then(response => response.text())
+      .then(html => {
+        document.getElementById('terms-container').innerHTML = html;
+      })
+      .catch(err => console.error('Failed to load terms', err));
   </script>
 </body>
 </html>
