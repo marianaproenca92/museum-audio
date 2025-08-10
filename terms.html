@@ -10,6 +10,14 @@
   <link rel="stylesheet" href="css/terminal.css">
   <link rel="stylesheet" href="css/text-glitcher.css">
   <style>
+
+    #btn-fixed {
+      display: none; /* hidden by default */
+      margin: 20px auto 0; /* centers horizontally */
+      min-width: 160px;
+      max-width: 200px; /* smaller max size */
+    }
+
     #terms-container {
       background: var(--term-bg);
       color: var(--term-fg);
@@ -108,7 +116,7 @@
       </label>
 
       <div id="wax-seal" aria-hidden="true"></div>
-      <button id="standard-btn" aria-controls="ritual-audio">Ativar Registo</button>
+      <button id="btn-fixed" class="btn-ritual btn-block" aria-controls="ritual-audio" style="display:none;">Ativar Registo</button>
     </div>
 
     <audio id="ritual-audio" preload="none" controls>

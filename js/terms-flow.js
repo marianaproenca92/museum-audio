@@ -6,7 +6,7 @@
   function init() {
     const termsBox = document.getElementById('terms-container');
     const checkbox = document.getElementById('accept');
-    const playBtn  = document.getElementById('play-btn');
+    const playBtn  = document.getElementById('btn-fixed');
     const waxSeal  = document.getElementById('wax-seal');
     const audioEl  = document.getElementById('ritual-audio');
 
@@ -39,7 +39,7 @@
           waxSeal.classList.add('break');
           setTimeout(() => {
             waxSeal.style.display = 'none';
-            playBtn.style.display = 'inline-block';
+            playBtn.style.display = 'block';
             playBtn.focus({ preventScroll: true });
           }, 600); // matches crack animation
         }, 800);

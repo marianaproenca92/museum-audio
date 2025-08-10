@@ -20,7 +20,7 @@
       <span class="blink"></span>
     </div>
 
-    <button id="standard-btn" aria-label="Ativar Registo">Ativar Registo</button>
+    <button id="btn-floating" class="btn-ritual btn-floating" aria-label="Ativar Registo">Ativar Registo</button>
 
     <audio id="ritual-audio" controls>
       <source src="audio/fugitivo.mp3" type="audio/mpeg">
@@ -46,7 +46,7 @@
     // init the runaway button ONLY after intro ends
     if (typeof initRunawayButton === 'function') {
       initRunawayButton({
-        btn: '#runaway-btn',
+        btn: '#btn-floating',
         audio: '#ritual-audio',
         padding: 16,
         onPlay: () => document.getElementById('post').style.display = 'block'
