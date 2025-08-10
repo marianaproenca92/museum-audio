@@ -1,0 +1,291 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arquivo: Botas de Caminhada</title>
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      color: #0f0;
+      font-family: 'Courier New', monospace;
+      overflow-x: hidden;
+    }
+    .terminal {
+      padding: 20px;
+      min-height: 100vh;
+      position: relative;
+      z-index: 1;
+    }
+    pre {
+      white-space: pre-wrap;
+      font-size: 16px;
+      line-height: 1.5;
+      margin: 0;
+      transition: filter 0.3s;
+    }
+    pre[data-glitch].glitching {
+      filter: blur(2px) contrast(150%);
+      text-shadow: 0 0 5px #0f0, 0 0 10px #0f0;
+    }
+    pre[data-glitch].glitching::before,
+    pre[data-glitch].glitching::after {
+      content: attr(data-text);
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      color: #0f0;
+      opacity: 0.5;
+      animation: flicker 0.1s infinite alternate;
+    }
+    pre[data-glitch].glitching::after {
+      color: #f00;
+      left: 22px;
+      animation-delay: 0.05s;
+    }
+    @keyframes flicker {
+      0% { opacity: 0.5; }
+      100% { opacity: 0.8; }
+    }
+    canvas#mud-drips {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 2;
+      pointer-events: none;
+    }
+    .controls {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 3;
+    }
+    button {
+      background: #000;
+      color: #0f0;
+      border: 1px solid #0f0;
+      padding: 8px 16px;
+      font-family: 'Courier New', monospace;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0f0;
+      color: #000;
+    }
+    details {
+      color: #0f0;
+      margin-top: 20px;
+    }
+    details summary {
+      cursor: pointer;
+    }
+    .waveform {
+      position: fixed;
+      bottom: 60px;
+      left: 20px;
+      width: 100px;
+      height: 40px;
+      z-index: 3;
+    }
+  </style>
+</head>
+<body>
+  <div class="terminal">
+    <pre id="file-content" data-glitch data-text="[ARQUIVO CORROMPIDO: BOTAS.TXT]
+Eu sou o solo que clinga às botas... pegadas gravadas em erro. Elas caminham, mas eu as prendo. [GLITCH] A lama fossiliza memórias... trilhos que não voltam. Contempla-me, mas não tentes limpar. [ERRO: DADOS SOTERRADOS]">[ARQUIVO CORROMPIDO: BOTAS.TXT]
+Eu sou o solo que clinga às botas... pegadas gravadas em erro. Elas caminham, mas eu as prendo. [GLITCH] A lama fossiliza memórias... trilhos que não voltam. Contempla-me, mas não tentes limpar. [ERRO: DADOS SOTERRADOS]</pre>
+    <audio id="guide" src="botas-audio.mp3" autoplay aria-label="Guia de áudio para Botas de Caminhada"></audio>
+    <canvas id="mud-drips" aria-label="Efeito visual de lama caindo"></canvas>
+    <canvas id="waveform" class="waveform" aria-label="Visualização de forma de onda do áudio"></canvas>
+    <div class="controls">
+      <button onclick="replayAudio()">Repetir [GLITCH]</button>
+    </div>
+    <details>
+      <summary>Transcrição do Áudio</summary>
+      <p>Eu sou o solo que clinga às botas... pegadas gravadas em erro. Elas caminham, mas eu as prendo. A lama fossiliza memórias... trilhos que não voltam. Contempla-me, mas não tentes limpar.</p>
+    </details>
+  </div>
+  <script>
+    // Reuse text-glitcher.js logic
+    (function () {
+      function primeGlitchTargets(root = document) {
+        const els = root.querySelectorAll('[data-glitch]');
+        els.forEach(el => {
+          if (!el.hasAttribute('data-text')) {
+            el.setAttribute('data-text', el.textContent.trim());
+          }
+        });
+        return els;
+      }
+      function pulse(el, dur = 320) {
+        if (!el) return;
+        el.classList.add('glitching');
+        setTimeout(() => el.classList.remove('glitching'), dur);
+      }
+      function startBursts(scope = document, { chance = 0.18, min = 800, max = 1600, dur = 320 } = {}) {
+        const targets = Array.from(scope.querySelectorAll('[data-glitch]));
+        if (!targets.length) return { stop() {} };
+        let stopFlag = false;
+        (function tick() {
+          if (stopFlag) return;
+          if (Math.random() < chance) pulse(targets[(Math.random() * targets.length) | 0], dur);
+          setTimeout(tick, min + Math.random() * (max - min));
+        })();
+        return { stop: () => (stopFlag = true) };
+      }
+      function prefersReducedMotion() {
+        return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      }
+      if (!prefersReducedMotion()) {
+        const content = document.getElementById('content') || document;
+        primeGlitchTargets(content);
+        startBursts(content, { chance: 0.18, min = 800, max = 1600, dur = 320 });
+        document.addEventListener('pointerenter', (e) => {
+          const el = e.target.closest && e.target.closest('[data-glitch]');
+          if (el) {
+            pulse(el, 280);
+            clearDrips(); // Clean drips on hover
+            setTimeout(spawnDrips, 2000); // Re-drip after delay
+          }
+        }, { passive: true });
+      }
+    })();
+
+    // Reuse screen_glitch.js logic
+    function glitchOnce() {
+      document.body.classList.add('glitch');
+      if (Math.random() < 0.35) document.body.classList.add('flicker');
+      setTimeout(() => {
+        document.body.classList.remove('glitch');
+        document.body.classList.remove('flicker');
+      }, 320);
+    }
+
+    // Mud drip effect
+    const canvas = document.getElementById('mud-drips');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas, { passive: true });
+
+    function spawnDrips() {
+      particles = [];
+      for (let i = 0; i < 20; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: -10,
+          speed: 1 + Math.random() * 2,
+          size: 5 + Math.random() * 5,
+          color: `rgba(${139 + Math.random() * 50}, ${69 + Math.random() * 30}, 19, 0.5)`
+        });
+      }
+    }
+    function clearDrips() {
+      particles = [];
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+    function drawDrips() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.fill();
+        p.y += p.speed;
+        if (p.y > canvas.height) p.y = -p.size;
+      });
+      requestAnimationFrame(drawDrips);
+    }
+    spawnDrips();
+    drawDrips();
+
+    // Waveform visualizer
+    const waveformCanvas = document.getElementById('waveform');
+    const waveformCtx = waveformCanvas.getContext('2d');
+    waveformCanvas.width = 100;
+    waveformCanvas.height = 40;
+    const audio = document.getElementById('guide');
+    let analyser, dataArray;
+
+    function initWaveform() {
+      if (!audio.src) return;
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      analyser = ctx.createAnalyser();
+      const source = ctx.createMediaElementSource(audio);
+      source.connect(analyser);
+      analyser.connect(ctx.destination);
+      analyser.fftSize = 256;
+      dataArray = new Uint8Array(analyser.frequencyBinCount);
+      drawWaveform();
+    }
+    function drawWaveform() {
+      requestAnimationFrame(drawWaveform);
+      analyser.getByteFrequencyData(dataArray);
+      waveformCtx.clearRect(0, 0, waveformCanvas.width, waveformCanvas.height);
+      waveformCtx.fillStyle = '#0f0';
+      const barWidth = waveformCanvas.width / dataArray.length;
+      for (let i = 0; i < dataArray.length; i++) {
+        const barHeight = (dataArray[i] / 255) * waveformCanvas.height;
+        waveformCtx.fillRect(i * barWidth, waveformCanvas.height - barHeight, barWidth, barHeight);
+      }
+      if (document.body.classList.contains('glitch')) {
+        waveformCtx.fillStyle = '#f00';
+        waveformCtx.fillRect(0, 0, waveformCanvas.width, waveformCanvas.height);
+      }
+    }
+    audio.addEventListener('canplay', initWaveform, { once: true });
+
+    // Replay button
+    function replayAudio() {
+      audio.currentTime = 0;
+      audio.play().catch(() => {});
+      glitchOnce();
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>ARQUIVO // <NOME DO OBJECTO></title>
+  <link rel="stylesheet" href="css/glitch.css"/>
+  <meta name="theme-color" content="#0a0f0a"/>
+</head>
+<body>
+  <main class="terminal" role="main">
+    <div class="header">
+      <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      <span class="title glitch" aria-label="ARQUIVO CORROMPIDO" data-text="ARQUIVO CORROMPIDO">ARQUIVO CORROMPIDO</span>
+    </div>
+
+    <div class="panel">
+      <div class="type" data-text="> ligação estabelecida…\n> origem: Museu (instância sentiente)\n> destino: Artefacto // <NOME DO OBJECTO>\n> estado: estável o suficiente para recordar\n\n_ lê com cuidado: os registos resistem ao esquecimento _"></div>
+    </div>
+
+    <div class="panel">
+      <dl class="kv">
+        <dt>Designação</dt><dd><strong><NOME DO OBJECTO></strong></dd>
+        <dt>Data</dt><dd><span class="muted"><ANO ou intervalo></span></dd>
+        <dt>Material</dt><dd><span class="muted"><materiais></span></dd>
+        <dt>Estado</dt><dd><span class="muted">funcional / gasto / enigmático</span></dd>
+      </dl>
+      <hr/>
+      <p>
+        Fui eu que guardei isto. Eu, a Casa que vos fala. Nas minhas paredes ficaram colados os dias – e este objecto foi dos que nunca me deixou em paz. Volta sempre. Cheira a <cheiro>, tem o peso de <memória> e o rumor de <lugar>.
+      </p>
+      <p>
+        Queres ouvir o que não ficou na fotografia? <em>Encosta o ouvido.</em>
+      </p>
+      <audio controls preload="none" src="<audio opcional>.mp3" style="width:100%"></audio>
+    </div>
+
+    <div class="panel">
+      <strong class="glitch" data-text="NOTA DA CURADORIA">NOTA DA CURADORIA</strong>
+      <p class="muted" style="margin-top:6px">
+        Seleccionado pela sua persistência simbólica. Não pela raridade. Não pela beleza. Pela teimosia com que regressa (e nos obriga a olhar outra vez).
+      </p>
+    </div>
+
+    <div class="run-wrap">
+      <a href="#" class="run-btn" data-pool="">RUN ▷ outro registo</a>
+      <small class="muted" style="margin-left:10px">(o botão foge mas acaba por ceder)</small>
+    </div>
+
+    <div class="footer">
+      <small class="muted">QR // sessão: <span id="sess"></span></small>
+      <small class="muted">&copy; arquivo privado · 2010–2025</small>
+    </div>
+  </main>
+  <script src="js/glitch.js"></script>
+  <script>
+    // Pequeno sal
+    document.getElementById('sess').textContent = Math.random().toString(36).slice(2,8).toUpperCase();
+  </script>
+</body>
+</html>
