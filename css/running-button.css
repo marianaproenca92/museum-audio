@@ -1,0 +1,54 @@
+/* ========= Arena & stack control (THIS PAGE ONLY) ========= */
+#arena{ position:relative; isolation:isolate; }
+#arena::before, #arena::after{ z-index:0 !important; }       /* keep CRT overlays behind */
+#arena > *{ position:relative; z-index:1; }                   /* content above overlays */
+
+/* ========= Overlay button (transparent, fixed‑size) ========= */
+#btn-floating{
+  position:absolute; inset:auto auto 24px 24px; /* initial bottom-left */
+  display:inline-grid !important; place-items:center !important; box-sizing:border-box;
+  width:190px !important; height:48px !important;
+  min-width:190px !important; max-width:190px !important;
+  min-height:48px !important; max-height:48px !important;
+  padding:0 !important; line-height:0 !important; border-width:1px !important;
+  border:1px solid var(--accent); border-radius:10px; background:transparent !important;
+  color:var(--accent); text-decoration:none; cursor:pointer;
+  box-shadow:0 0 0 1px rgba(39,243,154,.10);
+  transform:none !important; transition: box-shadow .12s ease !important;
+  contain:layout paint size; pointer-events:auto;
+}
+#btn-floating .btn-label{
+  pointer-events:none; font:700 14px var(--mono) !important; letter-spacing:.6px !important;
+  line-height:1 !important; white-space:nowrap; text-shadow:0 0 6px rgba(39,243,154,.25);
+}
+#btn-floating:hover{ box-shadow:0 0 0 3px rgba(39,243,154,.12); }
+#btn-floating.is-caught{ opacity:1; }
+
+/* ========= Warning banner (above log, below button) ========= */
+.alert{ border:1px solid var(--ghost); border-radius:10px; padding:12px 14px; background:rgba(0,0,0,.45); display:flex; align-items:center; gap:12px; }
+.alert-warning{ border-color: rgba(255,200,60,.35); box-shadow:0 0 0 1px rgba(255,200,60,.12) inset; }
+.alert .warn-icon{ width:18px; height:18px; border-radius:4px; display:grid; place-items:center; font:700 12px var(--mono); color:#111; background:#ffc83c; text-shadow:none; }
+.alert .warn-text{ color:var(--fg); }
+@keyframes warnFlick{ 0%,100%{opacity:1} 92%{opacity:.86} 94%{opacity:.6} 96%{opacity:.95} }
+@keyframes warnSkew{ 0%{transform:skewX(0deg)} 48%{transform:skewX(0deg)} 49%{transform:skewX(-6deg)} 51%{transform:skewX(0deg)} 80%{transform:skewX(0deg)} 81%{transform:skewX(5deg)} 83%{transform:skewX(0deg)} }
+.glitch-warn{ animation: warnFlick 1.8s steps(20) infinite, warnSkew 2.6s linear infinite; }
+
+/* ========= Boot‑log styling ========= */
+.bootlog{ white-space:pre-wrap; font:13px/1.55 var(--mono); color:var(--muted); text-shadow:0 0 6px rgba(39,255,140,.16); }
+.bootlog .err{ color:var(--danger); text-shadow:0 0 6px rgba(255,59,59,.22); }
+
+/* --- Overlay portal + no-flash guards --- */
+#rb-overlay{ position:fixed; inset:0; z-index:2147483647 !important; pointer-events:none; isolation:isolate; contain:paint; }
+#rb-overlay, #rb-overlay *{ mix-blend-mode:normal !important; }  /* stop overlay/scanline blending */
+#rb-overlay[hidden]{ display:none !important; }
+#btn-floating[hidden]{ display:none !important; }                 /* override any display: grid !important */
+/* stop the see-through */
+#rb-overlay > #btn-floating{
+  background: rgba(0,16,6,.92) !important;   /* solid dark CRT glass */
+  box-shadow:
+    0 0 0 1px rgba(39,255,140,.10),
+    0 0 0 3px rgba(39,255,140,.12) inset;     /* subtle inner glow */
+  mix-blend-mode: normal !important;          /* ignore scanline blending */
+}
+
+/* (keep your existing #btn-floating size rules) */

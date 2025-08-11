@@ -1,83 +1,64 @@
-/* === Fallout Green CRT overlay (non‑destructive: only overrides vars/classes) === */
+/* === Fallout Green CRT theme (colors, glow, aura) === */
 :root{
   --bg:#060a06;               /* almost‑black green */
   --fg:#b7ffb7;               /* phosphor light */
   --muted:#6bd66b;            /* dim labels */
   --accent:#27ff8c;           /* vivid scan green */
-  --danger:#ff3b3b;           /* keep red for errors */
+  --danger:#ff3b3b;           /* red for errors */
   --ghost:rgba(39,255,140,.18);
   --scanline:rgba(255,255,255,.04);
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
 }
 
 body{
-  background: radial-gradient( circle at 50% 0%, #0a0f0a 0%, #060a06 55%, #040704 100% );
+  background:radial-gradient(circle at 50% 0%, #0a0f0a 0%, #060a06 55%, #040704 100%);
   color:var(--fg);
-  text-shadow: 0 0 6px rgba(39,255,140,.20); /* phosphor bloom */
+  text-shadow:0 0 6px rgba(39,255,140,.20); /* phosphor bloom */
 }
 
 /* Terminal frame with green aura */
 .terminal{
   border:1px solid var(--ghost);
-  background: linear-gradient(180deg, rgba(0,20,8,.60), rgba(0,16,6,.38));
+  background:linear-gradient(180deg, rgba(0,20,8,.60), rgba(0,16,6,.38));
   box-shadow:
     0 0 0 1px rgba(39,255,140,.10),
     0 24px 80px rgba(0,0,0,.65),
     0 0 40px rgba(39,255,140,.04) inset;
 }
-.terminal:before{ /* scanlines */
-  background: repeating-linear-gradient(to bottom, transparent 0 2px, var(--scanline) 2px 3px);
+.terminal::before{ /* scanlines */
+  background:repeating-linear-gradient(to bottom, transparent 0 2px, var(--scanline) 2px 3px);
 }
-.terminal:after{ /* subtle barrel vignette */
-  box-shadow: inset 0 0 140px rgba(0,0,0,.85), inset 0 0 22px rgba(39,255,140,.08);
+.terminal::after{ /* subtle barrel vignette */
+  box-shadow:inset 0 0 140px rgba(0,0,0,.85), inset 0 0 22px rgba(39,255,140,.08);
 }
 
 /* Head + labels */
-.header{ color: var(--muted); }
+.header{ color:var(--muted); }
 .title{ letter-spacing:.9px; }
 
 /* Panels */
-.panel{ background: rgba(2,18,8,.55); border:1px solid var(--ghost); }
+.panel{ background:rgba(2,18,8,.55); border:1px solid var(--ghost); }
 hr{ border-top:1px dashed var(--ghost); opacity:.55 }
 small,.muted{ color:var(--muted) }
 
 /* Glitch text tint */
-.glitch:before{ text-shadow:-2px 0 var(--accent); }
-.glitch:after{ text-shadow: 2px 0 var(--accent); opacity:.8 }
+.glitch::before{ text-shadow:-2px 0 var(--accent); }
+.glitch::after{ text-shadow: 2px 0 var(--accent); opacity:.8 }
 
 /* Type cursor in green */
 .type, .typewriter-row{ border-right:2px solid var(--accent); }
 
-/* RUN button */
-.run-btn{
-  border-color:var(--accent); color:var(--accent);
-  background:rgba(39,255,140,.08);
-}
+/* RUN button baseline tint (geometry owned by page CSS) */
+.run-btn{ border-color:var(--accent); color:var(--accent); background:rgba(39,255,140,.08); }
 .run-btn:hover{ box-shadow:0 0 0 3px rgba(39,255,140,.14) }
 
 /* Differences game markers */
 .marker{ border-color:var(--accent); box-shadow:0 0 0 2px rgba(39,255,140,.20) }
 .badge{ border:1px solid var(--ghost); background:rgba(0,16,6,.55) }
 
-/* AUDIO toggle */
-.sfx-toggle{
-  -webkit-tap-highlight-color: transparent;
-  font: 12px var(--mono);
-  letter-spacing:.8px; text-transform:uppercase;
-  padding:6px 10px; border-radius:10px; margin-left:auto;
-  border:1px solid var(--ghost); color:var(--accent);
-  background: rgba(39,255,140,.06); cursor:pointer;
-}
-.sfx-toggle[aria-pressed="true"], .sfx-toggle[data-state="on"]{ outline:0; box-shadow:0 0 0 2px rgba(39,255,140,.16) inset }
-
 /* Optional CRT warp on large screens */
-@media (min-width:900px){
-  .terminal{ transform: perspective(1400px) translateZ(0) }
-}
+@media (min-width:900px){ .terminal{ transform:perspective(1400px) translateZ(0) } }
 
 .run-btn.is-locked,
-[aria-disabled="true"].run-btn{
-  cursor:not-allowed;
-  opacity:.55; filter:saturate(.8) brightness(.9);
-}
+[aria-disabled="true"].run-btn{ cursor:not-allowed; opacity:.55; filter:saturate(.8) brightness(.9); }
 .run-btn.is-locked:hover{ box-shadow:none; transform:none; }

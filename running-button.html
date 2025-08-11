@@ -1,58 +1,122 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-PT">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Nó de Arquivo 23 — O Botão Fugitivo</title>
-<link rel="stylesheet" href="css/intro.css">
-  <link rel="stylesheet" href="css/terminal.css">
-  <link rel="stylesheet" href="css/text-glitcher.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Nó de Arquivo 23 — O Botão Fugitivo</title>
+
+  <!-- Load order matters -->
+  <link rel="stylesheet" href="css/glitch.css">
+  <link rel="stylesheet" href="css/fallout-green.css">
+  <link rel="stylesheet" href="css/intro.css">
+  <link rel="stylesheet" href="css/running-button.css">
 </head>
 <body>
-<div id="intro" class="wrap terminal" style="display:none"></div>
+  <!-- Intro overlay (kept). -->
+  <div id="intro" class="wrap terminal" style="display:none">
+    <div class="bootbox">loading ARQUIVO 23</div>
+  </div>
 
-<div id="content" class="wrap">
-  <div class="terminal crt">
-    <h1 data-glitch>Arquivo 23</h1>
-    <div class="subtitle" data-glitch>«O Botão Fugitivo»</div>
-    <div class="help mt-1" data-glitch>
-      [O MUSEU]: Objeto instável detetado. Aproxima-te com cuidado… se conseguires.
-      <span class="blink"></span>
-    </div>
+  <div id="content" class="wrap" style="display:none">
+    <div class="terminal crt" id="arena">
+      <!-- TOP of #arena -->
+      <div class="header">
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        <span class="title glitch" aria-label="ARQUIVO // O BOTÃO FUGITIVO" data-text="ARQUIVO // O BOTÃO FUGITIVO">
+          ARQUIVO // O BOTÃO FUGITIVO
+        </span>
+      </div>
 
-    <button id="btn-floating" class="btn-ritual btn-floating" aria-label="Ativar Registo">Ativar Registo</button>
+      <!-- WARNING banner above the log (but below the overlay button) -->
+      <div class="alert alert-warning glitch-warn" role="status" aria-live="assertive">
+        <span class="warn-icon" aria-hidden="true">!</span>
+        <div class="warn-text" data-glitch>
+          [O MUSEU]: Objeto instável detetado. Contenção degradada. Mantém distância… tenta, pelo menos.
+        </div>
+      </div>
 
-    <audio id="ritual-audio" controls>
-      <source src="audio/fugitivo.mp3" type="audio/mpeg">
-    </audio>
+      <!-- Boot‑log / fake code preface -->
+      <section class="panel" id="rb-preface">
+        <strong class="label">ARQUIVO // RASTREIO</strong>
+        <pre id="rb-bootlog" class="bootlog"></pre>
+        <small class="muted">(se o ecrã tremer, não são tiques — é ele a jogar)</small>
+      </section>
 
-    <div class="help mt-2" id="post" style="display:none" data-glitch>
-      [O MUSEU]: Registo localizado. Mantém-te por perto.
+      <!-- Audio area (revealed when caught) -->
+      <section class="panel" id="audio-panel" hidden>
+        <strong class="label">REPRODUÇÃO // FUGITIVO</strong>
+        <audio id="ritual-audio" preload="none" controls hidden>
+          <source src="audio/fugitivo.mp3" type="audio/mpeg" />
+        </audio>
+        <small class="muted" id="audio-hint">—</small>
+      </section>
+
+      <div class="help mt-2" id="post" style="display:none" data-glitch>
+        [O MUSEU]: Registo localizado. Mantém-te por perto.
+      </div>
+      
+      <div class="footer">
+        <small class="muted">QR // sessão: <span id="sess"></span></small>
+        <small class="muted">&copy; arquivo privado · 2010–2025</small>
+      </div>
     </div>
   </div>
-</div>
 
-<div class="toast" id="toast"></div>
+  <!-- TOP‑LAYER overlay portal. Button lives here so it can never be under text. -->
+  <div id="rb-overlay" hidden>
+    <button id="btn-floating" hidden class="btn-floating" aria-label="Ativar Registo">
+      <span class="btn-label">Ativar Registo</span>
+    </button>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- Scripts -->
   <script src="js/intro.js"></script>
   <script src="js/intro-runner.js"></script>
-  <script src="js/running-button.js"></script>
   <script src="js/screen_glitch.js"></script>
   <script src="js/text-glitcher.js"></script>
-  <script>
-   runIntro(() => {
-    const content = document.getElementById('content');
-    if (content) content.style.display = 'block';
+  <script src="js/sfx-glitch.js" defer></script>
+  <script src="js/museum-voice.js" defer></script>
+  <script src="js/bootlogger.js"></script>
+  <script src="js/running-button.js"></script>
 
-    // init the runaway button ONLY after intro ends
-    if (typeof initRunawayButton === 'function') {
-      initRunawayButton({
-        btn: '#btn-floating',
-        audio: '#ritual-audio',
-        padding: 16,
-        onPlay: () => document.getElementById('post').style.display = 'block'
+  <!-- Boot‑log bank (randomized lines) -->
+  <script id="rb-bootlog-bank" type="application/json">[
+    "> varrer corredor … sinais residuais detetados",
+    "> protocolo de aproximação … DESCONFORTO: <err>elevado</err>",
+    "> perfil cinético do objeto … errático (com sentido de humor)",
+    "> preparar armadilha suave … `paciencia.sys` não encontrado",
+    "> tentativa de fixação … 12% … 67% … 104%?!",
+    "> nota para ti: ele foge porque lembra",
+    "> dica: insiste; quando ceder, eu abro o registo",
+    "> alocar faixa sonora … pronta (se o apanhares)",
+    "> aviso: o botão aprende com o medo — aproxima-te devagar",
+    "> fallback de segurança: luz verde = acesso concedido",
+    "> redundância: se falhar, culpar o estagiário (brincadeira)"
+  ]</script>
+
+  <script>
+    runIntro(() => {
+      document.getElementById('content').style.display = 'block';
+      startBootLogger('#rb-bootlog', '#rb-bootlog-bank', () => {
+        // reveal overlay & button only now (no flash at 0,0)
+        document.getElementById('rb-overlay').hidden = false;
+        document.getElementById('btn-floating').hidden = false;
+
+        initRunawayButton({
+          arena:'#arena', btn:'#btn-floating', audio:'#ritual-audio',
+          audioPanel:'#audio-panel', toast:'#toast', padding:16,
+          onPlay: () => document.getElementById('post').style.display='block'
+        });
       });
-    }
-  });
-</script>
+    });
+  </script>
+  <script>
+    (function(){ const el = document.getElementById('sess');
+      if (el) el.textContent = Math.random().toString(36).slice(2,8).toUpperCase();
+    })();
+  </script>
+
 </body>
 </html>

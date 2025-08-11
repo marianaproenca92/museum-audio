@@ -1,18 +1,9 @@
-/* Lock body when intro is visible */
-body.lock { overflow: hidden; }
+/* === Intro overlay only (no arena/stacking rules here) === */
+#intro.wrap.terminal{ display:none; }
 
-/* Intro overlay */
-#intro {
-  position: fixed;       /* <-- not absolute */
-  inset: 0;              /* top:0;right:0;bottom:0;left:0 */
-  width: 100%;
-  height: 100dvh;        /* viewport height, avoids mobile chrome jump */
-  z-index: 9999;         /* above everything */
-  overflow: hidden;      /* no inner scroll */
-  pointer-events: auto;
-    background: transparent; /* keep it see-through for the canvas below */
+/* Example minimal intro styles (adjust to your actual intro) */
+#intro .line{ font:14px var(--mono); color:var(--muted); }
+#intro .cursor{ border-right:2px solid var(--accent); animation:blink .9s steps(2,end) infinite }
+@keyframes blink{ 0%,100%{opacity:1} 50%{opacity:0} }
 
-}
-
-/* Content sits normally underneath */
-#content { position: relative; z-index: 0; }
+/* The intro script will set display:block and later hide it; no stacking needed here */
