@@ -1,0 +1,9 @@
+[
+  "> montar volume: /dev/ARQUIVO_BOTAS … OK",
+  "> abrir ficheiro: botas-de-caminhada.arc …",
+  "> verificar integridade física … <err>FALHA</err>",
+  "> tentativa de reparação … blocos ilegíveis",
+  "> <err>ERRO</err>: corrupção crítica detectada no arquivo",
+  "> localizar documento alternativo: MUSEU_TERMS.TXT … encontrado",
+  "> carregar Termos & Condições do Museu … pronto"
+]

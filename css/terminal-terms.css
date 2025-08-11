@@ -1,0 +1,23 @@
+/* Show shell only when ready */
+body.is-loaded .page-shell { display:block }
+
+/* Belt‑and‑suspenders: if a loader node lingers, hide it */
+.gl-loader, .gl-overlay { pointer-events:none }
+body.is-loaded .gl-loader, body.is-loaded .gl-overlay { display:none !important }
+
+/* Terminal visuals (safe defaults) */
+.term-wrap{max-width:940px;margin:24px auto;padding:0 16px}
+.term-window{border:1px solid rgba(39,255,140,.15);border-radius:14px;background:rgba(3,14,7,.55);box-shadow:0 0 0 1px rgba(39,255,140,.08),0 24px 80px rgba(0,0,0,.6)}
+.term-head{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid rgba(39,255,140,.15);color:var(--muted,#6bd66b)}
+.term-dot{width:10px;height:10px;border-radius:50%;background:rgba(39,255,140,.2)}
+.term-title{font-weight:700;letter-spacing:.8px}
+.term-body{position:relative}
+.scrollbox{height:60vh;overflow:auto;padding:18px;line-height:1.6;white-space:normal;font-family:var(--mono,ui-monospace,Menlo,Consolas,monospace)}
+.term-foot{display:flex;align-items:center;justify-content:space-between;gap:16px;border-top:1px solid rgba(39,255,140,.15);padding:12px 14px;color:var(--muted,#6bd66b)}
+.accept-line{display:flex;align-items:center;gap:10px}
+.accept-line input{accent-color:#27ff8c}
+.actions{display:flex;gap:10px}
+.btn{padding:10px 14px;border:1px solid rgba(39,255,140,.15);border-radius:10px;background:transparent;color:var(--fg,#b7ffb7);font:600 14px/1 var(--mono,monospace);cursor:pointer}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.meta{opacity:.8;font-size:12px;margin:8px 0 0 4px}
+.accept-line input[type="checkbox"] { appearance:auto; accent-color:#27ff8c; }

@@ -43,7 +43,7 @@
         nx = clamp(nx, Math.round(ar.left + pad),   Math.round(ar.right  - br.width  - pad));
         ny = clamp(ny, Math.round(ar.top  + pad),   Math.round(ar.bottom - br.height - pad));
         btn.style.left = nx + 'px'; btn.style.top  = ny + 'px';
-        if(evades===3) toast('quase…'); if(evades===6) toast('persiste. ele cede.'); if(evades===10){ mercy=true; toast('ok, vou facilitar…'); }
+        
       }
     }
 

@@ -1,147 +1,44 @@
 <!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="pt">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Nó de Arquivo 12 — O Juramento</title>
-  <link rel="stylesheet" href="css/glitch.css">
-  <link rel="stylesheet" href="css/fallout-green.css">
-  <link rel="stylesheet" href="css/intro.css">
-  <style>
-    /* tiny local polish for the boot log */
-    .bootlog{ white-space:pre-wrap; font: 13px/1.55 var(--mono); color:var(--muted); text-shadow:0 0 6px rgba(39,255,140,.16); }
-    .bootlog .err{ color:var(--danger); text-shadow:0 0 6px rgba(255,59,59,.22); }
-  </style>
+  <title>MUSEU — ARQUIVO BOTAS</title>
+
+  <link rel="stylesheet" href="/css/glitch.css" />
+  <link rel="stylesheet" href="/css/fallout-green.css" />
+  <link rel="stylesheet" href="/css/terminal-terms.css" />
+  <link rel="stylesheet" href="/css/glitch-loader.css" />
 </head>
-<body>
-  <!-- Intro overlay (kept) -->
-  <div id="intro" class="wrap terminal"></div>
+<body data-bootlog="/bootlogs/terms.json">
 
-  <!-- Main content hidden until intro finishes -->
-  <main id="content" class="terminal" role="main" style="display:none">
-    <div class="header">
-      <span class="title glitch" data-text="PROTOCOLO">PROTOCOLO</span>
+<main id="terms" class="page-shell terminal-look" data-audio="/museum-audio/botas.mp3" style="display:none">
+  <div class="term-wrap">
+    <div class="term-window">
+      <div class="term-head">
+        <span class="term-dot"></span><span class="term-dot"></span><span class="term-dot"></span>
+        <span class="term-title">MUSEU // TERMOS & CONDIÇÕES</span>
+      </div>
+      <div class="term-body">
+        <div class="scrollbox" id="scrollbox" tabindex="0" aria-label="Termos e Condições — desloca até ao fim para aceitar"></div>
+        <div class="scroll-fade" aria-hidden="true"></div>
+      </div>
+      <div class="term-foot" id="controls">
+        <div class="accept-line">
+          <input type="checkbox" id="chk" disabled>
+          <label for="chk">Declaro que li até ao fim e aceito os Termos & Condições</label>
+        </div>
+        <div class="actions">
+          <button class="btn" id="btn-accept" disabled>Aceitar</button>
+        </div>
+      </div>
+      <p class="meta">Arquivo: <code>/arquivos/museu/TERMS.TXT</code> · Sessão ativa</p>
     </div>
+  </div>
+</main>
 
-    <!-- Boot‑log / fake code preface (terms stay hidden until this finishes) -->
-    <section class="panel" id="preface">
-      <strong class="label">ARQUIVO // INICIALIZAÇÃO</strong>
-      <pre id="bootlog" class="bootlog"></pre>
-      <small class="muted">(se ouvires um estalido, não é o áudio — sou eu a acordar)</small>
-    </section>
-
-    <!-- Everything below stays hidden until boot‑log is done -->
-    <div id="terms-shell" hidden>
-      <!-- Sentient voice panel -->
-      <section class="panel voice" aria-live="polite">
-        <strong class="label">MUSEU // PROTOCOLO</strong>
-        <div id="voice-terms"></div>
-      </section>
-
-      <!-- Terms body (populated by fetch; page scroll, no inner scroll box) -->
-      <section class="panel" id="terms-body"></section>
-
-      <!-- Acceptance -->
-      <section class="panel">
-        <label>
-          <input type="checkbox" id="ok"> Li e aceito as condições.
-        </label>
-        <div class="muted" id="gate-msg">Lê até ao fim e aceita para ouvir.</div>
-      </section>
-
-      <!-- Audio (appears only when unlocked) -->
-      <section class="panel" id="audio-panel" style="display:none">
-        <strong class="label">REPRODUÇÃO // JURAMENTO</strong>
-        <audio id="museum-audio" preload="none" controls style="width:100%">
-          <!-- Replace with your file path -->
-          <source src="audio/juramento.mp3" type="audio/mpeg" />
-          O teu navegador não suporta áudio HTML5.
-        </audio>
-        <small class="muted" id="audio-hint">—</small>
-      </section>
-    </div>
-  </main>
-
-  <!-- Scripts (keep your intro) -->
-  <script src="js/intro.js"></script>
-  <script src="js/intro-runner.js"></script>
-  <script src="js/text-glitcher.js"></script>
-  <script src="js/sfx-glitch.js" defer></script>
-  <script src="js/museum-voice.js" defer></script>
-  <script src="js/terms-scroll-gate.js" defer></script>
-
-  <script>
-    // Start intro, then reveal main
-    runIntro(() => { document.getElementById('content').style.display = 'block'; });
-  </script>
-
-  <script>
-    // Load external terms body (page scroll; no inner overflow)
-    fetch('terms-content.html')
-      .then(r => r.text())
-      .then(html => { document.getElementById('terms-body').innerHTML = html; document.dispatchEvent(new CustomEvent('terms:loaded')); })
-      .catch(err => console.error('Failed to load terms', err));
-  </script>
-
-  <!-- Boot‑log bank (randomized per visit) -->
-  <script id="bootlog-bank" type="application/json">[
-    "> montar volume: /dev/ALMA … OK",
-    "> varrer poeira residual … 3 … 2 … 1 …",
-    "> desfragmentar memórias … 12% … 67% … 104%?!",
-    "> verificação: integridade narrativa — <err>INCONSISTENTE</err>",
-    "> a carregar: \"inventário-fotográfico-███\" — <err>INTERRUPÇÃO</err>",
-    "> checksum de saudades … 0xDEADC0DE",
-    "> alocar memórias … 512 KB de coisas que não cabem",
-    "> compor índice … 13/256 entradas … (as teimosas primeiro)",
-    "> driver 'paciencia.sys' não encontrado — prosseguir mesmo assim",
-    "> tentativa de arranque sonoro … rrr—st … <err>falhou</err>",
-    "> fallback: PROTOCOLO_DO_MUSEU.TXT",
-    "> motivo: curiosidade em excesso → aplicar termos",
-    "> conselho: lê até ao fim, prometo não morder",
-    "> dica: se o ecrã tremer é só nervos, não mexas nos cabos"
-  ]</script>
-
-  <script>
-    // Type‑writer for randomized boot‑log; when finished, reveal terms + speak
-    document.addEventListener('DOMContentLoaded', function(){
-      const out = document.getElementById('bootlog');
-      const bankEl = document.getElementById('bootlog-bank');
-      if(!out || !bankEl) return;
-      let bank = [];
-      try { bank = JSON.parse(bankEl.textContent.trim()); } catch(e){ bank = []; }
-
-      // pick 6–8 random unique lines and end with fallback→protocol lines if not included
-      function pick(n, arr){ const a=[...arr]; const r=[]; while(a.length && r.length<n){ r.push(a.splice(Math.floor(Math.random()*a.length),1)[0]); } return r; }
-      const must = [
-        "> fallback: PROTOCOLO_DO_MUSEU.TXT",
-        "> motivo: curiosidade em excesso → aplicar termos"
-      ];
-      const core = pick(6 + Math.floor(Math.random()*3), bank.filter(l=>!must.includes(l)));
-      const lines = [...core, ...must, "> continua a leitura. no fim eu abro a porta."];
-
-      // decorate <err>…</err>
-      const decorate = s => s.replace(/<err>(.*?)<\/err>/g, '<span class="err">$1<\/span>');
-
-      let i=0;
-      function write(){
-        if(i>=lines.length){
-          // done → reveal terms shell and announce
-          const shell = document.getElementById('terms-shell');
-          if(shell) shell.hidden = false;
-          try{ if(window.museumVoice) museumVoice.speak('#voice-terms', ["> ligação estabelecida…", "> lê-me até ao fim e aceita o juramento."]); }catch(_){ }
-          document.dispatchEvent(new CustomEvent('bootlog:finished'));
-          return;
-        }
-        const ln = decorate(lines[i++]) + "\n";
-        let j=0; (function tick(){
-          out.innerHTML += ln.slice(j, j+1);
-          j++;
-          if(j<=ln.length){ try{ if(window.SFX && j%7===0) SFX.beep(600+(j%2?80:-40), .022);}catch(_){} setTimeout(tick, 16); }
-          else { setTimeout(write, 220); }
-        })();
-      }
-      write();
-    });
-  </script>
+<!-- JS (plain defer; no modules) -->
+<script defer src="/js/glitch-loader.js"></script>
+<script defer src="/js/terms-vanilla.js"></script>
 </body>
 </html>
