@@ -1,4 +1,4 @@
-// running-button.js — button in fixed overlay, clamped to #arena rect
+// Fix for better mobile button movement
 (function(){
   const $ = (q, el=document) => el.querySelector(q);
   const clamp = (v,min,max)=> Math.max(min, Math.min(max, v));
@@ -13,14 +13,12 @@
     const pad = Number(opts.padding ?? 12);
     if(!arena || !overlay || !btn) return;
 
-    // ensure overlay paints last and contains the button
     document.body.appendChild(overlay);
     if(btn.parentElement !== overlay) overlay.appendChild(btn);
     btn.style.position = 'absolute';
 
     const arenaRect = () => arena.getBoundingClientRect();
 
-    // initial center (viewport coords)
     (function center(){
       const ar = arenaRect(); const bw = btn.offsetWidth || 190, bh = btn.offsetHeight || 48;
       btn.style.left = Math.round(ar.left + (ar.width - bw)/2) + 'px';
@@ -43,13 +41,22 @@
         nx = clamp(nx, Math.round(ar.left + pad),   Math.round(ar.right  - br.width  - pad));
         ny = clamp(ny, Math.round(ar.top  + pad),   Math.round(ar.bottom - br.height - pad));
         btn.style.left = nx + 'px'; btn.style.top  = ny + 'px';
-        
       }
     }
 
     function toast(msg){ const el = $('#toast'); if(!el) return; el.textContent = msg; el.classList.add('show'); clearTimeout(el.__t); el.__t=setTimeout(()=>el.classList.remove('show'),1200); }
     document.addEventListener('mousemove', e=> moveAway(e.clientX,e.clientY));
-    document.addEventListener('touchmove', e=>{ const t=e.touches[0]; if(t) moveAway(t.clientX,t.clientY); }, {passive:true});
+
+    // Improved touch handling for mobile
+    document.addEventListener('touchstart', e=>{
+      const t = e.touches[0];
+      if(t) moveAway(t.clientX,t.clientY);
+    }, {passive:true});
+
+    document.addEventListener('touchmove', e=>{
+      const t = e.touches[0];
+      if(t) moveAway(t.clientX,t.clientY);
+    }, {passive:true});
 
     btn.addEventListener('click', async ()=>{
       if(caught) return; caught=true; btn.classList.add('is-caught'); btn.setAttribute('aria-pressed','true');
@@ -63,7 +70,7 @@
       if(typeof opts.onPlay==='function'){ try{ opts.onPlay(); }catch(_){ } }
     });
 
-    new ResizeObserver(()=>{ // keep inside arena on resize
+    new ResizeObserver(()=>{
       const br = btn.getBoundingClientRect(), ar = arenaRect();
       const nx = clamp(parseFloat(btn.style.left)||0, Math.round(ar.left + pad), Math.round(ar.right  - br.width  - pad));
       const ny = clamp(parseFloat(btn.style.top )||0, Math.round(ar.top  + pad), Math.round(ar.bottom - br.height - pad));
