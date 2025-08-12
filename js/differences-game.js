@@ -26,12 +26,50 @@ const post    = document.getElementById('post');
 const foundEl = document.getElementById('found');
 const totalEl = document.getElementById('total');
 const needEl  = document.getElementById('need');
+const gallery = document.getElementById('gallery');
+const slideA  = document.getElementById('slideA');
+const slideB  = document.getElementById('slideB');
 
 imgA.src = IMG_A; imgB.src = IMG_B;
 totalEl.textContent = DIFFS.length;
 needEl.textContent  = DIFFS.length;
 
 const state = { found: new Array(DIFFS.length).fill(false) };
+
+// Which slide is currently most visible?
+function getActiveSlide(){
+  const vr = gallery.getBoundingClientRect();
+  const ar = slideA.getBoundingClientRect();
+  const br = slideB.getBoundingClientRect();
+  const visA = Math.max(0, Math.min(ar.right, vr.right) - Math.max(ar.left, vr.left));
+  const visB = Math.max(0, Math.min(br.right, vr.right) - Math.max(br.left, vr.left));
+  return visA >= visB ? { img: imgA, frame: slideA } : { img: imgB, frame: slideB };
+}
+
+// Compute the drawn image box for object-fit: contain; object-position: center
+function getImageBox(img, frame){
+  const W = frame.clientWidth, H = frame.clientHeight;
+  const iw = img.naturalWidth  || W;
+  const ih = img.naturalHeight || H;
+  const s  = Math.min(W/iw, H/ih);
+  const w = iw * s, h = ih * s;
+  const x = (W - w) / 2;    // centered
+  const y = (H - h) / 2;
+  return { x, y, w, h };
+}
+
+function layoutHotspots(){
+  const { img, frame } = getActiveSlide();
+  const box = getImageBox(img, frame); // visible image rect inside the slide
+  [...overlay.children].forEach((el, i) => {
+    const [px, py, pw, ph] = DIFFS[i]; // % relative to the image content
+    el.style.left   = (box.x + (px/100)*box.w) + 'px';
+    el.style.top    = (box.y + (py/100)*box.h) + 'px';
+    el.style.width  = ((pw/100)*box.w) + 'px';
+    el.style.height = ((ph/100)*box.h) + 'px';
+    el.style.opacity = state.found[i] ? 1 : 0;
+  });
+}
 
 // Create hotspots (percentage-based → responsive)
 DIFFS.forEach((_, i) => {
@@ -41,20 +79,13 @@ DIFFS.forEach((_, i) => {
     overlay.appendChild(hs);
 });
 
-function layoutHotspots(){
-    const r = board.getBoundingClientRect();
-    const W = r.width, H = r.height;
-    [...overlay.children].forEach((el, i) => {
-    const [px, py, pw, ph] = DIFFS[i];
-    el.style.left = (px/100 * W) + 'px';
-    el.style.top  = (py/100 * H) + 'px';
-    el.style.width  = (pw/100 * W) + 'px';
-    el.style.height = (ph/100 * H) + 'px';
-    el.style.opacity = state.found[i] ? 1 : 0;   // visible after found
-    });
-}
+
 new ResizeObserver(layoutHotspots).observe(board);
 window.addEventListener('load', layoutHotspots);
+gallery.addEventListener('scroll', () => requestAnimationFrame(layoutHotspots), { passive: true });
+imgA.addEventListener('load', layoutHotspots);
+imgB.addEventListener('load', layoutHotspots);
+
 
 function markFound(i){
     if (i < 0 || state.found[i]) return;
