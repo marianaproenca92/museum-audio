@@ -51,25 +51,6 @@ small,.muted{ color:var(--muted) }
 .kv dt{ color:var(--muted) }
 .kv dd{ margin:0 }
 
-/* RUN button (generic theme baseline; page-specific overrides later) */
-.run-wrap{ position:relative; margin-top:18px }
-.run-btn{
-  display:inline-block; border:1px solid var(--accent); color:var(--accent);
-  padding:10px 14px; border-radius:10px; text-decoration:none; font-weight:700; letter-spacing:.6px;
-  background:rgba(39,243,154,.07); transition:transform .12s ease, box-shadow .12s ease;
-}
-.run-btn:hover{ box-shadow:0 0 0 3px rgba(39,243,154,.12) }
-
-/* Differences game */
-.grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px }
-.frame{ position:relative; border:1px solid var(--ghost); border-radius:10px; overflow:hidden }
-.frame img{ display:block; width:100%; height:auto }
-.marker{ position:absolute; width:22px; height:22px; border:2px solid var(--accent); border-radius:50%;
-  transform:translate(-50%,-50%); box-shadow:0 0 0 2px rgba(39,243,154,.15) }
-.badge{ position:absolute; top:10px; right:10px; background:rgba(0,0,0,.55); border:1px solid var(--ghost); padding:6px 8px; border-radius:8px }
-
-.footer{ margin-top:16px; display:flex; justify-content:space-between; align-items:center }
-
 /* Typewriter */
 .type{ border-right:2px solid var(--accent); white-space:pre-wrap; overflow:hidden }
 
