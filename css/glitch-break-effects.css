@@ -1,0 +1,100 @@
+/* ==========================================================
+   Break effects for Glitch Loader v3
+   One file per effect (you can split this file into several)
+   Scope: only affects the loader overlay
+   ========================================================== */
+
+/* Shared palette (optional) */
+.gl-loader { --gl-green: #27ff8c; --gl-muted: #6bd66b; }
+
+/* ==========================================================
+   break-shake.css  (uses base .gl-broken animation from your loader)
+   Tip: no extra CSS needed here if glitch-loader.css defines .gl-broken
+   ========================================================== */
+/* (intentionally blank) */
+
+/* ==========================================================
+   break-flatline.css — quick ECG "beat" that collapses to a flat line
+   JS: adds .fx-flatline on .gl-term and appends <div class="fx-ecg-layer">
+   ========================================================== */
+.gl-loader .gl-term.fx-flatline { position: relative; }
+.gl-loader .gl-term.fx-flatline::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(60% 70% at 50% 50%, rgba(255,255,255,.06), transparent 60%);
+  opacity: 0; animation: flatFlash .5s ease both .05s;
+}
+.gl-loader .gl-term.fx-flatline .gl-bootlog { opacity:.9; filter: grayscale(.2) contrast(1.05); }
+
+/* ECG baseline */
+.gl-loader .gl-term.fx-flatline .fx-ecg-layer{
+  position:absolute; left:4%; right:4%; top:52%; height:2px;
+  background: linear-gradient(90deg, var(--gl-green), rgba(39,255,140,.55));
+  box-shadow: 0 0 8px rgba(39,255,140,.15) inset; overflow: visible;
+  animation: ecgFlat 700ms ease forwards;
+}
+/* traveling "spike" */
+.gl-loader .gl-term.fx-flatline .fx-ecg-layer::after{
+  content:""; position:absolute; top:-18px; left:0; width:24px; height:40px;
+  border-left:2px solid var(--gl-green); box-shadow: 0 0 8px rgba(39,255,140,.6);
+  transform-origin: left center; opacity:0; animation: ecgBeat 700ms cubic-bezier(.2,.8,.2,1) forwards;
+}
+
+@keyframes flatFlash{ 0%{opacity:0} 40%{opacity:.8} 100%{opacity:0} }
+@keyframes ecgBeat{
+  0%{ left:0%; opacity:0; transform: translateY(0) }
+  15%{ opacity:1 }
+  25%{ transform: translateY(-12px) } /* up */
+  36%{ transform: translateY(10px) }  /* down */
+  50%{ transform: translateY(0) }
+  65%{ left:100%; opacity:0.9 }
+  100%{ left:100%; opacity:0 }
+}
+/* As the spike moves, baseline "settles" to a flat line */
+@keyframes ecgFlat{ 0%{ opacity:1 } 60%{ opacity:1 } 100%{ opacity:1 } }
+
+/* ==========================================================
+   break-desync.css — RGB channel split + slight zoom wobble
+   JS: toggles .fx-desync on .gl-term
+   ========================================================== */
+.gl-loader .gl-term.fx-desync{ animation: fxDesync .48s ease both; }
+@keyframes fxDesync{
+  0%{ filter:none; transform:none }
+  30%{ filter: drop-shadow(-3px 0 var(--gl-green)) drop-shadow(3px 0 #ff3b3b) saturate(1.12); transform: scale(1.006) }
+  60%{ filter: drop-shadow(-1px 0 var(--gl-green)) drop-shadow(1px 0 #ff3b3b) saturate(1.06); transform: scale(1.003) }
+  100%{ filter:none; transform:none }
+}
+
+/* ==========================================================
+   break-scantear.css — top/bottom shear split (quick rip)
+   JS: adds .fx-scantear and appends two layers .fx-top/.fx-bot with .fx-clone text
+   ========================================================== */
+.gl-loader .gl-term.fx-scantear{ position:relative; }
+.gl-loader .gl-term.fx-scantear .fx-layer{ position:absolute; inset:0; pointer-events:none; }
+.gl-loader .gl-term.fx-scantear .fx-top{ clip-path: inset(0 0 50% 0); animation: fxTop .45s ease both; }
+.gl-loader .gl-term.fx-scantear .fx-bot{ clip-path: inset(50% 0 0 0); animation: fxBot .45s ease both; }
+/* minimal styling for the cloned text so it matches the bootlog */
+.gl-loader .gl-term.fx-scantear .fx-clone{ font: 13px/1.55 var(--mono, ui-monospace, Menlo, Consolas, monospace); color: var(--gl-muted,#6bd66b); white-space: pre-wrap; padding:14px 16px; background: rgba(2,18,8,.4); border-radius:10px; }
+@keyframes fxTop{ 0%{ transform:none } 40%{ transform: translate(-5px,-4px) rotate(-.5deg) } 100%{ transform:none } }
+@keyframes fxBot{ 0%{ transform:none } 40%{ transform: translate(5px,5px) rotate(.6deg) } 100%{ transform:none } }
+
+/* ==========================================================
+   break-pixel.css — coarse pixelation burst
+   JS: toggles .fx-pixel on .gl-term
+   ========================================================== */
+.gl-loader .gl-term.fx-pixel{ animation: fxPix .42s steps(8) both; }
+@keyframes fxPix{
+  0%{ image-rendering: pixelated; filter: contrast(1) saturate(1) }
+  25%{ filter: contrast(1.35) saturate(1.08) }
+  50%{ transform: scale(1.02); filter: contrast(1.55) saturate(1.12) }
+  100%{ transform:none; filter:none; image-rendering: auto }
+}
+
+/* ==========================================================
+   break-blackout.css — quick fade to black and back
+   JS: toggles .fx-blackout on .gl-term
+   ========================================================== */
+.gl-loader .gl-term.fx-blackout{ position:relative; }
+.gl-loader .gl-term.fx-blackout::after{
+  content:""; position:absolute; inset:0; background:black; opacity:0; pointer-events:none; animation: fxOut .42s ease both;
+}
+@keyframes fxOut{ 0%{opacity:0} 35%{opacity:1} 100%{opacity:0} }
