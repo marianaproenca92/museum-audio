@@ -10,37 +10,42 @@
   <link rel="stylesheet" href="/css/fallout-green.css" />
   <link rel="stylesheet" href="/css/terminal-terms.css" />
 
-  <!-- Loader + break effects (single bundle) -->
+  <!-- Loader + break effects (bundle) -->
   <link rel="stylesheet" href="/css/glitch-loader.css" />
   <link rel="stylesheet" href="/css/glitch-break-effects.css" />
 
+  <!-- Game styles (scoped) — you can move these to /css/differences.css later -->
   <style>
-    /* Overlay hotspots (tap to mark differences) */
-    .overlay{ pointer-events:none; position:absolute; inset:0; }
-    .hotspot{
-      position:absolute; border:2px solid var(--term-accent); border-radius:10px;
-      box-shadow:0 0 10px #ff3b3044; opacity:0; transition:opacity .2s;
-      pointer-events:auto;                   /* enable hit-test */
-      backdrop-filter:contrast(1.6) saturate(1.2);
+    .diff-game .board { position: relative; max-width: min(960px, 92vw); margin: 18px auto; }
+    .diff-game .gallery { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .diff-game .slide { position: relative; border: 1px solid rgba(39,255,140,.18); border-radius: 10px; overflow: auto; background: rgba(2,18,8,.55); max-height: min(70vh, 560px); }
+    .diff-game .slide img { display: block; width: 100%; height: auto; }
+
+    /* overlay + hotspots inside each slide so they scroll with the image */
+    .diff-game .overlay { pointer-events: none; position: absolute; inset: 0; }
+    .diff-game .hotspot { position: absolute; border: 2px solid var(--term-accent); border-radius: 10px; box-shadow: 0 0 10px #ff3b3044; opacity: 0; transition: opacity .2s; pointer-events: auto; backdrop-filter: contrast(1.6) saturate(1.2); }
+    .diff-game .hotspot.found { opacity: 1 !important; }
+
+    /* nicer scrollbars (webkit only) */
+    .diff-game .slide::-webkit-scrollbar { width: 10px; }
+    .diff-game .slide::-webkit-scrollbar-track { background: rgba(2,18,8,.3); border-radius: 10px; }
+    .diff-game .slide::-webkit-scrollbar-thumb { background: rgba(39,255,140,.25); border-radius: 10px; }
+
+    @media (max-width: 720px) {
+      .diff-game .gallery { grid-template-columns: 1fr; }
+      .diff-game .slide { max-height: min(58vh, 460px); }
     }
-    .hotspot.found{ opacity:1 !important; }
-    
-    /* simple board frame */
-    .board{ position:relative; max-width:min(960px, 92vw); margin:18px auto; }
-    .gallery{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-    .gallery .slide{ border:1px solid rgba(39,255,140,.18); border-radius:10px; overflow:hidden; background:rgba(2,18,8,.55); }
-    .gallery img{ display:block; width:100%; height:auto; }
   </style>
 </head>
 
-<body 
-  data-bootlog="/bootlogs/diferencas.json"     
-  data-detour="/bootlogs/arquivo.json"         
-  data-break="scantear">                        
+<body
+  data-bootlog="/bootlogs/diferencas.json"
+  data-detour="/bootlogs/arquivo.json"
+  data-break="scantear">
 
   <!-- MAIN -->
   <main id="content" class="wrap" style="display:none">
-    <div class="terminal">
+    <div class="terminal diff-game">
       <h1 data-glitch>Arquivo 09</h1>
       <div class="subtitle" data-glitch>«<span id="t-sub">Diferenças por Deslize</span> — Moldura CRT»</div>
 
@@ -55,20 +60,20 @@
 
       <div id="board" class="board">
         <div class="gallery" id="gallery" aria-label="Galeria: desliza para comparar imagens.">
-          <div class="slide" aria-label="Imagem A (original)"><img id="imgA" alt="Imagem original"/></div>
-          <div class="slide" aria-label="Imagem B (alterada)"><img id="imgB" alt="Imagem alterada"/></div>
+          <div class="slide" id="slideA" aria-label="Imagem A (original)">
+            <img id="imgA" alt="Imagem original">
+            <div class="overlay" id="overlayA" aria-hidden="true"></div>
+          </div>
+          <div class="slide" id="slideB" aria-label="Imagem B (alterada)">
+            <img id="imgB" alt="Imagem alterada">
+            <div class="overlay" id="overlayB" aria-hidden="true"></div>
+          </div>
         </div>
-        <div class="overlay" id="overlay" aria-hidden="true"></div>
-      </div>
-
-      <div class="terminal" style="margin-top:10px">
-        <strong>Dados do Arquivo</strong><br>
-        &gt; Assunto: Retrato lúdico (noiva/noivo)<br>
-        &gt; Nota: Interferência confirmada — sinais de corvos e… rumores de piscina de bolas.
+        <!-- removed global overlay (#overlay) so hotspots stay per-image and scroll with each frame -->
       </div>
 
       <audio id="voice">
-        <source src="audio/nodo09.mp3" type="audio/mpeg"/>
+        <source src="audio/nodo09.mp3" type="audio/mpeg" />
       </audio>
 
       <div id="post" class="help" style="display:none;margin-top:8px">
@@ -79,15 +84,30 @@
 
   <div class="toast" id="toast"></div>
 
-  <!-- Loader v3 (auto-wires from data-*) -->
+  <!-- Loader (auto-wires from data-*) -->
   <script defer src="/js/glitch-loader.js"></script>
-  <!-- Reveal content when loader completes -->
   <script>
+    // Reveal content when loader completes
     document.addEventListener('loader:done', function(){
       var m = document.getElementById('content');
       if(m) m.style.removeProperty('display');
     });
+
+    // Bridge: expose per-image overlays/containers in case your game expects a single #overlay
+    window.addEventListener('DOMContentLoaded', function(){
+      window.__diffOverlays = {
+        A: document.getElementById('overlayA'),
+        B: document.getElementById('overlayB')
+      };
+      window.__diffScrollContainers = {
+        A: document.getElementById('slideA'),
+        B: document.getElementById('slideB')
+      };
+    });
   </script>
+
+  <!-- Optional: your screen glitcher -->
+  <script defer src="/js/screen-glitcher.js"></script>
   <!-- Game logic -->
   <script defer src="/js/differences_game.js"></script>
 </body>
