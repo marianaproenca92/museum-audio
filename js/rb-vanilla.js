@@ -17,8 +17,6 @@
     document.querySelectorAll('.gl-loader, .gl-overlay, [data-glitch-overlay], .matrix-intro, .intro').forEach(el=> el.remove());
   }
 
-  function seedSession(){ const el = $('#sess'); if (el) el.textContent = Math.random().toString(36).slice(2,8).toUpperCase(); }
-
   function makeFullViewport(){
     const hole = $('#rb-overlay');
     hole.hidden = false;
@@ -96,7 +94,6 @@
           // Hard override to guarantee it's never caught
           makeUncatchable(btn, hole);
           removeFacilitarText();
-          seedSession();
         }
       });
     });
