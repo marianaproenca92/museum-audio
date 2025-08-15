@@ -1,0 +1,21 @@
+<div class="diff-game">
+  <button id="hint" class="run-btn crt-btn" aria-describedby="hint-h">Dica</button>
+  <span id="hint-h" class="help">Desliza ⟷ as molduras. As imagens ajustam ao quadro.</span>
+
+  <div class="board" id="board">
+    <div class="gallery" id="gallery" aria-label="Galeria deslizável: desliza ⟷ para alternar entre imagens.">
+      <div class="slide" id="slideA" aria-label="Imagem A (original)">
+        <img id="imgA" alt="Imagem original">
+        <div class="overlay" id="overlayA" aria-hidden="true"></div>
+      </div>
+      <div class="slide" id="slideB" aria-label="Imagem B (alterada)">
+        <img id="imgB" alt="Imagem alterada">
+        <div class="overlay" id="overlayB" aria-hidden="true"></div>
+      </div>
+    </div>
+    <div class="overlay" id="overlay" aria-hidden="true"></div>
+  </div>
+
+  <audio id="voice"><source src="audio/nodo09.mp3" type="audio/mpeg" /></audio>
+  <div id="post" class="help" style="display:none;margin-top:8px"><span id="t-post" data-glitch>[O MUSEU]: Verificação completa. A memória reabriu.</span></div>
+</div>

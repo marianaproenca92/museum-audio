@@ -1,0 +1,23 @@
+{
+  "pageTitle": "Sala 9 — Diferenças",
+  "title": "MUSEU — ARQUIVO 0X9",
+
+  "subtitle": "Diferenças por Deslize",
+  "description": "[O MUSEU]: Registo instável. Desliza ⟷ para alinhar memórias.",
+
+  "effects": "scantear imagestorm",
+  "drama": 2,
+  "typewriter": true,
+  "bootlog": "bootlogs/diferencas.json",
+
+  "audio": "audio/nodo09.mp3",
+  "audioAutoplay": false,
+  "audioLoop": false,
+
+  "styles": ["css/diferencas.css"],
+
+  "arenaHtmlUrl": "partials/diferencas-arena.html",
+
+  "scripts": ["js/differences-game.js"],
+  "init": { "when": "afterLoader" }
+}

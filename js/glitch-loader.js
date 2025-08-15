@@ -1,27 +1,31 @@
 /*
-  Glitch Loader v4 — single-effect attribute, default imagestorm path, strict bootlog JSON, failsafe cleanup, tinted ImageStorm
-  ------------------------------------------------------------------------------------------------------
+  Glitch Loader v5 — single-effect attribute, default title + imagestorm list, strict bootlog JSON,
+  robust autostart, failsafe cleanup, and subtitle with a ridiculous big number.
+
   Base deps (only two):
     • css/glitch-loader.css           (terminal shell)
     • css/glitch-break-effects.css    (visual effects classes)
 
-  Per‑page usage:
+  Minimal per‑page usage:
     <link rel="stylesheet" href="css/glitch-loader.css">
     <link rel="stylesheet" href="css/glitch-break-effects.css">
-    <script defer src="js/glitch-loader.js?v=4"></script>
+    <script defer src="js/glitch-loader.js?v=5"></script>
     <body
-      data-title="MUSEU // SALA X"
-      data-bootlog="bootlogs/roomX.json"           <!-- REQUIRED to show lines; no fallback if present -->
-      data-detour="bootlogs/roomX-detour.json"     <!-- optional extra lines after BREAK -->
-      data-effect="scantear, imagestorm"           <!-- ONE attribute; CSV or space‑separated -->
-      data-typewriter="on"                          <!-- on/off -->
-      data-drama="3"                                <!-- 1..4 -->
-      <!-- data-images-json can be omitted; a default constant is used -->
+      data-bootlog="bootlogs/roomX.json"            <!-- REQUIRED to show custom lines; if missing, uses tiny fallback -->
+      data-detour="bootlogs/roomX-detour.json"      <!-- optional extra lines after BREAK -->
+      data-effect="scantear imagestorm"             <!-- ONE attribute; CSV or space‑separated; imagestorm is an effect -->
+      data-typewriter="on"                           <!-- on/off -->
+      data-drama="3"                                 <!-- 1..4 -->
+      <!-- data-effects also supported; data-title/data-images-json are OPTIONAL because defaults exist -->
     >
 */
 (function(){
+  'use strict';
+
   // ---------- constants ----------
-  const DEFAULT_IMAGESTORM_LIST = 'img/glitch/images.json'; // used when imagestorm is selected and no data-images-json provided
+  const DEFAULT_TITLE = 'MUSEU // ARQUIVO PRIVADO 2010 - 2025';
+  const SUBTITLE_PREFIX = 'A CARREGAR ARQUIVO #';
+  const DEFAULT_IMAGESTORM_LIST = 'img/glitch/images.json'; // used when imagestorm is selected and body has no data-images-json
   const KILL_SWITCH_MS_BASE = 9000; // hard failsafe to always clear overlay even if something stalls
 
   // ---------- utils ----------
@@ -30,6 +34,14 @@
   const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
   const sleep=ms=>new Promise(r=>setTimeout(r,ms));
   const jitter=(base,v=.35)=>Math.max(8,(base*(1+(Math.random()*2-1)*v))|0);
+  const once=(fn)=>{ let done=false; return (...a)=>{ if(done) return; done=true; try{ return fn(...a);}catch(e){console.error(e);} } };
+
+  function bigRidiculousNumber(){
+    // 24-digit decimal number as a string: timestamp + random blocks
+    const t = Date.now().toString();
+    const rand = Array.from({length:14},()=>Math.floor(Math.random()*10)).join('');
+    return (t+rand).slice(0,24); // ensure 24 digits
+  }
 
   // ---------- audio (no assets) ----------
   const AudioFX={
@@ -55,20 +67,31 @@
       o.connect(g).connect(ctx.destination); o.start(t); o.stop(t+.25);
     }
   };
+  // Unlock on first tap (iOS)
   window.addEventListener('pointerdown', ()=>AudioFX.unlock(), { once:true, passive:true });
 
   // ---------- overlay (matches your CSS shell) ----------
-  function buildOverlay(title){
+  function injectSubtitleCSS(){
+    if(document.getElementById('gl-subtitle-style')) return;
+    const s=document.createElement('style'); s.id='gl-subtitle-style'; s.textContent=`
+      .gl-subtitle{ margin:4px 0 8px; opacity:.9; letter-spacing:.04em; font-size:.95em; }
+      .gl-subtitle strong{ font-weight:600; }
+    `; document.head.appendChild(s);
+  }
+
+  function buildOverlay(title, subtitle){
+    injectSubtitleCSS();
     const wrap=document.createElement('div'); wrap.className='gl-loader'; wrap.setAttribute('role','dialog'); wrap.setAttribute('aria-modal','true');
     const term=document.createElement('div'); term.className='gl-term';
     const head=document.createElement('div'); head.className='gl-head';
     head.innerHTML='<span class="gl-dot"></span><span class="gl-dot"></span><span class="gl-dot"></span><span class="gl-title"></span>';
     head.querySelector('.gl-title').textContent=title||'';
+    const sub=document.createElement('div'); sub.className='gl-subtitle'; sub.innerHTML = subtitle||'';
     const panel=document.createElement('div'); panel.className='gl-panel';
     const log=document.createElement('pre'); log.className='gl-bootlog'; log.id='gl-bootlog'; log.setAttribute('aria-live','polite');
     panel.appendChild(log);
     const foot=document.createElement('div'); foot.className='gl-foot'; foot.innerHTML='<span>status: CONNECT</span><span id="gl-time"></span>';
-    term.appendChild(head); term.appendChild(panel); term.appendChild(foot); wrap.appendChild(term);
+    term.appendChild(head); term.appendChild(sub); term.appendChild(panel); term.appendChild(foot); wrap.appendChild(term);
     document.body.appendChild(wrap);
     const tEl=$('#gl-time'); if(tEl){ const upd=()=>{tEl.textContent=new Date().toLocaleTimeString();}; upd(); wrap.__clock=setInterval(upd,1000); }
     return { wrap, term, log };
@@ -113,7 +136,6 @@
   }
 
   // ---------- Image Storm (as an effect) ----------
-  // Inject once: tint/flicker styles for storm images
   (function injectStormCSS(){
     if(document.getElementById('gl-storm-style')) return;
     const s=document.createElement('style'); s.id='gl-storm-style'; s.textContent=`
@@ -127,16 +149,8 @@
     let urls=[], timer=null;
     function spawn(src){
       const wrap=document.createElement('div'); wrap.className='gl-imgstorm'; wrap.style.cssText='position:fixed;z-index:10000;';
-      // random CRT‑greenish params
-      const hue = (90 + Math.random()*50)|0; // around green
-      const sat = (1.6 + Math.random()*0.6).toFixed(2);
-      const con = (1.2 + Math.random()*0.4).toFixed(2);
-      const spd = (480 + Math.random()*520)|0;
-      wrap.style.setProperty('--hue', hue+'deg');
-      wrap.style.setProperty('--sat', sat);
-      wrap.style.setProperty('--con', con);
-      wrap.style.setProperty('--spd', spd+'ms');
-
+      const hue = (90 + Math.random()*50)|0; const sat = (1.6 + Math.random()*0.6).toFixed(2); const con = (1.2 + Math.random()*0.4).toFixed(2); const spd = (480 + Math.random()*520)|0;
+      wrap.style.setProperty('--hue', hue+'deg'); wrap.style.setProperty('--sat', sat); wrap.style.setProperty('--con', con); wrap.style.setProperty('--spd', spd+'ms');
       const img=document.createElement('img'); img.src=src; img.draggable=false; img.style.userSelect='none'; img.style.width=((Math.random()*(maxSize-minSize)+minSize)|0)+'px';
       wrap.appendChild(img); document.body.appendChild(wrap);
       const vw=innerWidth,vh=innerHeight; const cx=(Math.random()*(vw-edge*2)+edge)|0; const cy=(Math.random()*(vh-edge*2)+edge)|0;
@@ -173,29 +187,41 @@
   }
 
   // ---------- core ----------
-  async function runSequence({ title, bootlogUrl, detourUrl, effects=['shake'], drama=2, typewriter=true, imagesJson='', onDone=null }={}){
-    const { wrap, term, log } = buildOverlay(title||document.title||'');
+  async function runSequence({ title, subtitle, bootlogUrl, detourUrl, effects=['shake'], drama=2, typewriter=true, imagesJson='', onDone=null }={}){
+    const { wrap, term, log } = buildOverlay(title||DEFAULT_TITLE, subtitle||'');
 
     // hard failsafe (ensures overlay is always cleared)
     const killDelay = KILL_SWITCH_MS_BASE + drama*800;
     let killTimer = setTimeout(()=> hardClean(), killDelay);
 
-    function hardClean(){
+    const hardClean = once(function(){
       try{ if(storm && storm.stop) storm.stop(); }catch(_){}
       try{ if(wrap.__clock) clearInterval(wrap.__clock); }catch(_){}
       try{ wrap.remove(); }catch(_){}
       document.dispatchEvent(new CustomEvent('glitch:done'));
+      // backwards-compat for pages listening to the old event name
+      document.dispatchEvent(new CustomEvent('loader:done'));
+      // safety: unhide main content if a page kept it display:none
+      const __main = document.getElementById('content');
+      if (__main) __main.style.removeProperty('display');
       if(typeof onDone==='function'){ try{ onDone(); }catch(_){} }
-      clearTimeout(killTimer); killTimer=null;
-    }
+      if(killTimer){ clearTimeout(killTimer); killTimer=null; }
+    });
+
+    let storm=null;
 
     try{
       if(drama>=3) term.classList.add('gl-broken');
 
-      // logs — STRICT: if bootlogUrl provided, do not use any fallback
+      // logs — STRICT: if bootlogUrl provided, do not use fallback lines
       let before=[], after=[];
-      if(bootlogUrl){ ({before,after}=await loadBootlog(bootlogUrl)); }
-      else { before=['ACCESSING MEMORY ARCHIVE…','CHECKSUM → MISMATCH','REBUILDING INDEX…']; }
+      if(bootlogUrl){
+        try{ ({before,after}=await loadBootlog(bootlogUrl)); }
+        catch(err){ before=[`[ERRO] Falha ao carregar: ${bootlogUrl}`]; after=[]; console.warn(err); }
+      } else {
+        // only when no bootlog URL at all (dev fallback)
+        before=['ACEDER AO ARQUIVO…','CHECKSUM → FALHA','REINDEXAR…'];
+      }
       if(detourUrl){ try{ const d=await loadBootlog(detourUrl); after=after.concat(d.before,d.after); }catch(_){} }
 
       // pre-break typing
@@ -208,7 +234,7 @@
 
       // imagestorm when selected
       const wantsStorm = effects.includes('imagestorm');
-      var storm = wantsStorm ? ImageStorm(imagesJson||DEFAULT_IMAGESTORM_LIST,{ rate:1+drama*0.8, minSize:200, maxSize:520, lifetime:1600+drama*180 }) : null;
+      storm = wantsStorm ? ImageStorm(imagesJson||DEFAULT_IMAGESTORM_LIST,{ rate:1+drama*0.8, minSize:200, maxSize:520, lifetime:1600+drama*180 }) : null;
       if(storm) await storm.start();
 
       await sleep(240+drama*180);
@@ -233,8 +259,15 @@
       // Prefer data-effects; fallback to data-effect; default to 'shake'
       const csv=(b.dataset.effects||b.dataset.effect||'shake');
       const effects=csv.split(/[\s,]+/).map(s=>s.trim().toLowerCase()).filter(Boolean);
+
+      // Title is constant by default; allow override via data-title if present
+      const title = b.dataset.title && b.dataset.title.trim().length ? b.dataset.title : DEFAULT_TITLE;
+      const ridic = bigRidiculousNumber();
+      const subtitle = `<strong>${SUBTITLE_PREFIX}${ridic}</strong>`;
+
       const opts={
-        title: b.dataset.title||document.title||'',
+        title,
+        subtitle,
         bootlogUrl: b.dataset.bootlog||'',
         detourUrl: b.dataset.detour||'',
         effects,
@@ -251,6 +284,13 @@
   };
   window.GlitchLoader=API;
 
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', ()=>API.startFromData());
-  else API.startFromData();
+  // robust autostart (covers defer, async, or plain)
+  const boot = once(()=>API.startFromData());
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded', boot, { once:true });
+    window.addEventListener('load', boot, { once:true });
+  } else {
+    // Run on next frame to ensure <body data-*> is parsed
+    requestAnimationFrame(boot);
+  }
 })();

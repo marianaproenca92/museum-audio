@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MUSEU — SHELL</title>
+
+  <!-- Your theme layers -->
+  <link rel="stylesheet" href="css/glitch.css" />
+  <link rel="stylesheet" href="css/fallout-green.css" />
+
+  <!-- Loader + BREAK effects -->
+  <link rel="stylesheet" href="css/glitch-loader.css" />
+  <link rel="stylesheet" href="css/glitch-break-effects.css" />
+
+  <!-- Small, local styles for subtitle + description -->
+  <style>
+    .subheader { margin: 4px 0 8px; }
+    .subheader #content-subtitle { opacity:.9; letter-spacing:.03em; }
+    .description { margin: 8px 0 16px; }
+    .description #content-description { opacity:.9; }
+  </style>
+
+  <!-- Router BEFORE loader so it can set data-* first -->
+  <script defer src="js/shell-router.js?v=5"></script>
+  <script defer src="js/glitch-loader.js?v=6"></script>
+</head>
+<body class="crt-page">
+  <main id="content" class="terminal" style="display:none">
+    <div class="header">
+      <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      <span id="hdr-title" class="title glitch" aria-label="" data-text=""></span>
+    </div>
+
+    <!-- Subtitle below the title -->
+    <div class="subheader">
+      <p id="content-subtitle" class="muted"></p>
+    </div>
+
+    <!-- NEW: description paragraph/block -->
+    <div class="description">
+      <p id="content-description" class="muted"></p>
+    </div>
+
+    <!-- Arena: router injects the right game/markup here -->
+    <section id="arena" class="arena"></section>
+
+    <hr>
+    <div class="footer">
+      <small class="muted">QR // sessão: <small id="gl-sess"></small></small>
+      <small class="muted">&copy; arquivo privado · 2010–2025</small>
+    </div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+</body>
+</html>
