@@ -34,7 +34,7 @@
 *{ box-sizing:border-box }
 html,body{ height:100% }
 body{
-  margin:5;
+  margin:0;
   background:radial-gradient(circle at 50% 0%, #0a0f0a 0%, #060a06 55%, #040704 100%);
   color:var(--fg);
   font:16px/1.55 var(--mono);
@@ -44,15 +44,14 @@ body{
 }
 
 /* === 3) Terminal min-size to viewport (grows if content is taller) === */
-#arena, .term-screen-min{ min-height:100vh }
-@supports (min-height:100dvh){ #arena, .term-screen-min{ min-height:100dvh } }
-@supports (min-height:100svh){ #arena, .term-screen-min{ min-height:100svh } }
-
-/* Header/body/footer layout for terminal blocks */
+.term-screen-min{ min-height:100vh }
 .term-screen-min{ display:grid; grid-template-rows:auto 1fr auto }
 .term-screen-min .body{ overflow:auto }
 /* Mobile safe areas */
 .term-screen-min{ padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom) }
+
+@supports (min-height:100dvh){ .term-screen-min{ min-height:100dvh } }
+@supports (min-height:100svh){ .term-screen-min{ min-height:100svh } }
 
 
 /* Terminal sits in the second row and centers horizontally */
