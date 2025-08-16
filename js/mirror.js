@@ -3,10 +3,10 @@
   let camStream=null, rec=null, listening=false, lastTap=0;
 
   // Acceptable negatives (normalize accents & case before matching)
-  const NEG = ['não','nao','no','nope','nah','nunca','jamais','nem pensar','claro que não','claro que nao','negative','negativo'];
-  const norm = s => (s||'').toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu,'').trim();
-  const isNeg = s => { const t=norm(s); return NEG.some(w=> t===norm(w) || t.startsWith(norm(w)+' ') || t.includes(' '+norm(w)+' ') || t.endsWith(' '+norm(w))); };
-
+  const YES=['sim','siiiim','claro','obvio','óbvio','com certeza','yes','yep','yeah'];
+  const norm=s=>(s||'').toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu,'').trim();
+  const isYes=s=>{ const t=norm(s); return YES.some(w=> t===norm(w) || t.startsWith(norm(w)+' ') || t.includes(' '+norm(w)+' ') || t.endsWith(' '+norm(w))); };
+  
   function petals(n=20){
     const stage=$('.mirror-stage'); if(!stage) return;
     for(let i=0;i<n;i++){
@@ -31,12 +31,17 @@
     $('#askFeedback').innerHTML = '<span class="nope">'+ lines[Math.floor(Math.random()*lines.length)] +'</span>';
   }
 
-  function handleAnswer(text){ isNeg(text) ? reveal() : roast(); }
+  function handleAnswer(text){ isYes(text) ? reveal() : roast(); }
 
   function bindVoice(){
     const btn=$('#btnListen'); if(!btn) return;
-    if(!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)){
-      btn.disabled=true; btn.textContent='Sem voz — usa Revelar'; return;
+   const hasSR = ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window);
+    // Fallback: if no SR, show typed puzzle instead of a reveal button
+    if(!hasSR){
+      btn.disabled=true; btn.textContent='Sem voz — escreve “Sim”';
+      const input=$('#answer'), ok=$('#btnSubmit');
+      if(input && ok){ input.hidden=false; ok.hidden=false; ok.addEventListener('click', ()=> handleAnswer(input.value)); }
+      return;
     }
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     rec = new SR(); rec.lang='pt-PT'; rec.interimResults=false; rec.maxAlternatives=4;
@@ -56,7 +61,7 @@
       camStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'user' }, audio:false });
       const v=$('#mirrorCam'); v.srcObject=camStream; v.hidden=false; $('#mirrorHint').textContent='';
     }catch{
-      $('#mirrorHint').textContent='Sem câmara? Diz “não” ou toca 2x';
+      return;
     }
   }
 
@@ -65,11 +70,10 @@
   function bindUI(){
     const stage=$('.mirror-stage');
     stage.addEventListener('click', ()=>{ const now=Date.now(); if(now-lastTap<400) reveal(); lastTap=now; });
-    $('#btnReveal')?.addEventListener('click', reveal);
   }
 
   function start(){
-    $('#groomBride').src='/museum-audio/img/mirror/mirror.jpg';
+    $('#groomBride').src='img/mirror/mirror.jpg';
     bindUI(); bindVoice(); startCam();
     document.addEventListener('page:leave', stopCam, { once:true });
     window.addEventListener('visibilitychange', ()=>{ if(document.hidden) stopCam(); });

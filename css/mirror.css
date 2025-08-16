@@ -1,5 +1,22 @@
 .mirror{ display:grid; gap:10px; justify-items:center }
-.mirror-stage{ position:relative; aspect-ratio:3/4; width:min(92vw, 680px); max-height:78vh; border:1px solid var(--ghost); border-radius:14px; overflow:hidden; background:radial-gradient(120% 120% at 50% -10%, rgba(39,255,140,.06), rgba(0,0,0,.65)); box-shadow:0 0 0 1px rgba(39,255,140,.10), 0 24px 80px rgba(0,0,0,.55) }
+.mirror-stage{
+  /* container‑relative sizing */
+  inline-size: min(100%, 640px);
+  max-inline-size: 100%;
+  margin-inline: auto;
+
+  /* frame */
+  position: relative;
+  aspect-ratio: 3/4;
+  /* removed: width:min(92vw, 640px); */
+  max-height: 78vh;
+  border: 1px solid var(--ghost);
+  border-radius: 14px;
+  overflow: hidden;
+  background: radial-gradient(120% 120% at 50% -10%, rgba(39,255,140,.06), rgba(0,0,0,.65));
+  box-shadow: 0 0 0 1px rgba(39,255,140,.10), 0 24px 80px rgba(0,0,0,.55);
+}
+
 #mirrorCam,#groomBride,#mirrorFx{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover }
 #mirrorCam{ transform:scaleX(-1) }
 #groomBride{ transform:scaleX(-1); opacity:0; transition:opacity .35s ease }
@@ -10,3 +27,12 @@
 .hud{ position:absolute; left:10px; right:10px; bottom:10px; display:flex; gap:8px; justify-content:center; z-index:3 }
 #mirrorHint{ margin:0 }
 .petal{ position:absolute; width:24px; height:24px; pointer-events:none }
+
+/* Prevent min-content overflow traps inside grid/flex parents */
+#arena, .term-body, .mirror, .mirror-stage{ min-inline-size: 0; }
+
+/* Don’t allow a horizontal scrollbar even if something shifts by 1px */
+#arena{ overflow-x: clip; }
+
+/* HUD won’t push the mirror wider on tiny screens */
+.hud{ flex-wrap: wrap; }
