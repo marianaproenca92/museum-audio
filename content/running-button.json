@@ -8,9 +8,19 @@
   "effects": "desync",
   "drama": 2,
   "typewriter": true,
-  "bootlog": "bootlogs/running-button.json",
 
-  "audio": "audio/nodo09.mp3",
+     "bootlog": {
+        "before": [
+            "> montar BONSAI.DRIVER … folhas com atitude",
+            "> abrir PRISIONEIRO.CAGE … chave desaparecida",
+            "> sync PIZZA.CAT … miau autenticado",
+            "> montar /dev/BOTAS … lama residual",
+            "> fallback: catch_the_button() … iniciado"
+        ],
+        "after":  ["ERRO: REGISTO INACESSÍVEL","ABRIR DESVIO"]
+    },
+
+  "audio": "audio/sample.mp3",
   "audioAutoplay": false,
   "audioLoop": false,
 
@@ -19,5 +29,18 @@
   "arenaHtmlUrl": "partials/running-button.html",
 
   "scripts": ["js/running-button.js","js/rb-vanilla.js"],
-  "init": { "when": "afterLoader" }
+  "init": { "when": "afterLoader" },
+  "glitcher": { 
+        "on": true, 
+        "level": "medium", 
+        "modes": "bug" 
+    },
+    "textTear": { 
+        "on": true, 
+        "targets": ["#hdr-title", "#content-subtitle"], 
+        "density": 8, 
+        "amp": 2.6, 
+        "freq": 140, 
+        "rgb": true 
+    }
 }

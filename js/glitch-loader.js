@@ -286,13 +286,25 @@
   };
   window.GlitchLoader=API;
 
-  // robust autostart (covers defer, async, or plain)
-  const boot = once(()=>API.startFromData());
-  if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded', boot, { once:true });
-    window.addEventListener('load', boot, { once:true });
-  } else {
-    // Run on next frame to ensure <body data-*> is parsed
-    requestAnimationFrame(boot);
-  }
+  // --- Manual mode + ready signal ---
+  // If window.__GL_MANUAL === true or <body data-gl-manual="on">, do NOT autostart.
+  // The router will call GlitchLoader.startFromData() after it sets <body data-*>.
+  (function(){
+    const signalReady = () => { try { document.dispatchEvent(new CustomEvent('glitch:ready')); } catch(_){} };
+    signalReady(); // let the router know API is ready
+
+    const b = document.body;
+    const manual = (window.__GL_MANUAL === true) || (b && b.dataset.glManual === 'on');
+    if (manual) return; // router will start us
+
+    // default autostart (same behavior as before)
+    const boot = once(()=>API.startFromData());
+    if(document.readyState==='loading'){
+      document.addEventListener('DOMContentLoaded', boot, { once:true });
+      window.addEventListener('load', boot, { once:true });
+    } else {
+      requestAnimationFrame(boot);
+    }
+  })();
+
 })();

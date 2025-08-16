@@ -20,7 +20,7 @@
         "after":  ["ERRO: REGISTO INACESSÍVEL","ABRIR DESVIO"]
     },
 
-    "audio": "audio/nodo09.mp3",
+    "audio": "audio/sample.mp3",
     "audioAutoplay": false,
     "audioLoop": false,
 
