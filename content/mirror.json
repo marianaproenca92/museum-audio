@@ -1,0 +1,10 @@
+{
+  "title": "ESPELHO // A NOIVA",
+  "subtitle": "Espelho meu, espelho meu, haverá noiva mais bela do que eu?",
+  "effects": "scantear imagestorm",
+  "arenaHtmlUrl": "partials/mirror-ask.html",
+  "scripts": ["js/mirror.js"],
+  "styles": ["css/mirror.css"],
+  "init": { "when": "afterLoader" },
+  "textTear": { "on": true, "targets": ["#hdr-title", "#content-subtitle"], "density": 7, "amp": 2.1, "freq": 120, "rgb": true }
+}

@@ -82,7 +82,7 @@
     const panel=document.createElement('div'); panel.className='gl-panel';
     const log=document.createElement('pre'); log.className='gl-bootlog'; log.id='gl-bootlog'; log.setAttribute('aria-live','polite');
     panel.appendChild(log);
-    const foot=document.createElement('div'); foot.className='gl-foot'; foot.innerHTML='<span>status: CONNECT</span><span id="gl-time"></span>';
+    const foot=document.createElement('div'); foot.className='gl-foot'; foot.innerHTML='<span>status: CONNECTED</span><span id="gl-time"></span>';
     term.appendChild(head); term.appendChild(sub); term.appendChild(panel); term.appendChild(foot); wrap.appendChild(term);
     document.body.appendChild(wrap);
     const tEl=$('#gl-time'); if(tEl){ const upd=()=>{tEl.textContent=new Date().toLocaleTimeString();}; upd(); wrap.__clock=setInterval(upd,1000); }

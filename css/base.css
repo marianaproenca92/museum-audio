@@ -1,0 +1,159 @@
+/*
+  base.css — Museum Site (merged theme + glitch + viewport min-size)
+  ---------------------------------------------------------------
+  What’s inside:
+  - Root variables (from Fallout Green, plus any missing from Glitch)
+  - Global reset + typography
+  - Terminal min-size-to-viewport pattern (svh/dvh with vh fallback)
+  - Terminal frame (CRT look: scanlines + vignette)
+  - Glitch text helpers
+  - Panels, dividers, small text
+  - Runaway overlay geometry (rb-overlay / rb-btn)
+  - CRT button geometry + states (+ green-tinted run button)
+
+  After adding this file, you can REMOVE css/fallout-green.css and css/glitch.css
+  from the page and include ONLY this one: <link rel="stylesheet" href="css/base.css">
+*/
+
+/* === 1) Theme variables (mostly from Fallout Green; merge unique tokens from Glitch) === */
+:root{
+  /* colors */
+  --bg:#060a06;               /* almost‑black green */
+  --fg:#b7ffb7;               /* phosphor light */
+  --muted:#6bd66b;            /* dim labels */
+  --accent:#27ff8c;           /* vivid scan green */
+  --danger:#ff3b3b;           /* red for errors */
+  --ghost:rgba(39,255,140,.18);
+  --scanline:rgba(255,255,255,.04);
+  --chrome-top: 4rem;
+  /* type */
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+/* === 2) Reset + base === */
+*{ box-sizing:border-box }
+html,body{ height:100% }
+body{
+  margin:5;
+  background:radial-gradient(circle at 50% 0%, #0a0f0a 0%, #060a06 55%, #040704 100%);
+  color:var(--fg);
+  font:16px/1.55 var(--mono);
+  letter-spacing:.2px;
+  text-shadow:0 0 6px rgba(39,255,140,.20); /* phosphor bloom */
+  overflow-x:hidden;
+}
+
+/* === 3) Terminal min-size to viewport (grows if content is taller) === */
+#arena, .term-screen-min{ min-height:100vh }
+@supports (min-height:100dvh){ #arena, .term-screen-min{ min-height:100dvh } }
+@supports (min-height:100svh){ #arena, .term-screen-min{ min-height:100svh } }
+
+/* Header/body/footer layout for terminal blocks */
+.term-screen-min{ display:grid; grid-template-rows:auto 1fr auto }
+.term-screen-min .body{ overflow:auto }
+/* Mobile safe areas */
+.term-screen-min{ padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom) }
+
+
+/* Terminal sits in the second row and centers horizontally */
+body.crt-page > .terminal{ margin: 0 auto; }
+
+
+/* Make the arena expand and scroll if needed */
+#arena{ min-height: 0; overflow: auto; }
+
+
+/* === 4) Terminal frame (CRT look) === */
+.terminal{
+  max-width:min(920px, 92vw);
+  margin:4rem auto;
+  padding:24px 28px;
+  border:1px solid var(--ghost);
+  border-radius:14px;
+  background:linear-gradient(180deg, rgba(0,20,8,.60), rgba(0,16,6,.38));
+  position:relative;
+  box-shadow:
+    0 0 0 1px rgba(39,255,140,.10),
+    0 24px 80px rgba(0,0,0,.65),
+    0 0 40px rgba(39,255,140,.04) inset;
+}
+.terminal::before{ /* scanlines */
+  content:""; position:absolute; inset:0; pointer-events:none; border-radius:14px;
+  background:repeating-linear-gradient(to bottom, transparent 0 2px, var(--scanline) 2px 3px);
+  mix-blend-mode:overlay; opacity:.5;
+}
+.terminal::after{ /* vignette */
+  content:""; position:absolute; inset:-2px; pointer-events:none; border-radius:16px;
+  box-shadow:inset 0 0 140px rgba(0,0,0,.85), inset 0 0 22px rgba(39,255,140,.08);
+}
+
+.header{ display:flex; gap:10px; align-items:center; margin-bottom:18px; color:var(--muted) }
+.dot{ width:10px; height:10px; border-radius:50%; background:var(--ghost); opacity:.7 }
+.title{ font-weight:700; letter-spacing:.9px }
+
+hr{ border:0; border-top:1px dashed var(--ghost); opacity:.55; margin:18px 0 }
+small,.muted{ color:var(--muted) }
+
+/* Large-screen optional tilt */
+@media (min-width:900px){ .terminal{ transform:perspective(1400px) translateZ(0) } }
+
+/* === 5) Glitch text helpers === */
+.glitch{ position:relative; display:inline-block }
+.glitch::before,.glitch::after{ content:attr(data-text); position:absolute; inset:0; pointer-events:none }
+/* base split */
+.glitch::before{ left:2px; text-shadow:-2px 0 var(--accent); clip-path:polygon(0 2%,100% 2%,100% 44%,0 44%) }
+.glitch::after{ left:-2px; text-shadow:2px 0 var(--danger); clip-path:polygon(0 60%,100% 60%,100% 98%,0 98%); opacity:.8 }
+
+/* Type cursor */
+.type, .typewriter-row{ border-right:2px solid var(--accent) }
+
+/* === 6) Panels === */
+.panel{ background:rgba(2,18,8,.55); border:1px solid var(--ghost); border-radius:10px; padding:14px 16px }
+.panel + .panel{ margin-top:12px }
+.kv{ display:grid; grid-template-columns:160px 1fr; gap:6px 12px }
+.kv dt{ color:var(--muted) }
+.kv dd{ margin:0 }
+@media (max-width:780px){ .kv{ grid-template-columns:1fr } }
+
+/* === 7) Runaway overlay geometry === */
+.rb-overlay{ position:fixed; inset:0; z-index:30; }
+.rb-overlay .rb-btn{ position:absolute; z-index:31; }
+
+/* === 8) Buttons === */
+/* Semantic tint for RUN actions (geometry below in .crt-btn) */
+.run-btn{ border-color:var(--accent); color:var(--accent); background:rgba(39,255,140,.08) }
+.run-btn:hover{ box-shadow:0 0 0 3px rgba(39,255,140,.14) }
+.run-btn.is-locked, [aria-disabled="true"].run-btn{ cursor:not-allowed; opacity:.55; filter:saturate(.8) brightness(.9) }
+.run-btn.is-locked:hover{ box-shadow:none; transform:none }
+
+/* CRT button geometry + interactions */
+.crt-btn{
+  position:relative; display:inline-flex; align-items:center; justify-content:center; gap:.6rem;
+  padding:10px 16px; min-height:42px; border:1px solid var(--ghost); border-radius:10px;
+  background:rgba(2,18,8,.45); font:600 14px/1 var(--mono); text-transform:uppercase; letter-spacing:.8px;
+  text-decoration:none; user-select:none; -webkit-tap-highlight-color:transparent;
+  transition:transform .08s ease, box-shadow .18s ease, background .18s ease, filter .18s ease;
+}
+.crt-btn::before{
+  content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+  background:repeating-linear-gradient(to bottom, transparent 0 2px, var(--scanline) 2px 3px);
+  mix-blend-mode:overlay; opacity:.18; transition:opacity .2s ease;
+}
+.crt-btn:hover{ transform:translateY(-1px); box-shadow:0 0 0 1px rgba(39,255,140,.10), 0 0 14px rgba(39,255,140,.08) inset }
+.crt-btn:active{ transform:translateY(0); filter:saturate(1.06) }
+.crt-btn:focus{ outline:none }
+.crt-btn:focus-visible{
+  box-shadow:0 0 0 1px var(--ghost), 0 0 0 4px rgba(39,255,140,.18), 0 0 22px rgba(39,255,140,.10) inset;
+}
+.crt-btn:is([disabled],[aria-disabled="true"],.is-locked){ cursor:not-allowed; opacity:.55; filter:saturate(.8) brightness(.9); transform:none; box-shadow:none }
+
+/* Button variants */
+.crt-btn--sm{ padding:8px 12px; min-height:36px; font-size:.92rem }
+.crt-btn--lg{ padding:12px 18px; min-height:48px; font-size:1.05rem }
+.crt-btn--block{ display:flex; width:100% }
+.crt-btn .glitch{ line-height:1; display:inline-block }
+.crt-btn--ghost{ background:transparent; border-color:currentColor }
+.crt-btn--danger{ color:var(--danger); border-color:var(--danger); background:rgba(255,59,59,.08) }
+
+/* === 9) Optional CRT warp hint on large screens === */
+@media (min-width:900px){ .terminal{ transform:perspective(1400px) translateZ(0) } }

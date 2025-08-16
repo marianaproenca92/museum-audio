@@ -1,8 +1,8 @@
 {
   "pageTitle": "ERROR",
-  "title": "ARQUIVO // ERROR",
+  "title": "ARQUIVO // BOTAS",
 
-  "subtitle": "",
+  "subtitle": "[O MUSEU]: Objeto instável detetado. Contenção degradada.",
   "description": "",
 
   "effects": "desync",
@@ -26,7 +26,7 @@
 
   "styles": ["css/running-button.css"],
 
-  "arenaHtmlUrl": "partials/running-button.html",
+  "arenaHtmlUrl": "",
 
   "scripts": ["js/running-button.js"],
   "init": { "when": "afterLoader" },
@@ -38,8 +38,8 @@
     "textTear": { 
         "on": true, 
         "targets": ["#hdr-title", "#content-subtitle"], 
-        "density": 8, 
-        "amp": 2.6, 
+        "density": 3, 
+        "amp": 10, 
         "freq": 140, 
         "rgb": true 
     }

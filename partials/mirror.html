@@ -1,0 +1,16 @@
+<div id="mirror" class="mirror term-screen-min" aria-live="polite" aria-label="Espelho">
+  <div class="mirror-stage">
+    <video id="mirrorCam" playsinline autoplay muted hidden></video>
+    <img id="groomBride" alt="A noiva (versão groom)" hidden>
+    <canvas id="mirrorFx" aria-hidden="true"></canvas>
+
+    <div class="mirror-glass" aria-hidden="true"></div>
+
+    <div class="hud">
+      <button id="btnListen" class="crt-btn crt-btn--sm crt-btn--ghost" aria-pressed="false" aria-label="Ativar microfone">Falar</button>
+      <button id="btnReveal" class="crt-btn crt-btn--sm run-btn" aria-label="Revelar (alternativa)">Revelar</button>
+    </div>
+  </div>
+  <p id="mirrorHint" class="muted">Dica: diz “não” depois da pergunta — ou toca 2x no espelho</p>
+  <p id="askFeedback" class="muted" role="status" aria-live="polite"></p>
+</div>
