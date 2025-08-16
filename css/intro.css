@@ -6,4 +6,5 @@
 #intro .cursor{ border-right:2px solid var(--accent); animation:blink .9s steps(2,end) infinite }
 @keyframes blink{ 0%,100%{opacity:1} 50%{opacity:0} }
 
-/* The intro script will set display:block and later hide it; no stacking needed here */
+.rb-overlay{ position:fixed; inset:0; z-index:30; pointer-events:none; }
+.rb-btn{ position:absolute; z-index:31; pointer-events:auto; padding:.9rem 1.1rem; border:1px solid currentColor; border-radius:999px; background:transparent; font:600 15px/1.1 system-ui, sans-serif; }

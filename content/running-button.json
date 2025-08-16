@@ -28,7 +28,7 @@
 
   "arenaHtmlUrl": "partials/running-button.html",
 
-  "scripts": ["js/running-button.js","js/rb-vanilla.js"],
+  "scripts": ["js/running-button.js"],
   "init": { "when": "afterLoader" },
   "glitcher": { 
         "on": true, 
