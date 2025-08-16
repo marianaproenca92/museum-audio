@@ -69,7 +69,7 @@
   }
 
   function start(){
-    $('#groomBride').src='/museum-audio/img/mirror/groom-bride.jpg';
+    $('#groomBride').src='/museum-audio/img/mirror/mirror.jpg';
     bindUI(); bindVoice(); startCam();
     document.addEventListener('page:leave', stopCam, { once:true });
     window.addEventListener('visibilitychange', ()=>{ if(document.hidden) stopCam(); });
