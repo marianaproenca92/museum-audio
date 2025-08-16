@@ -106,7 +106,6 @@
         }
     }
 
-
     // Body classes & CSS vars (apply immediately so loader/arena inherit)
     const body=document.body;
     const classes = Array.isArray(data.bodyClass) ? data.bodyClass : (typeof data.bodyClass==='string' ? data.bodyClass.split(/\s+/) : []);
@@ -129,6 +128,35 @@
     if(data.loaderTitle!==undefined) body.dataset.title = data.loaderTitle; else body.dataset.title = data.title||document.title||'';
     if(data.pageTitle) document.title=data.pageTitle;
 
+    // GLITCHER (screen-glitcher.js v3)
+    if (data.glitcher) {
+    body.dataset.glitch = (data.glitcher.on === false) ? 'off' : 'on';
+    if (data.glitcher.level)  body.dataset.glitchLevel = data.glitcher.level;      // light|medium|heavy
+    if (data.glitcher.modes)  body.dataset.glitchModes = Array.isArray(data.glitcher.modes)
+        ? data.glitcher.modes.join(' ')
+        : String(data.glitcher.modes);
+    }
+
+    // TEXT TEAR (optional, if you use it)
+    if (data.textTear) {
+    body.dataset.texttear = (data.textTear.on === false) ? 'off' : 'on';
+    if (data.textTear.targets) body.dataset.texttearTargets = Array.isArray(data.textTear.targets)
+        ? data.textTear.targets.join(',')
+        : String(data.textTear.targets);
+    if (data.textTear.density != null) body.dataset.texttearDensity = String(data.textTear.density);
+    if (data.textTear.amp != null)     body.dataset.texttearAmp     = String(data.textTear.amp);
+    if (data.textTear.freq != null)    body.dataset.texttearFreq    = String(data.textTear.freq);
+    if (data.textTear.rgb  != null)    body.dataset.texttearRgb     = data.textTear.rgb ? 'on' : 'off';
+    }
+
+    // INLINE BOOTLOGS: allow bootlog lines inside the page JSON
+    // Accepts either an array of lines, or { before:[], after:[] }
+    if (data.bootlog && typeof data.bootlog === 'object') {
+    window.__bootlog = data.bootlog; // read by glitch-loader.js
+    // Ensure we do NOT also set data-bootlog (URL), to avoid a fetch.
+    delete body.dataset.bootlog;
+    }
+
     // MAIN page audio
     if(data.audio){ body.dataset.audio=data.audio; ensureRoomAudio(data.audio, { autoplay: !!data.audioAutoplay, loop: !!data.audioLoop }); }
 
@@ -149,6 +177,27 @@
     const scripts = Array.isArray(data.scripts) ? data.scripts : [];
     const init = data.init||null; // {fn, args, when}
     if(scripts.length){ try{ await loadScripts(scripts); } catch(e){ console.warn('script failed', e); } }
+
+    // GLITCHER (screen effects)
+    if (data.glitcher) {
+    body.dataset.glitch = (data.glitcher.on === false) ? 'off' : 'on';
+    if (data.glitcher.level) body.dataset.glitchLevel = data.glitcher.level; // light|medium|heavy
+    if (data.glitcher.modes) body.dataset.glitchModes =
+        Array.isArray(data.glitcher.modes) ? data.glitcher.modes.join(' ') : String(data.glitcher.modes);
+    }
+
+    // TEXT TEAR (unstable text stripes)
+    if (data.textTear) {
+    body.dataset.texttear = (data.textTear.on === false) ? 'off' : 'on';
+    if (data.textTear.targets)
+        body.dataset.texttearTargets = Array.isArray(data.textTear.targets)
+        ? data.textTear.targets.join(',') : String(data.textTear.targets);
+    if (data.textTear.density != null) body.dataset.texttearDensity = String(data.textTear.density);
+    if (data.textTear.amp != null)     body.dataset.texttearAmp     = String(data.textTear.amp);
+    if (data.textTear.freq != null)    body.dataset.texttearFreq    = String(data.textTear.freq);
+    if (data.textTear.rgb != null)     body.dataset.texttearRgb     = data.textTear.rgb ? 'on' : 'off';
+    }
+
 
     const runInit = ()=>{
       if(!init||!init.fn) return; const fn=(window[init.fn]||window[init.fn.split('.').pop()]);

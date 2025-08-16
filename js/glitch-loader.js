@@ -10,14 +10,6 @@
     <link rel="stylesheet" href="css/glitch-loader.css">
     <link rel="stylesheet" href="css/glitch-break-effects.css">
     <script defer src="js/glitch-loader.js?v=5"></script>
-    <body
-      data-bootlog="bootlogs/roomX.json"            <!-- REQUIRED to show custom lines; if missing, uses tiny fallback -->
-      data-detour="bootlogs/roomX-detour.json"      <!-- optional extra lines after BREAK -->
-      data-effect="scantear imagestorm"             <!-- ONE attribute; CSV or space‑separated; imagestorm is an effect -->
-      data-typewriter="on"                           <!-- on/off -->
-      data-drama="3"                                 <!-- 1..4 -->
-      <!-- data-effects also supported; data-title/data-images-json are OPTIONAL because defaults exist -->
-    >
 */
 (function(){
   'use strict';
@@ -187,7 +179,7 @@
   }
 
   // ---------- core ----------
-  async function runSequence({ title, subtitle, bootlogUrl, detourUrl, effects=['shake'], drama=2, typewriter=true, imagesJson='', onDone=null }={}){
+  async function runSequence({ title, subtitle, bootlogUrl, detourUrl, bootlogInline=null, effects=['shake'], drama=2, typewriter=true, imagesJson='', onDone=null }={}){
     const { wrap, term, log } = buildOverlay(title||DEFAULT_TITLE, subtitle||'');
 
     // hard failsafe (ensures overlay is always cleared)
@@ -214,13 +206,22 @@
       if(drama>=3) term.classList.add('gl-broken');
 
       // logs — STRICT: if bootlogUrl provided, do not use fallback lines
+      // logs — prefer INLINE, then URL, else tiny fallback
       let before=[], after=[];
-      if(bootlogUrl){
-        try{ ({before,after}=await loadBootlog(bootlogUrl)); }
-        catch(err){ before=[`[ERRO] Falha ao carregar: ${bootlogUrl}`]; after=[]; console.warn(err); }
+      if (bootlogInline) {
+        if (Array.isArray(bootlogInline)) {
+          const cut = Math.max(1, Math.floor(bootlogInline.length * 0.6));
+          before = bootlogInline.slice(0, cut);
+          after  = bootlogInline.slice(cut);
+        } else if (bootlogInline.before || bootlogInline.after) {
+          before = bootlogInline.before || [];
+          after  = bootlogInline.after  || [];
+        }
+      } else if (bootlogUrl) {
+        try { ({ before, after } = await loadBootlog(bootlogUrl)); }
+        catch (err) { before = [`[ERRO] Falha ao carregar: ${bootlogUrl}`]; after = []; console.warn(err); }
       } else {
-        // only when no bootlog URL at all (dev fallback)
-        before=['ACEDER AO ARQUIVO…','CHECKSUM → FALHA','REINDEXAR…'];
+        before = ['ACEDER AO ARQUIVO…','CHECKSUM → FALHA','REINDEXAR…'];
       }
       if(detourUrl){ try{ const d=await loadBootlog(detourUrl); after=after.concat(d.before,d.after); }catch(_){} }
 
@@ -266,16 +267,17 @@
       const subtitle = `<strong>${SUBTITLE_PREFIX}${ridic}</strong>`;
 
       const opts={
-        title,
-        subtitle,
-        bootlogUrl: b.dataset.bootlog||'',
-        detourUrl: b.dataset.detour||'',
-        effects,
-        drama: clamp(parseInt(b.dataset.drama||'2',10)||2,1,4),
-        typewriter: (b.dataset.typewriter||'on')!=='off',
-        imagesJson: b.dataset.imagesJson||DEFAULT_IMAGESTORM_LIST,
-        onDone: null
-      };
+         title,
+         subtitle,
+         bootlogUrl: b.dataset.bootlog||'',
+         bootlogInline: (typeof window.__bootlog === 'object') ? window.__bootlog : null,
+         detourUrl: b.dataset.detour||'',
+         effects,
+         drama: clamp(parseInt(b.dataset.drama||'2',10)||2,1,4),
+         typewriter: (b.dataset.typewriter||'on')!=='off',
+         imagesJson: b.dataset.imagesJson||DEFAULT_IMAGESTORM_LIST,
+         onDone: null
+       };
       // optional extra effect css per page
       const effectCss=(b.dataset.effectCss||'').split(',').map(s=>s.trim()).filter(Boolean);
       for(const href of effectCss){ const link=document.createElement('link'); link.rel='stylesheet'; link.href=href; document.head.appendChild(link); }

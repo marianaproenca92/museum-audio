@@ -1,0 +1,23 @@
+{
+  "pageTitle": "ERROR",
+  "title": "ARQUIVO // ERROR",
+
+  "subtitle": "",
+  "description": "",
+
+  "effects": "desync",
+  "drama": 2,
+  "typewriter": true,
+  "bootlog": "bootlogs/running-button.json",
+
+  "audio": "audio/nodo09.mp3",
+  "audioAutoplay": false,
+  "audioLoop": false,
+
+  "styles": ["css/running-button.css"],
+
+  "arenaHtmlUrl": "partials/running-button.html",
+
+  "scripts": ["js/running-button.js","js/rb-vanilla.js"],
+  "init": { "when": "afterLoader" }
+}
