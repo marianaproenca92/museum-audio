@@ -46,3 +46,43 @@
 }
 
 .unmute-chip{ position:absolute; right:10px; bottom:10px; z-index:4 }
+
+/* HUD backdrop so the button is readable over video */
+.hud{
+  position:absolute; left:8px; right:8px; bottom:8px; z-index:3;
+  display:flex; justify-content:center; gap:8px; flex-wrap:wrap;
+  padding:8px 10px; border-radius:12px;
+  background: linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,.45));
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  margin-bottom: env(safe-area-inset-bottom);
+}
+
+/* FALAR — loud CTA style */
+#btnListen{
+  --cta: #27ff8c; /* reuse your Fallout green */
+  min-height: 48px; padding: 10px 16px;
+  font-weight: 800; letter-spacing: .03em; text-transform: uppercase;
+  border: 2px solid var(--cta);
+  color: var(--cta);
+  background: rgba(39,255,140,.08);
+  border-radius: 999px;
+  box-shadow:
+    0 0 0 2px rgba(39,255,140,.15) inset,
+    0 0 24px rgba(39,255,140,.25);
+}
+#btnListen::before{ content: "🎙 "; font-size: 1.1em; margin-right: .25em; }
+
+/* Pulse to draw attention before first tap */
+#btnListen.cta-pulse{ animation: cta-pulse 1.2s ease-in-out infinite; }
+@keyframes cta-pulse{
+  0%,100%{ transform: scale(1); box-shadow: 0 0 0 0 rgba(39,255,140,.40) }
+  50%{    transform: scale(1.03); box-shadow: 0 0 24px 4px rgba(39,255,140,.35) }
+}
+
+/* Accessibility */
+#btnListen:focus-visible{ outline:2px solid var(--cta); outline-offset:3px; }
+@media (prefers-reduced-motion: reduce){ #btnListen.cta-pulse{ animation:none } }
+
+/* On small screens, make it full-width */
+@media (max-width: 420px){ #btnListen{ flex:1 1 100%; width:100%; } }

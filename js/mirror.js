@@ -9,11 +9,12 @@
 
   function prepareBgm(){
     if(bgm) return bgm;
-    const src = document.body.dataset.museumAudio || '/museum-audio/audio/mirror-theme.mp3';
+    // read the router-forwarded page JSON field: body.dataset.audio
+    const src = document.body.dataset.audio || '/museum-audio/audio/mirror-theme.mp3';
     bgm = new Audio(src);
-    bgm.loop = true; bgm.preload = 'auto'; bgm.volume = 0; // fade in later
-    return bgm;
-  }
+     bgm.loop = true; bgm.preload = 'auto'; bgm.volume = 0; // fade in later
+     return bgm;
+   }
   function safePlayBgm(){
     const a = prepareBgm();
     return a.play().catch(()=>{
@@ -93,7 +94,11 @@
     if(!hasSR){
       btn.disabled=true; btn.textContent='Sem voz — escreve a resposta';
       const input=$('#answer'), ok=$('#btnSubmit');
-      if(input && ok){ input.hidden=false; ok.hidden=false; ok.addEventListener('click', ()=> handleAnswer(input.value)); }
+      if(input && ok){
+        input.hidden=false; ok.hidden=false;
+        // prime and try to start audio on first typed submit (counts as user gesture)
+        ok.addEventListener('click', ()=>{ prepareBgm(); safePlayBgm(); handleAnswer(input.value); });
+      }
       return;
     }
     btn.addEventListener('click', ()=>{ prepareBgm(); safePlayBgm(); }, { once:true });
