@@ -6,5 +6,10 @@
   "scripts": ["js/mirror.js"],
   "styles": ["css/mirror.css"],
   "init": { "when": "afterLoader" },
-  "textTear": { "on": true, "targets": ["#hdr-title", "#content-subtitle"], "density": 7, "amp": 2.1, "freq": 120, "rgb": true }
+  "textTear": { "on": true, "targets": ["#hdr-title", "#content-subtitle"], "density": 7, "amp": 2.1, "freq": 120, "rgb": true },
+  "glitcher": { 
+        "on": true, 
+        "level": "medium", 
+        "modes": "bug" 
+    }
 }

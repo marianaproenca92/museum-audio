@@ -21,9 +21,31 @@
 
   function reveal(){
     $('#askFeedback').innerHTML = '<span class="ok">FAIREST DETECTED // NOIVA CONFIRMADA</span>';
-    document.querySelector('#mirror').classList.add('revealed');
-    petals(24);
-    document.body.classList.add('glitch-pulse'); setTimeout(()=>document.body.classList.remove('glitch-pulse'), 450);
+    const img = document.getElementById('groomBride');
+    const vid = document.getElementById('mirrorCam');  
+    
+    // Lazy‑load the photo only now
+    const show = () => {
+      img.hidden = false;                 // remove the hidden attribute so CSS can show it
+      document.querySelector('#mirror').classList.add('revealed');
+      petals(24);
+      // fade out the camera view so the photo replaces it
+      if (vid && !vid.hidden) {
+        vid.animate([{opacity:1},{opacity:0}], {duration:250, fill:'forwards'})
+          .finished?.then(()=>{ vid.hidden = true; }).catch(()=>{ vid.hidden=true; });
+      }
+      document.body.classList.add('glitch-pulse');
+      setTimeout(()=>document.body.classList.remove('glitch-pulse'), 450);
+    };
+
+    if (!img.getAttribute('src')){
+      img.onload = show;                                 // reveal after image is ready
+      img.src = '/museum-audio/img/mirror/mirror.jpg';   // absolute path for GitHub Pages
+    } else {
+      show();
+  }
+  
+  
   }
 
   function roast(){
@@ -73,7 +95,6 @@
   }
 
   function start(){
-    $('#groomBride').src='img/mirror/mirror.jpg';
     bindUI(); bindVoice(); startCam();
     document.addEventListener('page:leave', stopCam, { once:true });
     window.addEventListener('visibilitychange', ()=>{ if(document.hidden) stopCam(); });
