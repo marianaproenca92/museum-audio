@@ -40,7 +40,7 @@
 
     if (!img.getAttribute('src')){
       img.onload = show;                                 // reveal after image is ready
-      img.src = '/museum-audio/img/mirror/mirror.jpg';   // absolute path for GitHub Pages
+      img.src = 'img/mirror/mirror.jpg';   // absolute path for GitHub Pages
     } else {
       show();
   }
