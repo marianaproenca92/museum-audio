@@ -44,3 +44,5 @@
 .heart{ position:absolute; will-change:transform,opacity; user-select:none; pointer-events:none; line-height:1;
   filter: drop-shadow(0 0 6px rgba(255,105,180,.55));
 }
+
+.unmute-chip{ position:absolute; right:10px; bottom:10px; z-index:4 }
