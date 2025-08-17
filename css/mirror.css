@@ -35,3 +35,12 @@
 
 /* HUD won’t push the mirror wider on tiny screens */
 .hud{ flex-wrap: wrap; }
+
+.reveal-flash{ position:absolute; inset:0; pointer-events:none; border-radius:inherit; opacity:0; mix-blend-mode:screen;
+  background: radial-gradient(60% 60% at 50% 50%, rgba(255,255,255,.9), rgba(255,255,255,0) 60%);
+}
+
+/* Emoji hearts as particles (no assets required) */
+.heart{ position:absolute; will-change:transform,opacity; user-select:none; pointer-events:none; line-height:1;
+  filter: drop-shadow(0 0 6px rgba(255,105,180,.55));
+}

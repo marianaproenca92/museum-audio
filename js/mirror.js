@@ -19,33 +19,69 @@
     }
   }
 
+  function hearts(n=14){
+    const stage=$('.mirror-stage'); if(!stage) return;
+    for(let i=0;i<n;i++){
+      const h=document.createElement('span');
+      h.className='heart';
+      h.textContent='❤'; // works without assets
+      const size=18+Math.random()*24; // px
+      h.style.fontSize=size+'px';
+      h.style.left=(10+Math.random()*80)+'%';
+      h.style.top=(20+Math.random()*20)+'%';
+      stage.appendChild(h);
+      const dx=(Math.random()*60-30), dy=80+Math.random()*40, rot=(Math.random()*120-60);
+      h.animate([
+        { transform:'translate(0,0) rotate(0deg)', opacity:.95 },
+        { transform:`translate(${dx}vw, ${dy}vh) rotate(${rot}deg)`, opacity:0 }
+      ], { duration:1300+Math.random()*900, easing:'cubic-bezier(.22,.7,.2,1)' })
+      .finished.finally(()=>h.remove());
+    }
+  }
+
+  function flash(){
+    const stage=$('.mirror-stage'); if(!stage) return;
+    const f=document.createElement('div'); f.className='reveal-flash'; stage.appendChild(f);
+    f.animate([{opacity:0},{opacity:1},{opacity:0}],{duration:360, easing:'ease-out'}).finished.finally(()=>f.remove());
+  }
+
+ 
   function reveal(){
     $('#askFeedback').innerHTML = '<span class="ok">FAIREST DETECTED // NOIVA CONFIRMADA</span>';
-    const img = document.getElementById('groomBride');
-    const vid = document.getElementById('mirrorCam');  
-    
-    // Lazy‑load the photo only now
+
+    const img=$('#groomBride');
+    const vid=$('#mirrorCam');
+
     const show = () => {
-      img.hidden = false;                 // remove the hidden attribute so CSS can show it
+      flash();
+      // SFX (optional, ignore errors if file missing)
+      try{ if(!sfx){ sfx=new Audio('/museum-audio/sfx/chime.mp3'); sfx.preload='auto'; sfx.volume=.9; } sfx.currentTime=0; sfx.play().catch(()=>{}); }catch{}
+
+      img.hidden=false;                 // allow CSS to show it
       document.querySelector('#mirror').classList.add('revealed');
-      petals(24);
-      // fade out the camera view so the photo replaces it
-      if (vid && !vid.hidden) {
-        vid.animate([{opacity:1},{opacity:0}], {duration:250, fill:'forwards'})
-          .finished?.then(()=>{ vid.hidden = true; }).catch(()=>{ vid.hidden=true; });
+
+      // extra zoom‑in on the photo for drama (on top of opacity transition)
+      img.animate([
+        { transform:'scaleX(-1) scale(1.06)', opacity:0 },
+        { transform:'scaleX(-1) scale(1.00)', opacity:1 }
+      ], { duration:420, easing:'cubic-bezier(.2,.7,.2,1)', fill:'forwards' });
+
+      // fade out camera
+      if(vid && !vid.hidden){
+        vid.animate([{opacity:1},{opacity:0}],{duration:280,fill:'forwards'})
+          .finished?.then(()=>{ vid.hidden=true; }).catch(()=>{ vid.hidden=true; });
       }
+
+      // particles
+      petals(22);
+      hearts(16);
+
       document.body.classList.add('glitch-pulse');
-      setTimeout(()=>document.body.classList.remove('glitch-pulse'), 450);
+      setTimeout(()=>document.body.classList.remove('glitch-pulse'), 480);
     };
 
-    if (!img.getAttribute('src')){
-      img.onload = show;                                 // reveal after image is ready
-      img.src = 'img/mirror/mirror.jpg';   // absolute path for GitHub Pages
-    } else {
-      show();
-  }
-  
-  
+    if(!img.getAttribute('src')){ img.onload=show; img.src='img/mirror/mirror.jpg'; }
+    else { show(); }
   }
 
   function roast(){
