@@ -1,46 +1,20 @@
 /*
-  screen-glitcher.js (v3)
+  screen-glitcher.fixed.js — terminal‑authentic
   ------------------------------------------------------------
-  One file that does ALL terminal chaos:
-   • Screen GLITCH: tear bar, RGB split + flash, camera shake, "bug" blocks
-   • Text TEAR: splits terminal text into horizontal stripes that jitter sideways
-   • Ambient randomness + public API
-   • Per-page CONFIG via <body data-*> (set from your JSON via shell-router)
-   • Respects prefers-reduced-motion
+  Replaces "white flash" and "camera shake" with subtle CRT‑like effects:
+   • Tear bar (soft)
+   • Raster roll (scanline drift) + phosphor dim
+   • V‑hold slip (tiny vertical drift & snap)
+   • Optional light RGB fringe
 
-  HOW TO USE
-  ----------
-  1) Include once in your shell:
-     <script defer src="js/screen-glitcher.js?v=3"></script>
+  Keeps TEXT TEAR system intact.
+  Loads after your loader (the script already waits for 'loader:done').
 
-  2) In your room JSON, add a block the router will map to data-* (see router patch below):
-     {
-       "glitcher": { "on": true, "level": "medium", "modes": "tear,glitch,bug" },
-       "textTear": { "on": true, "targets": ["#hdr-title", "#content-subtitle"], "density": 8, "amp": 2.6, "freq": 140, "rgb": true }
-     }
-
-  3) Router (v5) patch (set body.dataset from the JSON):
-     // after loader dataset, before reveal
-     if(data.glitcher){
-       body.dataset.glitch = (data.glitcher.on===false)?'off':'on';
-       if(data.glitcher.level) body.dataset.glitchLevel = data.glitcher.level; // light|medium|heavy
-       if(data.glitcher.modes) body.dataset.glitchModes = Array.isArray(data.glitcher.modes) ? data.glitcher.modes.join(' ') : String(data.glitcher.modes);
-     }
-     if(data.textTear){
-       body.dataset.texttear = (data.textTear.on===false)?'off':'on';
-       if(data.textTear.targets) body.dataset.texttearTargets = Array.isArray(data.textTear.targets) ? data.textTear.targets.join(',') : String(data.textTear.targets);
-       if(data.textTear.density!=null) body.dataset.texttearDensity = String(data.textTear.density);
-       if(data.textTear.amp!=null) body.dataset.texttearAmp = String(data.textTear.amp);
-       if(data.textTear.freq!=null) body.dataset.texttearFreq = String(data.textTear.freq);
-       if(data.textTear.rgb!=null) body.dataset.texttearRgb = data.textTear.rgb ? 'on' : 'off';
-     }
-
-  Public API:
-    TerminalGlitch.glitchOnce('tear'|'glitch'|'bug')
-    TerminalGlitch.panic(ms)      // heavy sequence loop
+  Public API (compatible + extended):
+    TerminalGlitch.glitchOnce('tear'|'glitch'|'raster'|'vhold'|'bug')
+    TerminalGlitch.panic(ms)
     TerminalGlitch.textTear.burst(ms)
-    TerminalGlitch.stop()         // stop ambient
-
+    TerminalGlitch.stop()
 */
 (function(){
   'use strict';
@@ -62,30 +36,41 @@
   /* Static scanlines overlay */
   .tg-scanlines{ background: repeating-linear-gradient(0deg, transparent 0 2px, var(--tg-scan) 2px 3px); mix-blend-mode: overlay; opacity:.18; }
 
-  /* Tear bar that scrolls vertically */
-  .tg-tear{ background: linear-gradient(180deg, transparent 0 45%, rgba(255,255,255,.07) 47%, transparent 50%, rgba(0,0,0,.12) 52%, transparent 55%); background-size: 100% 24px; opacity:0; }
-  @keyframes tg-tear-scroll{ from{ background-position-y: 0 } to{ background-position-y: 24px } }
-  .tg-tear.on{ opacity:.36; animation: tg-tear-scroll .12s linear infinite; }
+  /* Tear bar — lower contrast + slower scroll */
+  .tg-tear{ background: linear-gradient(180deg, transparent 0 45%, rgba(255,255,255,.035) 47%, transparent 50%, rgba(0,0,0,.06) 52%, transparent 55%); background-size: 100% 26px; opacity:0; }
+  @keyframes tg-tear-scroll{ from{ background-position-y: 0 } to{ background-position-y: 26px } }
+  .tg-tear.on{ opacity:.18; animation: tg-tear-scroll .22s linear infinite; }
 
-  /* White pop flash */
-  .tg-flash{ background: radial-gradient(ellipse at center, rgba(255,255,255,.95), rgba(255,255,255,0) 65%); opacity:0; }
-  @keyframes tg-flash-pop{ 0%{opacity:0} 6%{opacity:.98} 100%{opacity:0} }
-  .tg-flash.on{ animation: tg-flash-pop .28s ease-out; }
+  /* Phosphor dim — brief overall brightness dip */
+  .tg-dim{ opacity:0; background: radial-gradient(120% 80% at 50% 50%, rgba(0,0,0,.22), rgba(0,0,0,.35)); }
+  @keyframes tg-dim-pulse{ 0%{opacity:0} 40%{opacity:.28} 100%{opacity:0} }
+  .tg-dim.on{ animation: tg-dim-pulse .20s ease-out; }
 
-  /* Camera jitter */
-  @keyframes tg-jitter{ 0%{transform:translate(0,0)} 20%{transform:translate(.6px,-.4px)} 40%{transform:translate(-.8px,.5px)} 60%{transform:translate(.4px,.6px)} 80%{transform:translate(-.5px,-.6px)} 100%{transform:translate(0,0)} }
-  .tg-shake{ animation: tg-jitter .08s steps(2,end) infinite; }
+  /* V‑hold slip — tiny vertical drift & snap */
+  @keyframes tg-vhold-snap{ 0%{ transform: translateY(0) } 60%{ transform: translateY(-1.2px) } 100%{ transform: translateY(0) } }
+  .tg-vhold .terminal{ animation: tg-vhold-snap .18s steps(3,end); }
 
-  /* RGB split applied to .terminal only */
+  /* RGB fringe — lighter, tighter */
   .tg-rgb .terminal{ position:relative; }
   .tg-rgb .terminal::before,
-  .tg-rgb .terminal::after{ content:""; position:absolute; inset:-1px; pointer-events:none; mix-blend-mode:screen; filter: blur(.6px) contrast(1.1) saturate(1.1); opacity:.75; }
-  .tg-rgb .terminal::before{ background: currentColor; transform: translate(-1px,0); box-shadow: 0 0 0 9999px rgba(255,42,109,.35) inset; }
-  .tg-rgb .terminal::after { background: currentColor; transform: translate(1px,0);  box-shadow: 0 0 0 9999px rgba(42,179,255,.35) inset; }
-
+  .tg-rgb .terminal::after{ content:""; position:absolute; inset:-1px; pointer-events:none; mix-blend-mode:screen; filter: blur(.6px) contrast(1.06) saturate(1.05); }
+  .tg-rgb .terminal::before{ background: currentColor; transform: translate(-.5px,0); box-shadow: 0 0 0 9999px rgba(255,42,109,.22) inset; opacity:.45 }
+  .tg-rgb .terminal::after { background: currentColor; transform: translate(.5px,0);  box-shadow: 0 0 0 9999px rgba(42,179,255,.22) inset; opacity:.45 }
+  
   /* Pixel/bug blocks overlay; filled at runtime */
   .tg-bugs{ contain: layout; }
   .tg-bug{ position:absolute; background: rgba(0,0,0,.85); mix-blend-mode: difference; box-shadow: 0 0 10px rgba(255,255,255,.18); }
+
+  /* Raster roll — faint scanlines drifting slowly */
+  .tg-raster{ opacity:0; background:
+      repeating-linear-gradient(to bottom, rgba(255,255,255,.04) 0 1px, rgba(0,0,0,0) 1px 3px),
+      linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,.12)); }
+  @keyframes tg-raster-roll{ from{ background-position-y: 0, 0 } to{ background-position-y: 3px, 0 } }
+  .tg-raster.on{ opacity:.22; animation: tg-raster-roll .35s linear infinite; }
+
+  @media (prefers-reduced-motion: reduce){
+    .tg-dim.on, .tg-raster.on, .tg-vhold .terminal{ animation-duration: .01ms; animation-iteration-count: 1; }
+  }
 
   /* Text pulse for [data-glitch] */
   @keyframes tg-text-flick{ 0%{opacity:.6} 100%{opacity:1} }
@@ -110,11 +95,12 @@
     if(!r.classList.contains('tg-root')) r.classList.add('tg-root');
     const have = (cls)=> r.querySelector(':scope > .'+cls);
     const make = (cls)=>{ const d=document.createElement('div'); d.className='tg-overlay '+cls; r.appendChild(d); return d; };
-    const scan = have('tg-scanlines') || make('tg-scanlines');
-    const tear  = have('tg-tear')      || make('tg-tear');
-    const flash = have('tg-flash')     || make('tg-flash');
-    const bugs  = have('tg-bugs')      || ( ()=>{ const d=make('tg-bugs'); d.style.inset='0'; return d; } )();
-    return { r, scan, tear, flash, bugs };
+    const scan   = have('tg-scanlines') || make('tg-scanlines');
+    const tear   = have('tg-tear')      || make('tg-tear');
+    const raster = have('tg-raster')    || make('tg-raster');
+    const dim    = have('tg-dim')       || make('tg-dim');
+    const bugs   = have('tg-bugs')      || ( ()=>{ const d=make('tg-bugs'); d.style.inset='0'; return d; } )();
+    return { r, scan, tear, raster, dim, bugs };
   }
 
   function bugBurst(bugsLayer, howMany){
@@ -132,16 +118,18 @@
     }
   }
 
-  async function tearBurst(root, overlays, ms){ overlays.tear.classList.add('on'); root.classList.add('tg-shake'); await wait(ms||320); overlays.tear.classList.remove('on'); root.classList.remove('tg-shake'); }
-  async function glitchBurst(root, overlays, ms){ root.classList.add('tg-rgb','tg-shake'); overlays.flash.classList.add('on'); await wait(ms||300); overlays.flash.classList.remove('on'); root.classList.remove('tg-rgb','tg-shake'); }
-  async function heavySequence(root, overlays){ await tearBurst(root, overlays, 260); bugBurst(overlays.bugs, rnd(8,16)); await glitchBurst(root, overlays, 320); }
+  // --- new, subtle bursts ---
+  async function tearBurst(root, overlays, ms){ overlays.tear.classList.add('on'); await wait(ms||320); overlays.tear.classList.remove('on'); }
+  async function glitchBurst(root, overlays, ms){ root.classList.add('tg-rgb'); overlays.raster.classList.add('on'); overlays.dim.classList.add('on'); await wait(ms||260); overlays.raster.classList.remove('on'); overlays.dim.classList.remove('on'); root.classList.remove('tg-rgb'); }
+  async function vHoldSlip(root, overlays, ms){ root.classList.add('tg-vhold'); overlays.raster.classList.add('on'); await wait(ms||180); root.classList.remove('tg-vhold'); overlays.raster.classList.remove('on'); }
+  async function heavySequence(root, overlays){ await tearBurst(root, overlays, 240); bugBurst(overlays.bugs, rnd(8,16)); await glitchBurst(root, overlays, 240); await vHoldSlip(root, overlays, 160); }
 
   // -------------------- [data-glitch] pulses --------------------
   function primeGlitchTargets(root=document){ const els=root.querySelectorAll('[data-glitch]'); els.forEach(el=>{ if(!el.hasAttribute('data-text')) el.setAttribute('data-text', el.textContent.trim()); }); return els; }
   function pulseText(el, dur=320){ if(!el) return; el.classList.add('glitching'); setTimeout(()=>el.classList.remove('glitching'), dur); }
   function startAmbientText(root){ const targets=Array.from(root.querySelectorAll('[data-glitch]')); if(!targets.length) return ()=>{}; let stop=false; (function tick(){ if(stop) return; if(Math.random()<0.18) pulseText(targets[(Math.random()*targets.length)|0], 280); setTimeout(tick, 800+Math.random()*800); })(); return ()=>{ stop=true; }; }
 
-  // -------------------- TEXT TEAR (merged) ----------------------
+  // -------------------- TEXT TEAR (unchanged) -------------------
   function getRect(el){ const r=el.getBoundingClientRect(); return { w:r.width, h:r.height }; }
   function msRand(base, span){ return (base + (Math.random()*2-1)*span)|0; }
   function cloneStyles(from, to){ const cs=getComputedStyle(from); ['font','fontFamily','fontWeight','fontSize','lineHeight','letterSpacing','textTransform','textDecoration','textShadow','textRendering','-webkit-font-smoothing','-moz-osx-font-smoothing'].forEach(p=>{ try{ to.style[p]=cs[p]; }catch(_){} }); }
@@ -170,28 +158,31 @@
       // text primes
       primeGlitchTargets(root); this._stopText = startAmbientText(root);
       // ambient terminal bursts
-      const level = (opts.level||'medium'); const every = level==='heavy'? 800 : level==='light'? 1600 : 1200;
-      ambientTimer = setInterval(()=>{ const roll=Math.random(); const modes = (opts.modes||['tear','glitch','bug']); if(roll<0.14 && modes.includes('tear')) tearBurst(root, base, 280); else if(roll<0.26 && modes.includes('glitch')) glitchBurst(root, base, 300); else if(roll<0.32 && modes.includes('bug')) bugBurst(base.bugs); }, every);
-      // TEXT TEAR auto
+      const level = (opts.level||'medium');
+      const every = level==='heavy'? 900 : level==='light'? 1800 : level==='subtle'? 2400 : 1300;
+      const modes = Array.isArray(opts.modes)? opts.modes : String(opts.modes||'tear glitch bug').split(/[\s,]+/).filter(Boolean);
+      ambientTimer = setInterval(()=>{
+        const choices=[];
+        if(modes.includes('tear'))   choices.push(()=>tearBurst(root, base, 260));
+        if(modes.includes('glitch') || modes.includes('raster') || modes.includes('rgb')) choices.push(()=>glitchBurst(root, base, 240));
+        if(modes.includes('vhold'))  choices.push(()=>vHoldSlip(root, base, 180));
+        if(modes.includes('bug'))    choices.push(()=>bugBurst(base.bugs));
+        if(choices.length) choices[(Math.random()*choices.length)|0]();
+      }, every);
+      // TEXT TEAR auto (unchanged)
       if(opts.textTear && opts.textTear.on!==false){ this.textTear.start( Object.assign({ targets:['#hdr-title','#content-subtitle'], density:8, amp:2.6, freq:140, rgb:true }, opts.textTear) ); }
     },
-    glitchOnce(kind='auto'){ const root=this._root, ov=this._ov; if(!root||!ov) return; if(kind==='tear') return tearBurst(root, ov, 260); if(kind==='bug') return bugBurst(ov.bugs); if(kind==='glitch') return glitchBurst(root, ov, 300); const pool=['tear','glitch','bug']; return this.glitchOnce(pool[(Math.random()*pool.length)|0]); },
+    glitchOnce(kind='auto'){ const root=this._root, ov=this._ov; if(!root||!ov) return; if(kind==='tear') return tearBurst(root, ov, 260); if(kind==='bug') return bugBurst(ov.bugs); if(kind==='glitch'||kind==='raster'||kind==='rgb') return glitchBurst(root, ov, 240); if(kind==='vhold') return vHoldSlip(root, ov, 180); const pool=['tear','glitch','vhold','bug']; return this.glitchOnce(pool[(Math.random()*pool.length)|0]); },
     async panic(ms=900){ const root=this._root, ov=this._ov; if(!root||!ov) return; const t0=Date.now(); while(Date.now()-t0 < ms){ await heavySequence(root, ov); await wait(80+Math.random()*120); } },
     stop(){ if(ambientTimer) clearInterval(ambientTimer); ambientTimer=null; if(this._stopText) this._stopText(); this.textTear.stop(); },
 
-    // --- TEXT TEAR control ---
+    // --- TEXT TEAR control (unchanged) ---
     textTear: {
       start: function(cfg){
         const self = TerminalGlitch; self._tt.cfg = cfg||{}; const sels = Array.isArray(cfg.targets)? cfg.targets : String(cfg.targets||'#hdr-title,#content-subtitle').split(',');
-        // build
         const found=[]; sels.forEach(sel=> $$(sel.trim()).forEach(el=> { const inst = buildStripes(el, { density: cfg.density||8, rgb: cfg.rgb!==false }); found.push(inst); }));
         self._tt.instances = found;
-        // observe resize
-        if(!self._tt.ro){ self._tt.ro = new ResizeObserver(()=>{ // rebuild on size change
-          const old = self._tt.instances.slice(); self._tt.instances.length=0; old.forEach(it=>{ try{ it.ov.remove(); }catch(_){} });
-          const f2=[]; sels.forEach(sel=> $$(sel.trim()).forEach(el=> f2.push(buildStripes(el, { density: cfg.density||8, rgb: cfg.rgb!==false }))));
-          self._tt.instances = f2; }); self._tt.ro.observe(document.body); }
-        // tick
+        if(!self._tt.ro){ self._tt.ro = new ResizeObserver(()=>{ const old = self._tt.instances.slice(); self._tt.instances.length=0; old.forEach(it=>{ try{ it.ov.remove(); }catch(_){} }); const f2=[]; sels.forEach(sel=> $$(sel.trim()).forEach(el=> f2.push(buildStripes(el, { density: cfg.density||8, rgb: cfg.rgb!==false })))); self._tt.instances = f2; }); self._tt.ro.observe(document.body); }
         if(textTimer) clearInterval(textTimer); textTimer = setInterval(()=>{ const stripes=self._tt.instances.flatMap(i=>i.stripes); animateStripes(stripes, { amp: cfg.amp||2.6 }); }, clamp(cfg.freq||140, 60, 600));
       },
       stop: function(){ if(textTimer) clearInterval(textTimer); textTimer=null; const self=TerminalGlitch; self._tt.instances.forEach(it=> resetStripes(it.stripes)); },
@@ -218,11 +209,9 @@
 
   const boot = ()=>{ try{ if(!prefersReduced()) autoInitFromDataset(); }catch(e){ /* silent */ } };
   if(document.readyState==='loading'){
-    // Prefer to start AFTER the glitch-loader overlay clears, else on DOM ready
     document.addEventListener('loader:done', boot, { once:true });
     document.addEventListener('DOMContentLoaded', boot, { once:true });
   } else {
-    // If loader already done, init immediately
     boot();
   }
 })();
