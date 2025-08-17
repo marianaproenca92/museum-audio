@@ -1,4 +1,4 @@
-.mirror{ display:grid; gap:10px; justify-items:center }
+.mirror{ display:grid; gap:0px; justify-items:center }
 .mirror-stage{
   /* container‑relative sizing */
   inline-size: min(100%, 640px);
@@ -47,16 +47,6 @@
 
 .unmute-chip{ position:absolute; right:10px; bottom:10px; z-index:4 }
 
-/* HUD backdrop so the button is readable over video */
-.hud{
-  position:absolute; left:8px; right:8px; bottom:8px; z-index:3;
-  display:flex; justify-content:center; gap:8px; flex-wrap:wrap;
-  padding:8px 10px; border-radius:12px;
-  background: linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,.45));
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  margin-bottom: env(safe-area-inset-bottom);
-}
 
 /* FALAR — loud CTA style */
 #btnListen{
@@ -71,8 +61,6 @@
     0 0 0 2px rgba(39,255,140,.15) inset,
     0 0 24px rgba(39,255,140,.25);
 }
-#btnListen::before{ content: "🎙 "; font-size: 1.1em; margin-right: .25em; }
-
 /* Pulse to draw attention before first tap */
 #btnListen.cta-pulse{ animation: cta-pulse 1.2s ease-in-out infinite; }
 @keyframes cta-pulse{
