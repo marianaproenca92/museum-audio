@@ -4,7 +4,7 @@
 
   const FX = {
     particleSlow: 1.8, // 1 = original speed; higher = slower fall (e.g., 1.5–2.2)
-    stagger: 80        // ms between spawns; 0 = all at once, 80–120ms = gentle shower
+    stagger: 120       // ms between spawns; 0 = all at once, 80–120ms = gentle shower
   };
 
   function prepareBgm(){
