@@ -1,217 +1,467 @@
-/*
-  screen-glitcher.fixed.js — terminal‑authentic
-  ------------------------------------------------------------
-  Replaces "white flash" and "camera shake" with subtle CRT‑like effects:
-   • Tear bar (soft)
-   • Raster roll (scanline drift) + phosphor dim
-   • V‑hold slip (tiny vertical drift & snap)
-   • Optional light RGB fringe
-
-  Keeps TEXT TEAR system intact.
-  Loads after your loader (the script already waits for 'loader:done').
-
-  Public API (compatible + extended):
-    TerminalGlitch.glitchOnce('tear'|'glitch'|'raster'|'vhold'|'bug')
-    TerminalGlitch.panic(ms)
-    TerminalGlitch.textTear.burst(ms)
-    TerminalGlitch.stop()
-*/
-(function(){
+/*!
+ * TerminalGlitch v1.3 — realistic CRT terminal failings
+ * - RGB tears now vary per pass in focus/size/offset (subtle + believable)
+ * - Keeps shake (vhold) OFF by default; enable via data-glitch-modes if wanted
+ *
+ * Recommended <body> setup:
+ *   <body
+ *     data-glitch="on"
+ *     data-glitch-level="subtle"                 // try medium/heavy for evaluation
+ *     data-glitch-modes="tear flicker fringe"    // includes colored fringe; no vhold (shake)
+ *     data-fringe-strength="0.12"                 // 0..0.5; default 0.08
+ *     data-rgb-tear-variance="1.0"               // 0..2; higher = more variation (default 1)
+ *     data-texttear="off">
+ */
+(function (window, document) {
   'use strict';
 
-  // ----------------------- utils -----------------------
-  const $ = (q,el=document)=>el.querySelector(q);
-  const $$ = (q,el=document)=>Array.from(el.querySelectorAll(q));
-  const rnd = (min,max)=> min + Math.random()*(max-min);
-  const wait = (ms)=> new Promise(res=> setTimeout(res, ms));
-  const prefersReduced = ()=> window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
+  const ALLOWED_MODES = new Set(['tear', 'flicker', 'glitch', 'vhold', 'fringe']); // "glitch" aliases to "flicker"
+  const DEFAULTS = {
+    on: true,
+    level: 'subtle',               // subtle | medium | heavy
+    modes: ['tear', 'flicker', 'fringe'], // no vhold by default (no shake)
+    textTear: false,
+    fringeStrength: 0.08,          // base opacity for color fringe layer
+    rgbTearVariance: 1.0           // 0..2 — scales randomness in RGB tear focus/size
+  };
 
-  // ----------------------- CSS -------------------------
-  const CSS = `
-  :root{ --tg-acc: var(--accent, #28ff7a); --tg-glow: rgba(39,255,140,.35); --tg-scan: color-mix(in oklab, var(--scanline,#0b1a0f) 55%, transparent); }
-  .tg-root{ position: relative; }
-  .tg-overlay{ position: absolute; inset: 0; pointer-events:none; }
+  const State = {
+    enabled: true,
+    reduce: false,
+    level: 'subtle',
+    modes: new Set(DEFAULTS.modes),
+    textTear: false,
+    running: false,
+    rafs: new Set(),
+    timers: new Set(),
+    fringeBase: DEFAULTS.fringeStrength,
+    rgbVar: DEFAULTS.rgbTearVariance
+  };
 
-  /* Static scanlines overlay */
-  .tg-scanlines{ background: repeating-linear-gradient(0deg, transparent 0 2px, var(--tg-scan) 2px 3px); mix-blend-mode: overlay; opacity:.18; }
+  const Dom = {
+    styleEl: null,
+    overlay: null,
+    scan: null,
+    tear: null,
+    tearR: null,
+    tearC: null,
+    dimmer: null,
+    fringe: null,
+  };
 
-  /* Tear bar — lower contrast + slower scroll */
-  .tg-tear{ background: linear-gradient(180deg, transparent 0 45%, rgba(255,255,255,.035) 47%, transparent 50%, rgba(0,0,0,.06) 52%, transparent 55%); background-size: 100% 26px; opacity:0; }
-  @keyframes tg-tear-scroll{ from{ background-position-y: 0 } to{ background-position-y: 26px } }
-  .tg-tear.on{ opacity:.18; animation: tg-tear-scroll .22s linear infinite; }
+  // ---------- utilities ----------
+  const clamp = (n, min, max) => Math.min(max, Math.max(min, n));
+  const rnd = (min, max) => Math.random() * (max - min) + min;
+  const now = () => performance.now();
 
-  /* Phosphor dim — brief overall brightness dip */
-  .tg-dim{ opacity:0; background: radial-gradient(120% 80% at 50% 50%, rgba(0,0,0,.22), rgba(0,0,0,.35)); }
-  @keyframes tg-dim-pulse{ 0%{opacity:0} 40%{opacity:.28} 100%{opacity:0} }
-  .tg-dim.on{ animation: tg-dim-pulse .20s ease-out; }
+  function addTimer(id) { State.timers.add(id); return id; }
+  function clearAllTimers() { State.timers.forEach(id => clearTimeout(id)); State.timers.clear(); }
+  function addRaf(id) { State.rafs.add(id); return id; }
+  function clearAllRafs() { State.rafs.forEach(id => cancelAnimationFrame(id)); State.rafs.clear(); }
 
-  /* V‑hold slip — tiny vertical drift & snap */
-  @keyframes tg-vhold-snap{ 0%{ transform: translateY(0) } 60%{ transform: translateY(-1.2px) } 100%{ transform: translateY(0) } }
-  .tg-vhold .terminal{ animation: tg-vhold-snap .18s steps(3,end); }
+  function readDataset() {
+    const ds = (document.body && document.body.dataset) || {};
+    const on = (ds.glitch || 'on') !== 'off';
+    const level = (ds.glitchLevel || DEFAULTS.level).toLowerCase();
+    let modes = (ds.glitchModes || DEFAULTS.modes.join(' '))
+      .split(/\s+/g)
+      .map(s => s.trim().toLowerCase())
+      .filter(Boolean);
+    modes = modes.map(m => m === 'glitch' ? 'flicker' : m).filter(m => ALLOWED_MODES.has(m));
+    const textTear = (ds.texttear || 'off') === 'on';
+    const fringeStrength = parseFloat(ds.fringeStrength || DEFAULTS.fringeStrength);
+    const rgbTearVariance = parseFloat(ds.rgbTearVariance || ds.rgbTearvariance || ds.rgbtearVariance || ds.rgbtearvariance || DEFAULTS.rgbTearVariance);
 
-  /* RGB fringe — lighter, tighter */
-  .tg-rgb .terminal{ position:relative; }
-  .tg-rgb .terminal::before,
-  .tg-rgb .terminal::after{ content:""; position:absolute; inset:-1px; pointer-events:none; mix-blend-mode:screen; filter: blur(.6px) contrast(1.06) saturate(1.05); }
-  .tg-rgb .terminal::before{ background: currentColor; transform: translate(-.5px,0); box-shadow: 0 0 0 9999px rgba(255,42,109,.22) inset; opacity:.45 }
-  .tg-rgb .terminal::after { background: currentColor; transform: translate(.5px,0);  box-shadow: 0 0 0 9999px rgba(42,179,255,.22) inset; opacity:.45 }
-  
-  /* Pixel/bug blocks overlay; filled at runtime */
-  .tg-bugs{ contain: layout; }
-  .tg-bug{ position:absolute; background: rgba(0,0,0,.85); mix-blend-mode: difference; box-shadow: 0 0 10px rgba(255,255,255,.18); }
-
-  /* Raster roll — faint scanlines drifting slowly */
-  .tg-raster{ opacity:0; background:
-      repeating-linear-gradient(to bottom, rgba(255,255,255,.04) 0 1px, rgba(0,0,0,0) 1px 3px),
-      linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,.12)); }
-  @keyframes tg-raster-roll{ from{ background-position-y: 0, 0 } to{ background-position-y: 3px, 0 } }
-  .tg-raster.on{ opacity:.22; animation: tg-raster-roll .35s linear infinite; }
-
-  @media (prefers-reduced-motion: reduce){
-    .tg-dim.on, .tg-raster.on, .tg-vhold .terminal{ animation-duration: .01ms; animation-iteration-count: 1; }
+    return { on, level, modes, textTear, fringeStrength, rgbTearVariance };
   }
 
-  /* Text pulse for [data-glitch] */
-  @keyframes tg-text-flick{ 0%{opacity:.6} 100%{opacity:1} }
-  .glitching{ animation: tg-text-flick .06s linear both; text-shadow: 0 0 6px var(--tg-glow); }
+  function applyOptions(opts) {
+    const o = Object.assign({}, DEFAULTS, opts || {}, readDataset());
+    State.enabled = !!o.on;
+    State.level = ['subtle','medium','heavy'].includes(o.level) ? o.level : 'subtle';
+    State.modes = new Set((o.modes && o.modes.length ? o.modes : DEFAULTS.modes).filter(m => ALLOWED_MODES.has(m)));
+    State.textTear = !!o.textTear;
+    State.reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    State.fringeBase = clamp(isFinite(o.fringeStrength) ? o.fringeStrength : DEFAULTS.fringeStrength, 0, 0.5);
+    State.rgbVar = clamp(isFinite(o.rgbTearVariance) ? o.rgbTearVariance : DEFAULTS.rgbTearVariance, 0, 2);
+  }
 
-  /* TEXT TEAR stripes */
-  .tt-wrap{ position: relative; display: inline-block; }
-  .tt-overlay{ position:absolute; inset:0; pointer-events:none; mix-blend-mode:normal; }
-  .tt-text{ position:absolute; left:0; right:0; white-space:pre-wrap; will-change: transform; color: currentColor; text-shadow: 0 0 6px rgba(39,255,140,.28); }
-  .tt-overlay[data-rgb="on"] .tt-text::before,
-  .tt-overlay[data-rgb="on"] .tt-text::after{ content: attr(data-txt); position:absolute; inset:0; pointer-events:none; mix-blend-mode:screen; filter: blur(.4px); opacity:.7; }
-  .tt-overlay[data-rgb="on"] .tt-text::before{ color:#ff2a6d; transform: translateX(-1px); }
-  .tt-overlay[data-rgb="on"] .tt-text::after{  color:#2ab3ff; transform: translateX( 1px); }
+  // ---------- DOM / CSS ----------
+  const CSS = `
+  .tg-overlay{position:fixed;inset:0;pointer-events:none;z-index:2147483647;}
+  .tg-scan{position:absolute;inset:0;opacity:.22;background:
+    repeating-linear-gradient(to bottom,rgba(255,255,255,0.02) 0 1px,rgba(0,0,0,0.02) 1px 2px)}
+  .tg-tear{position:absolute;left:0;width:100%;height:14px;opacity:0;transform:translateY(-20px);
+    background:linear-gradient(to bottom,rgba(255,255,255,0)0,rgba(255,255,255,.28)50%,rgba(255,255,255,0)100%);
+    filter:blur(.2px);will-change:transform,opacity}
+  /* RGB tear fringes — height/blur adjusted per pass */
+  .tg-tear-r,.tg-tear-c{position:absolute;left:0;width:100%;height:3px;opacity:0;transform:translateY(-20px);will-change:transform,opacity,filter}
+  .tg-tear-r{background:linear-gradient(to bottom,rgba(255,0,0,0)0,rgba(255,0,0,.55)50%,rgba(255,0,0,0)100%)}
+  .tg-tear-c{background:linear-gradient(to bottom,rgba(0,255,255,0)0,rgba(0,255,255,.55)50%,rgba(0,255,255,0)100%)}
+  .tg-dimmer{position:absolute;inset:0;opacity:var(--tg-flicker, 0);
+    background:radial-gradient(ellipse at center,rgba(255,255,255,0) 0%,rgba(0,0,0,.05) 70%,rgba(0,0,0,.22) 100%)}
+  .tg-fringe{position:absolute;inset:0;mix-blend-mode:screen;}
+  .tg-fringe::before,.tg-fringe::after{content:"";position:absolute;inset:0}
+  .tg-fringe::before{transform:translateX(.6px);background:linear-gradient(90deg,rgba(255,0,0,.28),transparent 40%,transparent 60%,rgba(0,255,255,.28))}
+  .tg-fringe::after{transform:translateX(-.6px);background:linear-gradient(90deg,rgba(0,255,0,.22),transparent 40%,transparent 60%,rgba(255,0,255,.22))}
+  html.tg-vshift body{transform:translateY(-.6px);} /* used only if vhold enabled */
+  @media (prefers-reduced-motion: reduce){
+    .tg-scan{opacity:.12}
+    html.tg-vshift body{transform:none}
+  }
+  /* text shimmer (brief) */
+  .tg-text-shimmer{position:relative}
+  .tg-text-shimmer::after{content:attr(data-glitch-label);position:absolute;left:0;top:0;right:0;bottom:0;opacity:.3;filter:blur(.3px);}
   `;
 
-  function injectCSS(){ if(document.getElementById('tg-style')) return; const s=document.createElement('style'); s.id='tg-style'; s.textContent=CSS; document.head.appendChild(s); }
+  function ensureDom() {
+    if (Dom.overlay) return;
+    Dom.styleEl = document.createElement('style');
+    Dom.styleEl.id = 'tg-styles';
+    Dom.styleEl.textContent = CSS;
+    document.head.appendChild(Dom.styleEl);
 
-  // ----------------------- overlays --------------------
-  function ensureRoot(root){
-    const r = root || $('.terminal') || $('#content') || document.body;
-    if(!r) throw new Error('TerminalGlitch: no root element');
-    if(!r.classList.contains('tg-root')) r.classList.add('tg-root');
-    const have = (cls)=> r.querySelector(':scope > .'+cls);
-    const make = (cls)=>{ const d=document.createElement('div'); d.className='tg-overlay '+cls; r.appendChild(d); return d; };
-    const scan   = have('tg-scanlines') || make('tg-scanlines');
-    const tear   = have('tg-tear')      || make('tg-tear');
-    const raster = have('tg-raster')    || make('tg-raster');
-    const dim    = have('tg-dim')       || make('tg-dim');
-    const bugs   = have('tg-bugs')      || ( ()=>{ const d=make('tg-bugs'); d.style.inset='0'; return d; } )();
-    return { r, scan, tear, raster, dim, bugs };
+    Dom.overlay = document.createElement('div');
+    Dom.overlay.className = 'tg-overlay';
+
+    Dom.scan = document.createElement('div');
+    Dom.scan.className = 'tg-scan';
+
+    Dom.tear = document.createElement('div');
+    Dom.tear.className = 'tg-tear';
+
+    Dom.tearR = document.createElement('div');
+    Dom.tearR.className = 'tg-tear-r';
+
+    Dom.tearC = document.createElement('div');
+    Dom.tearC.className = 'tg-tear-c';
+
+    Dom.dimmer = document.createElement('div');
+    Dom.dimmer.className = 'tg-dimmer';
+
+    Dom.fringe = document.createElement('div');
+    Dom.fringe.className = 'tg-fringe';
+    Dom.fringe.style.opacity = String(State.fringeBase);
+
+    Dom.overlay.appendChild(Dom.scan);
+    Dom.overlay.appendChild(Dom.tear);
+    Dom.overlay.appendChild(Dom.tearR);
+    Dom.overlay.appendChild(Dom.tearC);
+    Dom.overlay.appendChild(Dom.dimmer);
+    document.body.appendChild(Dom.overlay);
   }
 
-  function bugBurst(bugsLayer, howMany){
-    const n = Math.max(4, Math.round(howMany||rnd(6,12)));
-    const vw = bugsLayer.clientWidth || innerWidth;
-    const vh = bugsLayer.clientHeight || innerHeight;
-    for(let i=0;i<n;i++){
-      const b=document.createElement('div'); b.className='tg-bug';
-      const w = rnd(40, vw*0.35), h = rnd(10, vh*0.12);
-      const x = rnd(0, vw-w), y = rnd(0, vh-h);
-      b.style.left = x+'px'; b.style.top=y+'px'; b.style.width=w+'px'; b.style.height=h+'px';
-      b.style.transform = `translateZ(0) skewX(${rnd(-2,2).toFixed(1)}deg)`;
-      bugsLayer.appendChild(b);
-      setTimeout(()=> b.remove(), 240 + rnd(0,120));
+  function destroyDom() {
+    if (Dom.overlay && Dom.overlay.parentNode) Dom.overlay.parentNode.removeChild(Dom.overlay);
+    if (Dom.styleEl && Dom.styleEl.parentNode) Dom.styleEl.parentNode.removeChild(Dom.styleEl);
+    Dom.styleEl = Dom.overlay = Dom.scan = Dom.tear = Dom.tearR = Dom.tearC = Dom.dimmer = Dom.fringe = null;
+  }
+
+  // ---------- effects ----------
+  function scheduleTear() {
+    if (!State.modes.has('tear') || State.reduce) return; // skip with reduced motion
+    const [min,max] = freqForLevel('tear');
+    addTimer(setTimeout(() => { doTear(); scheduleTear(); }, rnd(min, max)));
+  }
+
+  function doTear() {
+    if (!Dom.overlay) return;
+    const h = window.innerHeight + 40; // travel distance
+    const startY = -20, endY = h;
+
+    // ---- Per-pass randomization for realistic focus/size ----
+    const v = State.rgbVar; // 0..2 variance scale
+
+    // Base white tear height slightly varies (focus breathing)
+    const baseTearH = clamp(14 * (1 + (Math.random()-0.5) * 0.25 * v), 10, 18);
+    Dom.tear.style.height = baseTearH + 'px';
+
+    // Colored fringes: height/blur/opacity/vertical offset vary subtly per pass
+    const rH = clamp(rnd(2,5) * (1 + (v-1)*0.6), 1.5, 6);
+    const cH = clamp(rnd(2,5) * (1 + (v-1)*0.6), 1.5, 6);
+    Dom.tearR.style.height = rH + 'px';
+    Dom.tearC.style.height = cH + 'px';
+
+    const rBlur = clamp(rnd(0.15, 1.1) * (1 + (v-1)*0.8), 0, 2.0);
+    const cBlur = clamp(rnd(0.15, 1.1) * (1 + (v-1)*0.8), 0, 2.0);
+    Dom.tearR.style.filter = `blur(${rBlur}px)`;
+    Dom.tearC.style.filter = `blur(${cBlur}px)`;
+
+    const rOp = clamp(rnd(0.58, 0.9), 0.4, 1);
+    const cOp = clamp(rnd(0.58, 0.9), 0.4, 1);
+    Dom.tearR.style.opacity = String(rOp);
+    Dom.tearC.style.opacity = String(cOp);
+
+    // Separation and vertical offsets (simulate misaligned guns / scan)
+    const sepAmp = clamp(rnd(0.6, 1.6) * (1 + (v-1)*0.5), 0.4, 2.2);
+    const vOffBase = clamp(rnd(1.0, 3.2) * (1 + (v-1)*0.5), 0.6, 4.0);
+    const rYoff = vOffBase * rnd(0.8, 1.2);
+    const cYoff = vOffBase * rnd(0.8, 1.2);
+
+    Dom.tear.style.opacity = '0.26';
+    if (State.modes.has('fringe')) {
+      pulseFringe(Math.max(0.22, State.fringeBase + 0.12), 220);
+    }
+
+    const dur = durForLevel('tear');
+    const t0 = now();
+    function step(t) {
+      const k = clamp((t - t0) / dur, 0, 1);
+      const y = startY + (endY - startY) * k;
+      Dom.tear.style.transform = `translateY(${y}px)`;
+      if (State.modes.has('fringe')) {
+        // Opposite X offsets with a hint of noise and breathing to simulate focus drift
+        const wob = Math.sin(t*0.035) * sepAmp + (Math.random()-0.5) * 0.3 * v; // px
+        const rDx = Math.abs(wob);
+        const cDx = -Math.abs(wob);
+        Dom.tearR.style.transform = `translateY(${y - rYoff}px) translateX(${rDx}px)`;
+        Dom.tearC.style.transform = `translateY(${y + cYoff}px) translateX(${cDx}px)`;
+      }
+      if (k < 1 && State.running) addRaf(requestAnimationFrame(step));
+      else {
+        Dom.tear.style.opacity = '0';
+        Dom.tear.style.transform = `translateY(${startY}px)`;
+        Dom.tearR.style.opacity = '0';
+        Dom.tearC.style.opacity = '0';
+        Dom.tearR.style.transform = `translateY(${startY - rYoff}px)`;
+        Dom.tearC.style.transform = `translateY(${startY + cYoff}px)`;
+      }
+    }
+    addRaf(requestAnimationFrame(step));
+  }
+
+  // ---- FLICKER (replaces shake by default) ----
+  function scheduleFlicker() {
+    if (!(State.modes.has('flicker') || State.modes.has('glitch'))) return;
+    const [min,max] = freqForLevel('flicker');
+    addTimer(setTimeout(() => { flickerBurst(); scheduleFlicker(); }, rnd(min, max)));
+  }
+
+  function setFlicker(v) {
+    if (!Dom.dimmer) return;
+    const val = clamp(v, 0, 0.6); // tasteful cap
+    Dom.dimmer.style.setProperty('--tg-flicker', String(val));
+    if (State.modes.has('fringe') && Dom.fringe) {
+      // raise fringe with flicker for visibility
+      Dom.fringe.style.opacity = String(clamp(State.fringeBase + val*0.7, 0, 0.5));
     }
   }
 
-  // --- new, subtle bursts ---
-  async function tearBurst(root, overlays, ms){ overlays.tear.classList.add('on'); await wait(ms||320); overlays.tear.classList.remove('on'); }
-  async function glitchBurst(root, overlays, ms){ root.classList.add('tg-rgb'); overlays.raster.classList.add('on'); overlays.dim.classList.add('on'); await wait(ms||260); overlays.raster.classList.remove('on'); overlays.dim.classList.remove('on'); root.classList.remove('tg-rgb'); }
-  async function vHoldSlip(root, overlays, ms){ root.classList.add('tg-vhold'); overlays.raster.classList.add('on'); await wait(ms||180); root.classList.remove('tg-vhold'); overlays.raster.classList.remove('on'); }
-  async function heavySequence(root, overlays){ await tearBurst(root, overlays, 240); bugBurst(overlays.bugs, rnd(8,16)); await glitchBurst(root, overlays, 240); await vHoldSlip(root, overlays, 160); }
+  function pulseFringe(targetOpacity, ms) {
+    if (!Dom.fringe) return;
+    const start = parseFloat(Dom.fringe.style.opacity || State.fringeBase);
+    Dom.fringe.style.opacity = String(clamp(targetOpacity, 0, 0.5));
+    addTimer(setTimeout(() => { Dom.fringe && (Dom.fringe.style.opacity = String(start)); }, ms || 180));
+  }
 
-  // -------------------- [data-glitch] pulses --------------------
-  function primeGlitchTargets(root=document){ const els=root.querySelectorAll('[data-glitch]'); els.forEach(el=>{ if(!el.hasAttribute('data-text')) el.setAttribute('data-text', el.textContent.trim()); }); return els; }
-  function pulseText(el, dur=320){ if(!el) return; el.classList.add('glitching'); setTimeout(()=>el.classList.remove('glitching'), dur); }
-  function startAmbientText(root){ const targets=Array.from(root.querySelectorAll('[data-glitch]')); if(!targets.length) return ()=>{}; let stop=false; (function tick(){ if(stop) return; if(Math.random()<0.18) pulseText(targets[(Math.random()*targets.length)|0], 280); setTimeout(tick, 800+Math.random()*800); })(); return ()=>{ stop=true; }; }
+  function flickerBurst(intensity) {
+    let amp;
+    if (typeof intensity === 'number') amp = clamp(intensity, 0.04, 0.6);
+    else {
+      const lvl = intensity || State.level;
+      amp = lvl === 'heavy' ? rnd(0.22,0.42) : lvl === 'medium' ? rnd(0.14,0.28) : rnd(0.08,0.18);
+    }
+    const pattern = pick(['pop','stutter','flutter']);
+    if (pattern === 'pop') return flickerPop(amp);
+    if (pattern === 'stutter') return flickerStutter(amp);
+    return flickerFlutter(amp);
+  }
 
-  // -------------------- TEXT TEAR (unchanged) -------------------
-  function getRect(el){ const r=el.getBoundingClientRect(); return { w:r.width, h:r.height }; }
-  function msRand(base, span){ return (base + (Math.random()*2-1)*span)|0; }
-  function cloneStyles(from, to){ const cs=getComputedStyle(from); ['font','fontFamily','fontWeight','fontSize','lineHeight','letterSpacing','textTransform','textDecoration','textShadow','textRendering','-webkit-font-smoothing','-moz-osx-font-smoothing'].forEach(p=>{ try{ to.style[p]=cs[p]; }catch(_){} }); }
+  function flickerPop(amp) {
+    const t0 = now();
+    const up = rnd(50,110), down = rnd(80,160);
+    function step(t) {
+      const k = t - t0;
+      if (k <= up) setFlicker(amp * easeOutQuad(k/up));
+      else if (k <= up + down) setFlicker(amp * (1 - easeInQuad((k - up)/down)));
+      else { setFlicker(0); return; }
+      addRaf(requestAnimationFrame(step));
+    }
+    addRaf(requestAnimationFrame(step));
+  }
 
-  function buildStripes(el, { density=8, rgb=true }={}){
-    let wrap = el.closest('.tt-wrap'); if(!wrap){ wrap=document.createElement('span'); wrap.className='tt-wrap'; el.parentNode.insertBefore(wrap, el); wrap.appendChild(el); }
-    let ov = wrap.querySelector(':scope > .tt-overlay'); if(!ov){ ov=document.createElement('span'); ov.className='tt-overlay'; wrap.appendChild(ov); }
-    ov.dataset.rgb = rgb ? 'on' : 'off'; ov.textContent='';
-    const rect=getRect(el); const H=Math.max(1,rect.h); const N=clamp(density|0,3,18);
-    const heights=[]; let remain=H; for(let i=0;i<N;i++){ const left=N-i; const min=Math.max(1,Math.floor(H/(N*1.8))); const max=Math.max(min,Math.floor(H/(N*0.9))); const h=(i===N-1)?remain:clamp(Math.floor(Math.random()*(max-min+1)+min),1,remain-(left-1)*min); heights.push(h); remain-=h; }
-    let top=0; const stripes=[]; const baseTxt=el.textContent; for(let i=0;i<N;i++){ const h=heights[i]; const s=document.createElement('span'); s.className='tt-text'; s.dataset.txt=baseTxt; cloneStyles(el,s); s.style.clipPath=`inset(${top}px 0 ${Math.max(0,H-top-h)}px 0)`; s.style.top='0px'; s.style.transform='translateX(0)'; s.textContent=baseTxt; ov.appendChild(s); stripes.push({el:s,top,h}); top+=h; }
-    return { wrap:wrap, ov:ov, stripes }; }
+  function flickerStutter(amp) {
+    const blips = Math.round(rnd(2,4));
+    let i = 0;
+    function one() {
+      if (i++ >= blips) { setFlicker(0); return; }
+      const a = amp * rnd(0.6, 1);
+      setFlicker(a);
+      addTimer(setTimeout(() => { setFlicker(0); addTimer(setTimeout(one, rnd(30, 110))); }, rnd(40, 120)));
+    }
+    one();
+  }
 
-  function animateStripes(stripes, { amp=2.6 }={}){ for(const s of stripes){ const dir=Math.random()<.5?-1:1; const mag=Math.random()**.8*amp; s.el.style.transform=`translate3d(${(dir*mag).toFixed(2)}px,0,0)`; } }
-  function resetStripes(stripes){ for(const s of stripes){ s.el.style.transform='translate3d(0,0,0)'; } }
+  function flickerFlutter(amp) {
+    const t0 = now();
+    const dur = rnd(260, 820);
+    function step(t) {
+      const k = (t - t0) / dur;
+      if (k >= 1) { setFlicker(0); return; }
+      const s = (Math.sin(t*0.06) + Math.sin(t*0.17 + 1.4)) * 0.25 + 0.5; // 0..1
+      const n = (Math.random() - 0.5) * 0.3; // noise
+      setFlicker(clamp((s + n) * amp, 0, amp));
+      addRaf(requestAnimationFrame(step));
+    }
+    addRaf(requestAnimationFrame(step));
+  }
 
-  // -------------------- main init + API -------------------------
-  let ambientTimer=null, textTimer=null;
-  const API = {
-    _root:null,_ov:null,_stopText:null,_tt:{instances:[], ro:null, cfg:null},
-    init(opts={}){
-      if(prefersReduced()) return;
-      injectCSS();
-      const base = ensureRoot( typeof opts.root==='string' ? $(opts.root) : (opts.root||$('.terminal')||document.body) );
-      const root = base.r; this._root=root; this._ov=base;
-      // text primes
-      primeGlitchTargets(root); this._stopText = startAmbientText(root);
-      // ambient terminal bursts
-      const level = (opts.level||'medium');
-      const every = level==='heavy'? 900 : level==='light'? 1800 : level==='subtle'? 2400 : 1300;
-      const modes = Array.isArray(opts.modes)? opts.modes : String(opts.modes||'tear glitch bug').split(/[\s,]+/).filter(Boolean);
-      ambientTimer = setInterval(()=>{
-        const choices=[];
-        if(modes.includes('tear'))   choices.push(()=>tearBurst(root, base, 260));
-        if(modes.includes('glitch') || modes.includes('raster') || modes.includes('rgb')) choices.push(()=>glitchBurst(root, base, 240));
-        if(modes.includes('vhold'))  choices.push(()=>vHoldSlip(root, base, 180));
-        if(modes.includes('bug'))    choices.push(()=>bugBurst(base.bugs));
-        if(choices.length) choices[(Math.random()*choices.length)|0]();
-      }, every);
-      // TEXT TEAR auto (unchanged)
-      if(opts.textTear && opts.textTear.on!==false){ this.textTear.start( Object.assign({ targets:['#hdr-title','#content-subtitle'], density:8, amp:2.6, freq:140, rgb:true }, opts.textTear) ); }
-    },
-    glitchOnce(kind='auto'){ const root=this._root, ov=this._ov; if(!root||!ov) return; if(kind==='tear') return tearBurst(root, ov, 260); if(kind==='bug') return bugBurst(ov.bugs); if(kind==='glitch'||kind==='raster'||kind==='rgb') return glitchBurst(root, ov, 240); if(kind==='vhold') return vHoldSlip(root, ov, 180); const pool=['tear','glitch','vhold','bug']; return this.glitchOnce(pool[(Math.random()*pool.length)|0]); },
-    async panic(ms=900){ const root=this._root, ov=this._ov; if(!root||!ov) return; const t0=Date.now(); while(Date.now()-t0 < ms){ await heavySequence(root, ov); await wait(80+Math.random()*120); } },
-    stop(){ if(ambientTimer) clearInterval(ambientTimer); ambientTimer=null; if(this._stopText) this._stopText(); this.textTear.stop(); },
+  // Optional: vhold (kept for compatibility if user explicitly enables it)
+  function scheduleVHold() {
+    if (!State.modes.has('vhold') || State.reduce) return;
+    const [min,max] = freqForLevel('vhold');
+    addTimer(setTimeout(() => { doVHold(rnd(70, 160)); scheduleVHold(); }, rnd(min, max)));
+  }
+  function doVHold(ms) {
+    document.documentElement.classList.add('tg-vshift');
+    addTimer(setTimeout(() => document.documentElement.classList.remove('tg-vshift'), clamp(ms, 60, 200)));
+  }
 
-    // --- TEXT TEAR control (unchanged) ---
+  function scheduleTextShimmer() {
+    if (!State.textTear || State.reduce) return;
+    const [min,max] = freqForLevel('text');
+    addTimer(setTimeout(() => { shimmerOnce(); scheduleTextShimmer(); }, rnd(min, max)));
+  }
+
+  function shimmerOnce() {
+    const candidates = Array.from(document.querySelectorAll('[data-glitch]')).filter(el => el.offsetParent !== null);
+    if (!candidates.length) return;
+    const el = candidates[Math.floor(Math.random()*candidates.length)];
+    const label = el.textContent.trim();
+    el.setAttribute('data-glitch-label', label);
+    el.classList.add('tg-text-shimmer');
+    addTimer(setTimeout(() => el.classList.remove('tg-text-shimmer'), 90));
+  }
+
+  // helpers for frequencies/durations based on intensity level
+  function freqForLevel(kind) {
+    switch (State.level) {
+      case 'heavy':
+        if (kind === 'tear') return [2600, 5200];
+        if (kind === 'flicker') return [1400, 3400];
+        if (kind === 'vhold') return [3600, 7200];
+        return [4500, 9000]; // text shimmer
+      case 'medium':
+        if (kind === 'tear') return [5200, 11000];
+        if (kind === 'flicker') return [2600, 7200];
+        if (kind === 'vhold') return [7600, 14000];
+        return [9000, 16000];
+      default: // subtle
+        if (kind === 'tear') return [9000, 17000];
+        if (kind === 'flicker') return [5200, 12000];
+        if (kind === 'vhold') return [12000, 22000];
+        return [14000, 26000];
+    }
+  }
+
+  function durForLevel(kind) {
+    switch (State.level) {
+      case 'heavy': return kind === 'tear' ? 900 : 160; // ms
+      case 'medium': return kind === 'tear' ? 800 : 140;
+      default: return kind === 'tear' ? 720 : 120;
+    }
+  }
+
+  // ---------- public API ----------
+  function start() {
+    if (State.running) return;
+    applyOptions();
+    if (!State.enabled) return;
+
+    ensureDom();
+
+    if (State.modes.has('fringe') && !State.reduce && !Dom.fringe.parentNode) {
+      Dom.fringe.style.opacity = String(State.fringeBase);
+      Dom.overlay.appendChild(Dom.fringe); // sits on top of dimmer
+    }
+
+    State.running = true;
+
+    scheduleTear();
+    scheduleFlicker();
+    scheduleVHold(); // only if user enabled it
+    scheduleTextShimmer();
+  }
+
+  function stop() {
+    State.running = false;
+    clearAllTimers();
+    clearAllRafs();
+    if (Dom.overlay) {
+      setFlicker(0);
+      if (Dom.fringe) Dom.fringe.style.opacity = String(State.fringeBase);
+      document.documentElement.classList.remove('tg-vshift');
+      destroyDom();
+    }
+  }
+
+  function glitchOnce(intensity = 'subtle') {
+    // Quick tear + visible flicker + fringe pulse
+    const prev = State.level;
+    State.level = ['subtle','medium','heavy'].includes(intensity) ? intensity : prev;
+    if (State.modes.has('fringe')) pulseFringe(Math.max(0.26, State.fringeBase + 0.16), 220);
+    doTear();
+    flickerBurst(intensity);
+    State.level = prev;
+  }
+
+  function panic(ms = 1200) {
+    if (State.reduce) { flickerBurst('medium'); return; }
+    const endAt = Date.now() + ms;
+    (function loop() {
+      if (Date.now() > endAt || !State.running) { setFlicker(0); if (Dom.fringe) Dom.fringe.style.opacity = String(State.fringeBase); return; }
+      if (State.modes.has('fringe')) pulseFringe(Math.max(0.28, State.fringeBase + 0.2), 160);
+      flickerBurst('heavy');
+      addTimer(setTimeout(loop, rnd(70, 160)));
+    })();
+  }
+
+  const TerminalGlitch = {
+    init: (opts) => { if (State.running) return; applyOptions(opts); start(); },
+    stop,
+    glitchOnce,
+    panic,
     textTear: {
-      start: function(cfg){
-        const self = TerminalGlitch; self._tt.cfg = cfg||{}; const sels = Array.isArray(cfg.targets)? cfg.targets : String(cfg.targets||'#hdr-title,#content-subtitle').split(',');
-        const found=[]; sels.forEach(sel=> $$(sel.trim()).forEach(el=> { const inst = buildStripes(el, { density: cfg.density||8, rgb: cfg.rgb!==false }); found.push(inst); }));
-        self._tt.instances = found;
-        if(!self._tt.ro){ self._tt.ro = new ResizeObserver(()=>{ const old = self._tt.instances.slice(); self._tt.instances.length=0; old.forEach(it=>{ try{ it.ov.remove(); }catch(_){} }); const f2=[]; sels.forEach(sel=> $$(sel.trim()).forEach(el=> f2.push(buildStripes(el, { density: cfg.density||8, rgb: cfg.rgb!==false })))); self._tt.instances = f2; }); self._tt.ro.observe(document.body); }
-        if(textTimer) clearInterval(textTimer); textTimer = setInterval(()=>{ const stripes=self._tt.instances.flatMap(i=>i.stripes); animateStripes(stripes, { amp: cfg.amp||2.6 }); }, clamp(cfg.freq||140, 60, 600));
-      },
-      stop: function(){ if(textTimer) clearInterval(textTimer); textTimer=null; const self=TerminalGlitch; self._tt.instances.forEach(it=> resetStripes(it.stripes)); },
-      async burst(ms=520){ const self=TerminalGlitch; const stripes=self._tt.instances.flatMap(i=>i.stripes); const t0=Date.now(); while(Date.now()-t0 < ms){ animateStripes(stripes, { amp: (self._tt.cfg?.amp||2.6)*1.6 }); await wait(60); } resetStripes(stripes); }
+      burst(times = 3, withinMs = 600) {
+        if (State.reduce) return;
+        const els = Array.from(document.querySelectorAll('[data-glitch]'));
+        if (!els.length) return;
+        const step = () => {
+          els.forEach(el => {
+            const label = el.textContent.trim();
+            el.setAttribute('data-glitch-label', label);
+            el.classList.add('tg-text-shimmer');
+            addTimer(setTimeout(() => el.classList.remove('tg-text-shimmer'), 90));
+          });
+        };
+        for (let i=0;i<times;i++) addTimer(setTimeout(step, rnd(0, withinMs)));
+      }
     }
   };
 
-  window.TerminalGlitch = API;
+  // expose
+  window.TerminalGlitch = TerminalGlitch;
 
-  // -------------------- Auto-start from <body data-*> -----------
-  function autoInitFromDataset(){
-    const b=document.body; if(!b) return;
-    const enabled = (b.dataset.glitch||'on')!=='off'; if(!enabled) return;
-    const level = b.dataset.glitchLevel||'medium';
-    const modes = (b.dataset.glitchModes||'tear glitch bug').split(/[\s,]+/).filter(Boolean);
-    const ttOn = (b.dataset.texttear||'off')!=='off';
-    const targets = (b.dataset.texttearTargets||'#hdr-title,#content-subtitle').split(',').map(s=>s.trim()).filter(Boolean);
-    const density = parseInt(b.dataset.texttearDensity||'8',10);
-    const amp = parseFloat(b.dataset.texttearAmp||'2.6');
-    const freq = parseInt(b.dataset.texttearFreq||'140',10);
-    const rgb  = (b.dataset.texttearRgb||'on')!=='off';
-    TerminalGlitch.init({ level, modes, textTear: ttOn? { on:true, targets, density, amp, freq, rgb } : null });
+  // auto-init: wait for loader:done if it fires, otherwise DOM ready fallback
+  function autoInit() {
+    applyOptions();
+    if (!State.enabled) return;
+    start();
   }
 
-  const boot = ()=>{ try{ if(!prefersReduced()) autoInitFromDataset(); }catch(e){ /* silent */ } };
-  if(document.readyState==='loading'){
-    document.addEventListener('loader:done', boot, { once:true });
-    document.addEventListener('DOMContentLoaded', boot, { once:true });
+  let started = false;
+  function tryStart() { if (!started) { started = true; autoInit(); } }
+
+  window.addEventListener('loader:done', tryStart, { once: true });
+  if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    addTimer(setTimeout(tryStart, 600));
   } else {
-    boot();
+    document.addEventListener('DOMContentLoaded', () => addTimer(setTimeout(tryStart, 600)), { once: true });
   }
-})();
+
+  // ----- helpers -----
+  function easeOutQuad(t){return 1-(1-t)*(1-t)}
+  function easeInQuad(t){return t*t}
+  function pick(arr){return arr[Math.floor(Math.random()*arr.length)]}
+
+})(window, document);
