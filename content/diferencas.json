@@ -29,19 +29,5 @@
     "arenaHtmlUrl": "partials/diferencas-arena.html",
 
     "scripts": ["js/differences-game.js"],
-    "init": { "when": "afterLoader" },
-
-    "glitcher": { 
-        "on": true, 
-        "level": "medium", 
-        "modes": "bug" 
-    },
-    "textTear": { 
-        "on": true, 
-        "targets": ["#hdr-title", "#content-subtitle"], 
-        "density": 8, 
-        "amp": 2.6, 
-        "freq": 140, 
-        "rgb": true 
-    }
+    "init": { "when": "afterLoader" }
 }

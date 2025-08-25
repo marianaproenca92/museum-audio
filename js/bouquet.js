@@ -14,6 +14,11 @@
   let score=0; const GOAL=12; goalEl.textContent=GOAL;
   let ctrl=0;             // -1..1 normalized control (tilt or slider)
 
+  function updateFill(){
+    const pct = Math.max(0, Math.min(1, score / GOAL));
+    catcher.style.setProperty('--fill', pct.toFixed(3));
+  }
+
   // --- Audio (optional, uses page JSON "audio") ---
   let bgm; function prepareBgm(){ if(bgm) return bgm; const src=document.body.dataset.audio; if(!src) return null; bgm=new Audio(src); bgm.loop=true; bgm.preload='auto'; bgm.volume=0; return bgm; }
   function fadeVol(a,to=1,ms=500){ if(!a) return; const from=a.volume; const t0=performance.now(); function step(t){ const p=Math.min(1,(t-t0)/ms); a.volume=from+(to-from)*p; if(p<1) requestAnimationFrame(step); } requestAnimationFrame(step); }
@@ -86,7 +91,7 @@
 
       // collision (simple AABB)
       if(d.y>chY-22 && d.y<chY+8 && d.x>cx-6 && d.x<cx+cw+6){
-        score++; scoreEl.textContent=score; d.el.remove(); dots.splice(i,1);
+        score++; scoreEl.textContent=score; updateFill(); d.el.remove(); dots.splice(i,1);
         navigator.vibrate?.(8);
         if(score>=GOAL){ win(); break; }
         continue;
@@ -108,6 +113,7 @@
 
   function start(){
     running=true; score=0; scoreEl.textContent='0'; banner.hidden=true; ctrl=0; moveCatcher(0);
+    updateFill(); // <- keep empty until something is caught
     if(!raf) raf=requestAnimationFrame(tick);
   }
 
@@ -116,4 +122,36 @@
   else document.addEventListener('loader:done', run, { once:true });
 
   document.addEventListener('page:leave', ()=>{ running=false; if(raf) cancelAnimationFrame(raf); dots.splice(0).forEach(d=>d.el.remove()); stopBgm(); }, { once:true });
+
+  // --- Pointer/touch drag across the arena (mobile-friendly) ---
+  let dragging = false;
+  function updateCtrlFromPointer(e){
+    const rect = stage.getBoundingClientRect();
+    const nx = (e.clientX - rect.left) / rect.width;      // 0..1 across arena
+    ctrl = Math.max(-1, Math.min(1, (nx - 0.5) * 2));     // map to -1..1
+    slider.value = Math.round(ctrl * 100);                // keep UI in sync
+  }
+
+  stage.addEventListener('pointerdown', (e) => {
+    dragging = true;
+    stage.setPointerCapture?.(e.pointerId);
+    updateCtrlFromPointer(e);
+  });
+  stage.addEventListener('pointermove', (e) => {
+    if(dragging) updateCtrlFromPointer(e);
+  });
+  function stopDrag(e){
+    dragging = false;
+    stage.releasePointerCapture?.(e.pointerId);
+  }
+  stage.addEventListener('pointerup', stopDrag);
+  stage.addEventListener('pointercancel', () => dragging = false);
+
+  // Optional: small keyboard fallback
+  catcher.addEventListener('keydown', (e)=>{
+    if(e.key==='ArrowLeft' || e.key==='a'){ ctrl = Math.max(-1, ctrl - 0.12); slider.value = Math.round(ctrl*100); }
+    if(e.key==='ArrowRight'|| e.key==='d'){ ctrl = Math.min( 1, ctrl + 0.12); slider.value = Math.round(ctrl*100); }
+  });
+
+
 })();

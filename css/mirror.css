@@ -7,7 +7,7 @@
 
   /* frame */
   position: relative;
-  aspect-ratio: 3/4;
+  aspect-ratio: 2/4;
   /* removed: width:min(92vw, 640px); */
   max-height: 78vh;
   border: 1px solid var(--ghost);

@@ -6,7 +6,5 @@
   "scripts": ["js/bouquet.js"],
   "styles": ["css/bouquet.css"],
   "init": { "when": "afterLoader" },
-"glitcher": { "on": true, "level": "heavy", "modes": "tear raster vhold" },
-  "textTear": { "on": true, "targets": ["#hdr-title", "#content-subtitle"], "density": 7, "amp": 2.6, "freq": 140, "rgb": true },
   "audio": "audio/bouquet-theme.mp3"
 }

@@ -14,10 +14,19 @@
 .dot.heart{ color:#ffb3c7; text-shadow: 0 0 8px rgba(255,120,180,.55); }
 
 /* Catcher */
-.catcher{ position:absolute; bottom:14px; left:50%; transform:translateX(-50%); pointer-events:auto;
-  padding:6px 12px; border:1px dashed var(--ghost); border-radius:10px; background:rgba(0,0,0,.22);
+/* Catcher progress fill (only shows when --fill > 0) */
+.catcher{ --fill: 0; position:absolute; bottom:14px; left:50%; transform:translateX(-50%); pointer-events:auto;
+  padding:6px 12px; border:1px dashed var(--ghost); border-radius:10px; background:rgba(0,0,0,.22); overflow:hidden; }
+.catcher::before{
+  content:"";
+  position:absolute; inset:0;
+  background: linear-gradient(90deg, rgba(39,255,140,.18), rgba(39,255,140,.05));
+  transform-origin: left center;
+  transform: scaleX(var(--fill));
+  transition: transform .15s cubic-bezier(.2,.8,.2,1);
+  mix-blend-mode: screen; pointer-events:none;
 }
-.catcher span{ display:block; font-weight:800; letter-spacing:.06em; }
+.catcher span{ position: relative; z-index: 1; font-weight:800; letter-spacing:.06em; }
 
 /* HUD */
 .hud{ position:absolute; left:10px; right:10px; top:10px; display:flex; gap:8px; align-items:center; justify-content:space-between; z-index:2 }

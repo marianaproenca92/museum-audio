@@ -44,11 +44,11 @@ body{
 }
 
 /* === 3) Terminal min-size to viewport (grows if content is taller) === */
-.term-screen-min{ min-height:100vh }
-.term-screen-min{ display:grid; grid-template-rows:auto 1fr auto }
-.term-screen-min .body{ overflow:auto }
-/* Mobile safe areas */
-.term-screen-min{ padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom) }
+.term-screen-min .body{
+min-height: 0; /* critical: allows child to size to free space */
+display: flex; /* make the content column stretch */
+flex-direction: column;
+}
 
 @supports (min-height:100dvh){ .term-screen-min{ min-height:100dvh } }
 @supports (min-height:100svh){ .term-screen-min{ min-height:100svh } }
@@ -65,7 +65,7 @@ body.crt-page > .terminal{ margin: 0 auto; }
 /* === 4) Terminal frame (CRT look) === */
 .terminal{
   max-width:min(920px, 92vw);
-  margin:4rem auto;
+  margin:0 auto;
   padding:24px 28px;
   border:1px solid var(--ghost);
   border-radius:14px;
@@ -76,6 +76,7 @@ body.crt-page > .terminal{ margin: 0 auto; }
     0 24px 80px rgba(0,0,0,.65),
     0 0 40px rgba(39,255,140,.04) inset;
 }
+
 .terminal::before{ /* scanlines */
   content:""; position:absolute; inset:0; pointer-events:none; border-radius:14px;
   background:repeating-linear-gradient(to bottom, transparent 0 2px, var(--scanline) 2px 3px);
@@ -92,9 +93,6 @@ body.crt-page > .terminal{ margin: 0 auto; }
 
 hr{ border:0; border-top:1px dashed var(--ghost); opacity:.55; margin:18px 0 }
 small,.muted{ color:var(--muted) }
-
-/* Large-screen optional tilt */
-@media (min-width:900px){ .terminal{ transform:perspective(1400px) translateZ(0) } }
 
 /* === 5) Glitch text helpers === */
 .glitch{ position:relative; display:inline-block }
@@ -155,4 +153,3 @@ small,.muted{ color:var(--muted) }
 .crt-btn--danger{ color:var(--danger); border-color:var(--danger); background:rgba(255,59,59,.08) }
 
 /* === 9) Optional CRT warp hint on large screens === */
-@media (min-width:900px){ .terminal{ transform:perspective(1400px) translateZ(0) } }
