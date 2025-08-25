@@ -1,12 +1,26 @@
 <div id="bouquet" class="bouquet-term" aria-live="polite">
-  <div class="bouquet-stage">
-    <div id="catcher" class="catcher" aria-label="Cesto do ramo" role="button" tabindex="0"><span>⟦ BOUQUET ⟧</span></div>
-    <div class="hud">
-      <div class="score"><span id="score">0</span>/<span id="goal">12</span></div>
-      <button id="btnTilt" class="crt-btn crt-btn--sm crt-btn--ghost" aria-label="Ativar giroscópio">Tilt</button>
-      <input id="tilt" type="range" min="-100" max="100" step="1" value="0" aria-label="Mover" />
-    </div>
-    <div id="banner" class="banner" hidden>RAMO COMPLETO</div>
-  </div>
-  <p id="status" class="muted" role="status"></p>
+<div class="bouquet-stage">
+<!-- Start overlay: only hides after the player presses the button (or taps the stage) -->
+<div id="cover" class="cover" role="dialog" aria-modal="true" aria-labelledby="startLabel">
+<div style="text-align:center">
+<div id="startLabel" class="muted" style="margin-bottom:8px; font-weight:800; letter-spacing:.08em;">⟦ BOUQUET ⟧</div>
+<button id="btnStart" class="start-btn crt-btn crt-btn--lg">COMEÇAR</button>
+<p class="muted">Inclina o telemóvel ou arrasta para apanhar 12 pétalas.</p>
+</div>
+</div>
+
+
+<div id="catcher" class="catcher" aria-label="Cesto do ramo" role="button" tabindex="0"><span>⟦ BOUQUET ⟧</span></div>
+
+
+<div class="hud">
+<div class="score"><span id="score">0</span>/<span id="goal">12</span></div>
+<button id="btnTilt" class="crt-btn crt-btn--sm crt-btn--ghost" aria-label="Ativar giroscópio">Tilt</button>
+<input id="tilt" type="range" min="-100" max="100" step="1" value="0" aria-label="Mover" />
+</div>
+
+
+<div id="banner" class="banner" hidden>RAMO COMPLETO</div>
+</div>
+<p id="status" class="muted" role="status"></p>
 </div>

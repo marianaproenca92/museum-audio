@@ -31,7 +31,7 @@
 #arena, .term-body, .mirror, .mirror-stage{ min-inline-size: 0; }
 
 /* Don’t allow a horizontal scrollbar even if something shifts by 1px */
-#arena{ overflow-x: clip; }
+#arena{ overflow-x: clip; } 
 
 /* HUD won’t push the mirror wider on tiny screens */
 .hud{ flex-wrap: wrap; }

@@ -44,22 +44,13 @@ body{
 }
 
 /* === 3) Terminal min-size to viewport (grows if content is taller) === */
-.term-screen-min .body{
-min-height: 0; /* critical: allows child to size to free space */
-display: flex; /* make the content column stretch */
-flex-direction: column;
-}
-
+.term-screen-min{ min-height:100vh; display:flex; flex-direction:column; }
+.term-screen-min .body{ flex:1 1 auto; min-height:0; display:flex; flex-direction:column; }
 @supports (min-height:100dvh){ .term-screen-min{ min-height:100dvh } }
 @supports (min-height:100svh){ .term-screen-min{ min-height:100svh } }
 
-
-/* Terminal sits in the second row and centers horizontally */
-body.crt-page > .terminal{ margin: 0 auto; }
-
-
 /* Make the arena expand and scroll if needed */
-#arena{ min-height: 0; overflow: auto; }
+#arena{ flex:1 1 auto; min-height:0; display:flex; flex-direction:column; overflow:hidden; }
 
 
 /* === 4) Terminal frame (CRT look) === */

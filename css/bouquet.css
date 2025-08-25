@@ -1,47 +1,57 @@
-.bouquet-term{ display:grid; gap:10px; justify-items:center }
+/* Fix: correctly style the bouquet container and center the stage */
+.bouquet-term{ display:grid; gap:10px; justify-items:center; }
+
+
 .bouquet-stage{
-  position:relative; inline-size:min(100%, 640px); max-inline-size:100%; aspect-ratio:3/4;
-  border:1px solid var(--ghost); border-radius:14px; overflow:hidden;
-  background: radial-gradient(120% 120% at 50% -10%, rgba(39,255,140,.06), rgba(0,0,0,.65));
-  box-shadow:0 0 0 1px rgba(39,255,140,.10), 0 24px 80px rgba(0,0,0,.55);
+  
+position:relative; inline-size:min(100%, 640px); max-inline-size:100%; aspect-ratio:3/4;
+border:1px solid var(--ghost); border-radius:14px; overflow:hidden;
+background: radial-gradient(120% 120% at 50% -10%, rgba(39,255,140,.06), rgba(0,0,0,.65));
+box-shadow:0 0 0 1px rgba(39,255,140,.10), 0 24px 80px rgba(0,0,0,.55);
 }
 
-/* Terminal dots (petals) */
-.dot{ position:absolute; top:-2rem; left:0; will-change:transform, opacity; color:var(--fg);
-  font: 700 18px/1.1 ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-  text-shadow: 0 0 8px rgba(39,255,140,.5);
-}
-.dot.heart{ color:#ffb3c7; text-shadow: 0 0 8px rgba(255,120,180,.55); }
 
 /* Catcher */
-/* Catcher progress fill (only shows when --fill > 0) */
-.catcher{ --fill: 0; position:absolute; bottom:14px; left:50%; transform:translateX(-50%); pointer-events:auto;
-  padding:6px 12px; border:1px dashed var(--ghost); border-radius:10px; background:rgba(0,0,0,.22); overflow:hidden; }
-.catcher::before{
-  content:"";
-  position:absolute; inset:0;
-  background: linear-gradient(90deg, rgba(39,255,140,.18), rgba(39,255,140,.05));
-  transform-origin: left center;
-  transform: scaleX(var(--fill));
-  transition: transform .15s cubic-bezier(.2,.8,.2,1);
-  mix-blend-mode: screen; pointer-events:none;
+.catcher{ position:absolute; bottom:14px; left:50%; transform:translateX(-50%); pointer-events:auto;
+padding:6px 12px; border:1px dashed var(--ghost); border-radius:10px; background:rgba(0,0,0,.22);
 }
-.catcher span{ position: relative; z-index: 1; font-weight:800; letter-spacing:.06em; }
+.catcher span{ display:block; font-weight:800; letter-spacing:.06em; }
 
-/* HUD */
+
+/* Hide the top HUD bar (score/tilt/slider) but keep elements in DOM */
+#bouquet .hud{ display:none !important; }
+
+
+/* Start overlay */
+.cover{
+position:absolute; inset:0; z-index:3;
+display:grid; place-items:center; gap:12px;
+background:linear-gradient(180deg, rgba(0,0,0,.55), rgba(0,0,0,.60));
+}
+.cover .start-btn{
+padding:10px 16px; border-radius:10px; border:1px solid var(--ghost);
+background:rgba(0,0,0,.45); font-weight:900; letter-spacing:.08em;
+}
+.cover p{ margin:0; font-size:12px; opacity:.85; text-align:center; }
+
+
+/* HUD (kept for reference) */
 .hud{ position:absolute; left:10px; right:10px; top:10px; display:flex; gap:8px; align-items:center; justify-content:space-between; z-index:2 }
 #tilt{ flex:1 1 auto }
 .score{ font-weight:800 }
 
+
 /* Success banner */
 .banner{ position:absolute; inset:auto 10px 50% 10px; transform:translateY(50%);
-  text-align:center; padding:10px 12px; border-radius:10px; border:1px solid rgba(39,255,140,.35);
-  background:linear-gradient(180deg, rgba(39,255,140,.12), rgba(39,255,140,.06)); font-weight:900; letter-spacing:.08em;
-  text-shadow:0 0 10px rgba(39,255,140,.35);
+text-align:center; padding:10px 12px; border-radius:10px; border:1px solid rgba(39,255,140,.35);
+background:linear-gradient(180deg, rgba(39,255,140,.12), rgba(39,255,140,.06)); font-weight:900; letter-spacing:.08em;
+text-shadow:0 0 10px rgba(39,255,140,.35);
 }
+
 
 /* Keep within arena width; avoid horizontal scroll */
 #arena, .bouquet-term, .bouquet-stage{ min-inline-size:0 }
 #arena{ overflow-x:clip }
+
 
 @media (prefers-reduced-motion: reduce){ .dot{ transition:none } }

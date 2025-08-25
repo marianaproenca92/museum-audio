@@ -1,5 +1,26 @@
 .term-dot{width:10px;height:10px;border-radius:50%;background:rgba(39,255,140,.2)}
-.scrollbox{height:60vh;overflow:auto;padding:5px;line-height:1.6;white-space:normal;font-family:var(--mono,ui-monospace,Menlo,Consolas,monospace)}
+.scrollbox{
+    flex: 1 1 auto; 
+    display:block;
+    height:70vh;
+    overflow:auto;
+    padding:5px;
+    overscroll-behavior: contain;
+    line-height:1.6;
+    white-space:normal;
+    font-family:var(--mono,ui-monospace,Menlo,Consolas,monospace)
+}/*
+.scrollbox{
+ flex: 1 1 auto; 
+ min-height: 0; 
+ overflow: auto;
+ padding: 5px;
+ line-height: 1.6;
+ white-space: normal;
+ font-family: var(--mono,ui-monospace,Menlo,Consolas,monospace);
+ display: block;
+}*/
+
 .term-foot{display:flex;align-items:center;justify-content:space-between;gap:16px;border-top:1px solid rgba(39,255,140,.15);padding:12px 14px;color:var(--muted,#6bd66b)}
 .accept-line{display:flex;align-items:center;gap:10px}
 .accept-line input{accent-color:#27ff8c}
