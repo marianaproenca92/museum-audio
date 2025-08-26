@@ -1,57 +1,66 @@
-/* Fix: correctly style the bouquet container and center the stage */
-.bouquet-term{ display:grid; gap:10px; justify-items:center; }
-
-
+/* Container & stage */
+.bouquet-term{ display:grid; justify-items:center; }
 .bouquet-stage{
-  
-position:relative; inline-size:min(100%, 640px); max-inline-size:100%; aspect-ratio:3/4;
-border:1px solid var(--ghost); border-radius:14px; overflow:hidden;
-background: radial-gradient(120% 120% at 50% -10%, rgba(39,255,140,.06), rgba(0,0,0,.65));
-box-shadow:0 0 0 1px rgba(39,255,140,.10), 0 24px 80px rgba(0,0,0,.55);
+  position:relative;
+  inline-size:min(100%, 640px);
+  aspect-ratio:3/4;
+  border:1px solid var(--ghost, #27ff8c88);
+  border-radius:14px;
+  overflow:hidden;
+  background: radial-gradient(120% 120% at 50% -10%, rgba(39,255,140,.06), rgba(0,0,0,.65));
+  box-shadow:0 0 0 1px rgba(39,255,140,.10), 0 24px 80px rgba(0,0,0,.55);
+  touch-action:none; /* prevent page scroll while dragging */
 }
 
-
-/* Catcher */
-.catcher{ position:absolute; bottom:14px; left:50%; transform:translateX(-50%); pointer-events:auto;
-padding:6px 12px; border:1px dashed var(--ghost); border-radius:10px; background:rgba(0,0,0,.22);
+/* Petals */
+.dot{
+  position:absolute; inline-size:14px; block-size:14px; border-radius:50%;
+  background: rgba(39,255,140,.85);
+  box-shadow: 0 0 10px rgba(39,255,140,.55);
+  will-change: transform;
 }
-.catcher span{ display:block; font-weight:800; letter-spacing:.06em; }
 
-
-/* Hide the top HUD bar (score/tilt/slider) but keep elements in DOM */
-#bouquet .hud{ display:none !important; }
-
-
-/* Start overlay */
-.cover{
-position:absolute; inset:0; z-index:3;
-display:grid; place-items:center; gap:12px;
-background:linear-gradient(180deg, rgba(0,0,0,.55), rgba(0,0,0,.60));
+/* Catcher (the “bouquet” bar) */
+#catcher{
+  position:absolute; bottom:14px; left:50%; transform:translateX(-50%);
+  inline-size:120px; block-size:12px;
+  border:1px dashed var(--ghost, #27ff8c88); border-radius:10px;
+  background:rgba(0,0,0,.22);
+  pointer-events:auto;
 }
-.cover .start-btn{
-padding:10px 16px; border-radius:10px; border:1px solid var(--ghost);
-background:rgba(0,0,0,.45); font-weight:900; letter-spacing:.08em;
+
+/* HUD */
+.hud{
+  position:absolute; inset:10px 10px auto 10px;
+  display:flex; gap:8px; align-items:center; z-index:2;
+  font-weight:800; letter-spacing:.04em;
 }
-.cover p{ margin:0; font-size:12px; opacity:.85; text-align:center; }
-
-
-/* HUD (kept for reference) */
-.hud{ position:absolute; left:10px; right:10px; top:10px; display:flex; gap:8px; align-items:center; justify-content:space-between; z-index:2 }
-#tilt{ flex:1 1 auto }
-.score{ font-weight:800 }
-
 
 /* Success banner */
-.banner{ position:absolute; inset:auto 10px 50% 10px; transform:translateY(50%);
-text-align:center; padding:10px 12px; border-radius:10px; border:1px solid rgba(39,255,140,.35);
-background:linear-gradient(180deg, rgba(39,255,140,.12), rgba(39,255,140,.06)); font-weight:900; letter-spacing:.08em;
-text-shadow:0 0 10px rgba(39,255,140,.35);
+#banner{
+  position:absolute; inset:auto 10px 50% 10px; transform:translateY(50%);
+  text-align:center; padding:10px 12px; border-radius:10px;
+  border:1px solid rgba(39,255,140,.35);
+  background:linear-gradient(180deg, rgba(39,255,140,.12), rgba(39,255,140,.06));
+  font-weight:900; letter-spacing:.08em; text-shadow:0 0 10px rgba(39,255,140,.35);
 }
 
+/* Start overlay */
+#cover{
+  position:absolute; inset:0; z-index:3;
+  display:grid; place-items:center; gap:12px;
+  background:linear-gradient(180deg, rgba(0,0,0,.55), rgba(0,0,0,.60));
+}
+.start-btn{
+  padding:10px 16px; border-radius:10px; border:1px solid var(--ghost, #27ff8c88);
+  background:rgba(0,0,0,.45); font-weight:900; letter-spacing:.08em;
+}
 
-/* Keep within arena width; avoid horizontal scroll */
+/* When JS hides the overlay, it stays hidden */
+#cover[hidden]{ display:none !important; }
+
+/* Make sure nothing overflows horizontally */
 #arena, .bouquet-term, .bouquet-stage{ min-inline-size:0 }
 #arena{ overflow-x:clip }
-
 
 @media (prefers-reduced-motion: reduce){ .dot{ transition:none } }
