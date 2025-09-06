@@ -57,14 +57,18 @@ const asArray = v => Array.isArray(v) ? v : (v ? [v] : []);
   }
 
   function setGlitchText(el, text){ if(!el) return; el.textContent=text||''; el.setAttribute('data-text', text||''); el.setAttribute('aria-label', text||''); }
-  function ensureRoomAudio(url, {autoplay=false, loop=false}={}){
-    let a = document.getElementById('room-audio');
-    if(!a){ a = document.createElement('audio'); a.id='room-audio'; a.preload='metadata'; const src=document.createElement('source'); src.type='audio/mpeg'; a.appendChild(src); document.body.appendChild(a); }
-    const srcEl=a.querySelector('source'); if(srcEl) srcEl.src=url||''; a.loop=!!loop;
-    if(autoplay && url){ a.autoplay=true; a.muted=true; a.play().catch(()=>{}); } else { a.autoplay=false; }
-    return a;
-  }
-
+function ensureRoomAudio(url, { autoplay, loop } = {}) {
+    if (!url) return;
+    let audio = document.querySelector('audio[data-room-audio]');
+    if (!audio) {
+        audio = document.createElement('audio');
+        audio.dataset.roomAudio = '1';
+        document.body.appendChild(audio);
+    }
+    if (audio.src !== url) audio.src = url;
+    if (loop) audio.loop = true;
+    if (autoplay) audio.play().catch(() => console.warn('Autoplay failed'));
+}
   async function start() {
     console.log('Router: Starting with id=', getParam('id', 'room1')); // Debug log
     const id = getParam('id', 'room1');

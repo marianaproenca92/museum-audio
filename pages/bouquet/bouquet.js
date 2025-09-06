@@ -185,7 +185,15 @@ window.initBouquet = function() {
                     console.log('initBouquet: Game won, score:', score); // Debug log
                     running = false;
                     cancelAnimationFrame(raf);
-                    banner && (banner.hidden = false);
+                   banner && (banner.hidden = false);
+                    // Play audio on game completion
+                    const audio = document.querySelector('audio[data-room-audio]');
+                    if (audio) {
+                        console.log('initBouquet: Playing bouquet.mp3 on game completion'); // Debug log
+                        audio.play().catch(e => console.warn('initBouquet: Audio play failed:', e));
+                    } else {
+                        console.warn('initBouquet: Audio element not found'); // Debug log
+                    }
                     return;
                 }
             } else if (d.y - d.h / 2 > r.height + 24) {
