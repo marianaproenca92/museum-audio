@@ -6,6 +6,10 @@
   - Handles dynamic content height (images/fonts) via observers
   - Tolerates fractional scroll values (rounding)
 */
+
+const pageBase = document.body?.dataset?.pageBase || '';
+const join = (u) => (/^([a-z]+:)?\/\//i.test(u) || u.startsWith('/')) ? u : (pageBase + u);
+
 (function(){
   'use strict';
   const $ = (q, el=document) => el.querySelector(q);
@@ -103,8 +107,8 @@
 
     const explicit = host?.dataset?.termsUrl; // optional override
     const paths = explicit ? [explicit] : [
-      'terms-content.html', './terms-content.html',
-      '/museum-audio/terms-content.html', '/terms-content.html'
+      join('terms-content.html'),
+      'terms-content.html', './terms-content.html'
     ];
 
     fetchFirst(paths)

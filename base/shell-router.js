@@ -68,6 +68,7 @@ const asArray = v => Array.isArray(v) ? v : (v ? [v] : []);
   async function start(){    
     const id = getParam('id','room1');
     const base = `pages/${id}/`;
+    document.body.dataset.pageBase = base;
     const path = `${base}${id}.json`;
      
     let data={};

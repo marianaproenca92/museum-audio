@@ -1,6 +1,10 @@
 // ===== CONFIG =====
-const IMG_A = "img/diffs/base.jpg";  // original
-const IMG_B = "img/diffs/diff.jpg";  // edit with funny differences
+const pageBase = document.body?.dataset?.pageBase || '';
+const join = (u) => (/^([a-z]+:)?\/\//i.test(u) || u.startsWith('/')) ? u : (pageBase + u);
+
+const IMG_A = join('img/base.jpg');
+const IMG_B = join('img/diff.jpg');
+
 // Differences as [x%, y%, w%, h%] relative to the board frame
 const DIFFS = [
     [15, 18, 12, 14],  // horns
