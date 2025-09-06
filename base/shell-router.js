@@ -179,14 +179,18 @@ const asArray = v => Array.isArray(v) ? v : (v ? [v] : []);
     const init = data.init||null; // {fn, args, when}
     if(scripts.length){ try{ await loadScripts(scripts); } catch(e){ console.warn('script failed', e); } }
 
-    const runInit = ()=>{
-      if(!init||!init.fn) return; const fn=(window[init.fn]||window[init.fn.split('.').pop()]);
-      if(typeof fn==='function'){ try{ fn(init.args||{}); }catch(err){ console.warn('init failed', err); } }
-      else { console.warn('init fn not found:', init && init.fn); }
-    };
-    const when = (init && init.when)||'afterLoader';
-    if(when==='immediate') runInit(); else document.addEventListener('loader:done', runInit, { once:true });
-  }
+    const when = (init && init.when) || 'afterLoader';
+    if (when === 'immediate') {
+      runInit();
+    } else if (when === 'afterLoader') {
+      if (window.__loaderDone) runInit();
+      else document.addEventListener('loader:done', runInit, { once:true });
+    } else {
+      // optional: DOM-ready mode
+      if (document.readyState !== 'loading') runInit();
+      else document.addEventListener('DOMContentLoaded', runInit, { once:true });
+    }
+}
 
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', start, { once:true });
   else start();

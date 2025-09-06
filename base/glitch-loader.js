@@ -180,6 +180,7 @@
       document.dispatchEvent(new CustomEvent('glitch:done'));
       // backwards-compat for pages listening to the old event name
       document.dispatchEvent(new CustomEvent('loader:done'));
+      window.__loaderDone = true; // <-- add this
       // safety: unhide main content if a page kept it display:none
       const __main = document.getElementById('content');
       if (__main) __main.style.removeProperty('display');

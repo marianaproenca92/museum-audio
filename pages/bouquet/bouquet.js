@@ -5,6 +5,8 @@ window.initBouquet = function(){
   'use strict';
   const $=(q,el=document)=>el.querySelector(q);
   const root = $('#bouquet'); if(!root) return;
+  if (root.dataset.initialized === '1') return;
+  root.dataset.initialized = '1';
 
   const stage  = $('.bouquet-stage', root);
   const catcher= $('#catcher', root);
@@ -167,4 +169,20 @@ window.initBouquet = function(){
   cover && cover.addEventListener('click', e=>{
     if(e.target===cover) startGame(); // tap outside button also starts
   });
+
+  
+(function(){
+    const boot = () => window.initBouquet && window.initBouquet();
+
+    // If the loader already ended, run now; else wait for it
+    if (window.__loaderDone) boot();
+    else document.addEventListener('loader:done', boot, { once:true });
+
+    // Also run at DOM ready as a belt-and-suspenders fallback
+    if (document.readyState !== 'loading') setTimeout(boot, 0);
+    else document.addEventListener('DOMContentLoaded', boot, { once:true });
+  })();
+
 };
+
+
