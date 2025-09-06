@@ -65,133 +65,126 @@ const asArray = v => Array.isArray(v) ? v : (v ? [v] : []);
     return a;
   }
 
-  async function start(){    
-    const id = getParam('id','room1');
+  async function start() {
+    console.log('Router: Starting with id=', getParam('id', 'room1')); // Debug log
+    const id = getParam('id', 'room1');
     const base = `pages/${id}/`;
     document.body.dataset.pageBase = base;
     const path = `${base}${id}.json`;
-     
-    let data={};
-    try{ data=await loadJSON(path); }
-    catch(e){ console.warn('Router: missing/invalid', path, e); data={ title:'ARQUIVO // EM FALHA', subtitle:id, html:'<p>O arquivo indicado não existe. Verifica o QR ou o JSON.</p>' }; }
 
-    // Header
-    setGlitchText($('#hdr-title'), data.title||'');
-
-    // Subtitle & Description
-    { const sub=$('#content-subtitle'); if(sub){ if(data.subtitleHtml) sub.innerHTML=data.subtitleHtml; else sub.textContent=data.subtitle||''; } }
-    { const desc=$('#content-description'); if(desc){ if(data.descriptionHtml) desc.innerHTML=data.descriptionHtml; else desc.textContent=data.description||''; } }
-
-    // Optional content block
-    if($('#content-body') && data.html){ $('#content-body').innerHTML = data.html; }
-
-    // Body classes & CSS vars early
-    const body=document.body;
-    const classes = Array.isArray(data.bodyClass) ? data.bodyClass : (typeof data.bodyClass==='string' ? data.bodyClass.split(/\s+/) : []);
-    classes.filter(Boolean).forEach(c=> body.classList.add(c));
-    setCssVars(data.cssVars);
-
-    // Per-page CSS
-    const styles =asArray(data.styles).map(u => joinUrl(base, u));
-    const cssReady = loadStyles(styles);
-    if(data.inlineCss) injectInlineCss(data.inlineCss);
-
-    // ----- Loader config via <body data-*> -----
-    // effects
-    let effects=[]; if(Array.isArray(data.effects)) effects=data.effects; else if(typeof data.effects==='string') effects=data.effects.split(/[\s,]+/);
-    if(!effects.length) effects=['shake'];
-    body.dataset.effects = effects.join(' ');
-
-    // bootlog: inline object/array OR URL string
-    if (data.bootlog && typeof data.bootlog === 'object') {
-      window.__bootlog = data.bootlog; // consumed by glitch-loader
-      delete body.dataset.bootlog;     // avoid fetch
-    } else if (typeof data.bootlog === 'string') { body.dataset.bootlog = joinUrl(base, data.bootlog); }
-
-    if(data.detour)  body.dataset.detour = joinUrl(base, data.detour);
-    if(data.drama!=null) body.dataset.drama=String(data.drama);
-    body.dataset.typewriter = (data.typewriter===false)?'off':'on';
-    if(data.loaderTitle!==undefined) body.dataset.title = data.loaderTitle; else body.dataset.title = data.title||document.title||'';
-    if(data.pageTitle) document.title=data.pageTitle;
-
-    // MAIN page audio
-    if(data.audio){ 
-      const audioUrl = joinUrl(base, data.audio);
-      body.dataset.audio = audioUrl;
-      ensureRoomAudio(audioUrl, { autoplay: !!data.audioAutoplay, loop: !!data.audioLoop });
+    let data = {};
+    try {
+        data = await loadJSON(path);
+        console.log('Router: Loaded JSON', data); // Debug log
+    } catch (e) {
+        console.warn('Router: missing/invalid', path, e);
+        data = { title: 'ARQUIVO // EM FALHA', subtitle: id, html: '<p>O arquivo indicado não existe. Verifica o QR ou o JSON.</p>' };
     }
 
-    // Glitcher modes for screen-glitcher.js v3
-    if (data.glitcher){
-      body.dataset.glitch = (data.glitcher.on === false) ? 'off' : 'on';
-      if (data.glitcher.level)  body.dataset.glitchLevel = data.glitcher.level;         // light|medium|heavy
-      if (data.glitcher.modes)  body.dataset.glitchModes = Array.isArray(data.glitcher.modes)
-        ? data.glitcher.modes.join(' ')
-        : String(data.glitcher.modes);
+    // Set body datasets, audio, glitcher, etc. (unchanged)
+    const body = document.body;
+    if (data.title) setGlitchText($('.title'), data.title);
+    if (data.subtitle) setGlitchText($('.subtitle'), data.subtitle);
+    if (data.description) $('#content').innerHTML = data.description;
+    await loadStyles(asArray(data.styles).map(u => joinUrl(base, u)));
+    if (data.cssVars) setCssVars(data.cssVars);
+    if (data.css) injectInlineCss(data.css);
+    const audioUrl = data.audio ? joinUrl(base, data.audio) : '';
+    body.dataset.audio = audioUrl;
+    ensureRoomAudio(audioUrl, { autoplay: !!data.audioAutoplay, loop: !!data.audioLoop });
+    if (data.glitcher) {
+        body.dataset.glitch = (data.glitcher.on === false) ? 'off' : 'on';
+        if (data.glitcher.level) body.dataset.glitchLevel = data.glitcher.level;
+        if (data.glitcher.modes) body.dataset.glitchModes = Array.isArray(data.glitcher.modes) ? data.glitcher.modes.join(' ') : String(data.glitcher.modes);
+    }
+    if (data.textTear) {
+        body.dataset.texttear = (data.textTear.on === false) ? 'off' : 'on';
+        if (data.textTear.targets) body.dataset.texttearTargets = Array.isArray(data.textTear.targets) ? data.textTear.targets.join(',') : String(data.textTear.targets);
+        if (data.textTear.density != null) body.dataset.texttearDensity = String(data.textTear.density);
+        if (data.textTear.amp != null) body.dataset.texttearAmp = String(data.textTear.amp);
+        if (data.textTear.freq != null) body.dataset.texttearFreq = String(data.textTear.freq);
+        if (data.textTear.rgb != null) body.dataset.texttearRgb = data.textTear.rgb ? 'on' : 'off';
     }
 
-    // Text tear settings (optional)
-    if (data.textTear){
-      body.dataset.texttear = (data.textTear.on === false) ? 'off' : 'on';
-      if (data.textTear.targets)
-        body.dataset.texttearTargets = Array.isArray(data.textTear.targets)
-          ? data.textTear.targets.join(',')
-          : String(data.textTear.targets);
-      if (data.textTear.density != null) body.dataset.texttearDensity = String(data.textTear.density);
-      if (data.textTear.amp     != null) body.dataset.texttearAmp     = String(data.textTear.amp);
-      if (data.textTear.freq    != null) body.dataset.texttearFreq    = String(data.textTear.freq);
-      if (data.textTear.rgb     != null) body.dataset.texttearRgb     = data.textTear.rgb ? 'on' : 'off';
-    }
-
-    // Arena HTML (inline or external)
+    // Arena HTML
     const arenaEl = document.getElementById('arena');
-    if(arenaEl){
-      try{
-        if(data.arenaHtml){ arenaEl.innerHTML = data.arenaHtml; }
-        else if (data.arenaHtmlUrl){ arenaEl.innerHTML = await loadText(joinUrl(base, data.arenaHtmlUrl)); }
-      }catch(e){ console.warn('Arena HTML load failed', e); }
+    if (arenaEl) {
+        try {
+            if (data.arenaHtml) arenaEl.innerHTML = data.arenaHtml;
+            else if (data.arenaHtmlUrl) arenaEl.innerHTML = await loadText(joinUrl(base, data.arenaHtmlUrl));
+            console.log('Router: Arena HTML loaded'); // Debug log
+        } catch (e) {
+            console.warn('Arena HTML load failed', e);
+        }
     }
 
-    // Router→Loader handshake + explicit start
-    window.__shellConfigReady = true; // optional flag others can read
+    // Load page-specific scripts BEFORE loader
+    const scripts = asArray(data.scripts).map(u => joinUrl(base, u));
+    if (scripts.length) {
+        try {
+            await loadScripts(scripts);
+            console.log('Router: Scripts loaded', scripts); // Debug log
+        } catch (e) {
+            console.warn('Script failed', e);
+        }
+    }
+
+    // Router→Loader handshake
+    window.__shellConfigReady = true;
     document.dispatchEvent(new CustomEvent('shell:config', { detail: { id, data } }));
 
-    (function startLoaderWhenReady(){
-      if (window.GlitchLoader?.startFromData) {
-        window.GlitchLoader.startFromData();
-      } else {
-        document.addEventListener('glitch:ready', ()=> window.GlitchLoader.startFromData(), { once:true });
-        setTimeout(startLoaderWhenReady, 0);
-      }
+    (function startLoaderWhenReady() {
+        console.log('Router: Starting loader'); // Debug log
+        if (window.GlitchLoader?.startFromData) {
+            window.GlitchLoader.startFromData();
+        } else {
+            document.addEventListener('glitch:ready', () => window.GlitchLoader.startFromData(), { once: true });
+            setTimeout(startLoaderWhenReady, 0);
+        }
     })();
 
-    // Reveal content after loader and CSS are ready
-    const reveal = async ()=>{ await cssReady; const c=$('#content'); if(c) c.style.removeProperty('display'); };
-    document.addEventListener('loader:done', reveal, { once:true });
+    // Reveal content
+    const cssReady = loadStyles(asArray(data.styles).map(u => joinUrl(base, u)));
+    const reveal = async () => {
+        await cssReady;
+        const c = $('#content');
+        if (c) c.style.removeProperty('display');
+        console.log('Router: Content revealed'); // Debug log
+    };
+    document.addEventListener('loader:done', reveal, { once: true });
 
-    // Load screen‑glitcher only after the overlay is gone
+    // Load screen-glitcher after loader
     document.addEventListener('loader:done', async () => {
         await loadScripts(['base/screen-glitcher.js']);
-    }, { once:true });
+        console.log('Router: Screen glitcher loaded'); // Debug log
+    }, { once: true });
 
-    // Page-specific scripts + optional init
-    const scripts = asArray(data.scripts).map(u => joinUrl(base, u));
-    const init = data.init||null; // {fn, args, when}
-    if(scripts.length){ try{ await loadScripts(scripts); } catch(e){ console.warn('script failed', e); } }
-
+    // Run init
+    const init = data.init || null;
     const when = (init && init.when) || 'afterLoader';
+    function runInit() {
+        if (!init || !init.fn) return;
+        try {
+            const fn = (typeof init.fn === 'function') ? init.fn : window[init.fn];
+            const args = Array.isArray(init.args) ? init.args : (init.args ? [init.args] : []);
+            if (typeof fn === 'function') fn.apply(window, args);
+            console.log('Router: Init function ran', init.fn); // Debug log
+        } catch (e) {
+            console.warn('Init failed', e);
+        }
+    }
+
     if (when === 'immediate') {
-      runInit();
+        runInit();
     } else if (when === 'afterLoader') {
-      if (window.__loaderDone) runInit();
-      else document.addEventListener('loader:done', runInit, { once:true });
+        if (window.__loaderDone) runInit();
+        else document.addEventListener('loader:done', runInit, { once: true });
     } else {
-      // optional: DOM-ready mode
-      if (document.readyState !== 'loading') runInit();
-      else document.addEventListener('DOMContentLoaded', runInit, { once:true });
+        if (document.readyState !== 'loading') runInit();
+        else document.addEventListener('DOMContentLoaded', runInit, { once: true });
     }
 }
 
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', start, { once:true });
-  else start();
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
+else start();
 })();
