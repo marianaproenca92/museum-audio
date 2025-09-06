@@ -2,9 +2,9 @@
   "title": "RAMO // CAPTURA",
   "subtitle": "Inclina o telemóvel para apanhar 12 pétalas (ou usa a barra)",
   "effects": "scantear",
-  "arenaHtmlUrl": "partials/bouquet.html",
-  "scripts": ["js/bouquet.js"],
-  "styles": ["css/bouquet.css"],
+  "arenaHtmlUrl": "bouquet.html",
+  "scripts": ["bouquet.js"],
+  "styles": ["bouquet.css"],
   "init": { "fn": "initBouquet", "when": "afterLoader" },
-  "audio": "audio/bouquet-theme.mp3"
+  "audio": "bouquet.mp3"
 }

@@ -2,9 +2,9 @@
   "title": "ESPELHO // A NOIVA",
   "subtitle": "Espelho meu, espelho meu, haverá noiva mais bela do que eu?",
   "effects": "scantear imagestorm",
-  "arenaHtmlUrl": "partials/mirror.html",
-  "scripts": ["js/mirror.js"],
-  "styles": ["css/mirror.css"],
-  "audio": "audio/sample.mp3",
+  "arenaHtmlUrl": "mirror.html",
+  "scripts": ["mirror.js"],
+  "styles": ["mirror.css"],
+  "audio": "sample.mp3",
   "init": { "when": "afterLoader" }
 }

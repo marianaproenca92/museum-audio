@@ -20,14 +20,14 @@
         "after":  ["ERRO: REGISTO INACESSÍVEL","ABRIR DESVIO"]
     },
 
-  "audio": "audio/sample.mp3",
+  "audio": "terms.mp3",
   "audioAutoplay": false,
   "audioLoop": false,
 
-  "styles": ["css/terminal-terms.css"],
+  "styles": ["terms.css"],
 
-  "arenaHtmlUrl": "partials/terms-arena.html",
+  "arenaHtmlUrl": "terms-arena.html",
 
-  "scripts": ["js/terms.js"],
+  "scripts": ["terms.js"],
   "init": { "when": "afterLoader" }
 }

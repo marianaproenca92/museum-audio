@@ -20,14 +20,14 @@
         "after":  ["ERRO: REGISTO INACESSÍVEL","ABRIR DESVIO"]
     },
 
-    "audio": "audio/sample.mp3",
+    "audio": "sample.mp3",
     "audioAutoplay": false,
     "audioLoop": false,
 
-    "styles": ["css/diferencas.css"],
+    "styles": ["diferencas.css"],
 
-    "arenaHtmlUrl": "partials/diferencas-arena.html",
+    "arenaHtmlUrl": "diferencas-arena.html",
 
-    "scripts": ["js/differences-game.js"],
+    "scripts": ["differences-game.js"],
     "init": { "when": "afterLoader" }
 }

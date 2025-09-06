@@ -90,7 +90,7 @@
 
   function wireAudio(){
     let audio; const host = document.getElementById('terms');
-    const src = host?.dataset?.audio || '/audio/botas.mp3';
+    const src = host?.dataset?.audio;
     document.addEventListener('terms:accepted', () => {
       if(!audio){ audio = new Audio(src); audio.preload = 'auto'; audio.volume = 1.0; }
       audio.currentTime = 0; audio.play().catch(()=>{});
@@ -103,7 +103,7 @@
 
     const explicit = host?.dataset?.termsUrl; // optional override
     const paths = explicit ? [explicit] : [
-      'content/terms-content.html', './terms-content.html',
+      'terms-content.html', './terms-content.html',
       '/museum-audio/terms-content.html', '/terms-content.html'
     ];
 

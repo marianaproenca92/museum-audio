@@ -13,6 +13,9 @@
 
 // Tell the loader not to autostart; the router will trigger it
 window.__GL_MANUAL = true;
+function isAbs(u){ return /^([a-z]+:)?\/\//i.test(u) || (u||'').startsWith('/'); }
+function joinUrl(base,u){ return isAbs(u) ? u : (base + u).replace(/\\/g,'/'); }
+const asArray = v => Array.isArray(v) ? v : (v ? [v] : []);
 
 (function(){
   const $ = (q, el=document) => el.querySelector(q);
@@ -64,7 +67,9 @@ window.__GL_MANUAL = true;
 
   async function start(){    
     const id = getParam('id','room1');
-    const path = `content/${id}.json`;
+    const base = `pages/${id}/`;
+    const path = `${base}${id}.json`;
+     
     let data={};
     try{ data=await loadJSON(path); }
     catch(e){ console.warn('Router: missing/invalid', path, e); data={ title:'ARQUIVO // EM FALHA', subtitle:id, html:'<p>O arquivo indicado não existe. Verifica o QR ou o JSON.</p>' }; }
@@ -86,7 +91,7 @@ window.__GL_MANUAL = true;
     setCssVars(data.cssVars);
 
     // Per-page CSS
-    const styles = Array.isArray(data.styles) ? data.styles : (data.styles ? [data.styles] : []);
+    const styles =asArray(data.styles).map(u => joinUrl(base, u));
     const cssReady = loadStyles(styles);
     if(data.inlineCss) injectInlineCss(data.inlineCss);
 
@@ -100,18 +105,20 @@ window.__GL_MANUAL = true;
     if (data.bootlog && typeof data.bootlog === 'object') {
       window.__bootlog = data.bootlog; // consumed by glitch-loader
       delete body.dataset.bootlog;     // avoid fetch
-    } else if (typeof data.bootlog === 'string') {
-      body.dataset.bootlog = data.bootlog;
-    }
+    } else if (typeof data.bootlog === 'string') { body.dataset.bootlog = joinUrl(base, data.bootlog); }
 
-    if(data.detour)  body.dataset.detour=data.detour;
+    if(data.detour)  body.dataset.detour = joinUrl(base, data.detour);
     if(data.drama!=null) body.dataset.drama=String(data.drama);
     body.dataset.typewriter = (data.typewriter===false)?'off':'on';
     if(data.loaderTitle!==undefined) body.dataset.title = data.loaderTitle; else body.dataset.title = data.title||document.title||'';
     if(data.pageTitle) document.title=data.pageTitle;
 
     // MAIN page audio
-    if(data.audio){ body.dataset.audio=data.audio; ensureRoomAudio(data.audio, { autoplay: !!data.audioAutoplay, loop: !!data.audioLoop }); }
+    if(data.audio){ 
+      const audioUrl = joinUrl(base, data.audio);
+      body.dataset.audio = audioUrl;
+      ensureRoomAudio(audioUrl, { autoplay: !!data.audioAutoplay, loop: !!data.audioLoop });
+    }
 
     // Glitcher modes for screen-glitcher.js v3
     if (data.glitcher){
@@ -140,7 +147,7 @@ window.__GL_MANUAL = true;
     if(arenaEl){
       try{
         if(data.arenaHtml){ arenaEl.innerHTML = data.arenaHtml; }
-        else if(data.arenaHtmlUrl){ arenaEl.innerHTML = await loadText(data.arenaHtmlUrl); }
+        else if (data.arenaHtmlUrl){ arenaEl.innerHTML = await loadText(joinUrl(base, data.arenaHtmlUrl)); }
       }catch(e){ console.warn('Arena HTML load failed', e); }
     }
 
@@ -163,13 +170,11 @@ window.__GL_MANUAL = true;
 
     // Load screen‑glitcher only after the overlay is gone
     document.addEventListener('loader:done', async () => {
-        await loadScripts(['js/screen-glitcher.js']);
-        // If your glitcher needs an explicit kick, call it here, e.g.:
-        // window.ScreenGlitcher?.start?.();
+        await loadScripts(['base/screen-glitcher.js']);
     }, { once:true });
 
     // Page-specific scripts + optional init
-    const scripts = Array.isArray(data.scripts) ? data.scripts : [];
+    const scripts = asArray(data.scripts).map(u => joinUrl(base, u));
     const init = data.init||null; // {fn, args, when}
     if(scripts.length){ try{ await loadScripts(scripts); } catch(e){ console.warn('script failed', e); } }
 

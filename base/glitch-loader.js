@@ -1,23 +1,10 @@
-/*
-  Glitch Loader v5 — single-effect attribute, default title + imagestorm list, strict bootlog JSON,
-  robust autostart, failsafe cleanup, and subtitle with a ridiculous big number.
-
-  Base deps (only two):
-    • css/glitch-loader.css           (terminal shell)
-    • css/glitch-break-effects.css    (visual effects classes)
-
-  Minimal per‑page usage:
-    <link rel="stylesheet" href="css/glitch-loader.css">
-    <link rel="stylesheet" href="css/glitch-break-effects.css">
-    <script defer src="js/glitch-loader.js?v=5"></script>
-*/
 (function(){
   'use strict';
 
   // ---------- constants ----------
   const DEFAULT_TITLE = 'MUSEU // ARQUIVO PRIVADO 2010 - 2025';
   const SUBTITLE_PREFIX = 'A CARREGAR ARQUIVO #';
-  const DEFAULT_IMAGESTORM_LIST = 'img/glitch/images.json'; // used when imagestorm is selected and body has no data-images-json
+  const DEFAULT_IMAGESTORM_LIST = 'glitch/images.json'; // used when imagestorm is selected and body has no data-images-json
   const KILL_SWITCH_MS_BASE = 9000; // hard failsafe to always clear overlay even if something stalls
 
   // ---------- utils ----------
