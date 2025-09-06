@@ -5,6 +5,6 @@
   "arenaHtmlUrl": "partials/bouquet.html",
   "scripts": ["js/bouquet.js"],
   "styles": ["css/bouquet.css"],
-  "init": { "when": "afterLoader" },
+  "init": { "fn": "initBouquet", "when": "afterLoader" },
   "audio": "audio/bouquet-theme.mp3"
 }

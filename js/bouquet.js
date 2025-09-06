@@ -1,7 +1,7 @@
 // ============================
 // bouquet.js
 // ============================
-(function(){
+window.initBouquet = function(){
   'use strict';
   const $=(q,el=document)=>el.querySelector(q);
   const root = $('#bouquet'); if(!root) return;
@@ -167,4 +167,4 @@
   cover && cover.addEventListener('click', e=>{
     if(e.target===cover) startGame(); // tap outside button also starts
   });
-})();
+};

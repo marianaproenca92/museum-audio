@@ -64,3 +64,4 @@
 #arena{ overflow-x:clip }
 
 @media (prefers-reduced-motion: reduce){ .dot{ transition:none } }
+
