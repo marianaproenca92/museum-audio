@@ -163,13 +163,12 @@ const FX = {
 
     };
 
-    if(!img.getAttribute('src')){
+    if (!img.complete || img.naturalWidth === 0) {
       img.onload = show;
-      // put the file at /pages/mirror/img/mirror/mirror.jpg OR change the path below accordingly
-      img.src = join('img/mirror.jpg');
-    } else {
-      show();
+      img.onerror = ()=>{ /* optional: fallback or message */ };
+      return;
     }
+    show();
   }
 
   function roast(){
@@ -199,13 +198,10 @@ const FX = {
 
   function setQuestionText(){
     // Pull from the shell subtitle if present; default to your exact phrase
-    const fallback = 'espelho meu espelho meu, há noiva mais bela do que eu?';
+    const fallback = 'espelho meu, espelho meu, haverá noiva mais bela do que eu?';
     const q = (document.querySelector('.subtitle')?.textContent || '').trim() || fallback;
     const slot = $('#mirrorQuestion');
     if (slot) slot.textContent = q;
-    // Keep a copy inside #askFeedback for any logic that reads from it
-    const ask = $('#askFeedback');
-    if (ask) ask.textContent = q;
   }
 
   function start(){
@@ -213,6 +209,8 @@ const FX = {
     bindUI(); 
     bindVoice(); 
     startCam();
+    const pre = $('#groomBride');
+    if (pre && !pre.getAttribute('src')) pre.src = join('img/mirror.jpg');
     document.addEventListener('page:leave', stopCam, { once:true });
     document.addEventListener('page:leave', stopBgm, { once:true });
     window.addEventListener('visibilitychange', ()=>{ if(document.hidden) stopCam(); });
