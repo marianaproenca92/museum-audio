@@ -11,6 +11,7 @@ const FX = {
   particleSlow: 1,
 };
 
+const IMG_REVEAL = join('mirror.jpg');
 
 (function(){
   let camStream=null, rec=null, listening=false, lastTap=0, sfx, bgm;
@@ -70,25 +71,31 @@ const FX = {
     }
   }
 
-  function hearts(n=14){
-    const stage = $('.mirror-stage'); if(!stage) return;
-    for (let i=0; i<n; i++) {
+  function hearts(n = 14){
+    const stage = $('.mirror-stage');
+    if (!stage) return;
+    for (let i = 0; i < n; i++) {
       setTimeout(() => {
         const h = document.createElement('span');
         h.className = 'heart';
         h.textContent = '❤';
-        const size = 18 + Math.random()*24; h.style.fontSize = size+'px';
-        h.style.left = (10 + Math.random()*80)+'%';
-        h.style.top  = (20 + Math.random()*20)+'%';
+        const size = 18 + Math.random() * 24;
+        h.style.fontSize = size + 'px';
+        h.style.left = (10 + Math.random() * 80) + '%';
+        h.style.top = (20 + Math.random() * 20) + '%';
         stage.appendChild(h);
-        const dx=(Math.random()*60-30), dy=80+Math.random()*40, rot=(Math.random()*120-60);
-        const ms=(1300+Math.random()*900)*FX.particleSlow;
+        const dx = (Math.random() * 60 - 30);
+        const dy = 80 + Math.random() * 40;
+        const rot = (Math.random() * 120 - 60);
+        const ms = (1300 + Math.random() * 900) * FX.particleSlow;
         h.animate(
-          [ { transform:'translate(0,0) rotate(0deg)', opacity:.95 },
-            { transform:`translate(${dx}vw, ${dy}vh) rotate(${rot}deg)`, opacity:0 } ],
-          { duration: ms, easing:'cubic-bezier(.22,.7,.2,1)' }
-        ).finished.finally(()=>h.remove());
-      }, i*FX.stagger);
+          [
+            { transform: 'translate(0,0) rotate(0deg)', opacity: .95 },
+            { transform: `translate(${dx}vw, ${dy}vh) rotate(${rot}deg)`, opacity: 0 }
+          ],
+          { duration: ms, easing: 'cubic-bezier(.22,.7,.2,1)' }
+        ).finished.finally(() => h.remove());
+      }, i * FX.stagger);
     }
   }
 
@@ -120,10 +127,26 @@ const FX = {
     rec.onerror = ()=>{ $('#askFeedback').textContent='[voz] erro — tenta novamente'; };
     rec.onend = ()=>{ listening=false; btn.setAttribute('aria-pressed','false'); };
 
-    btn.addEventListener('click', ()=>{
-      if(listening){ rec.stop(); return; }
-      listening=true; btn.setAttribute('aria-pressed','true'); $('#askFeedback').textContent='[voz] a ouvir…';
-      try{ rec.start(); }catch{ listening=false; btn.setAttribute('aria-pressed','false'); }
+    let tapLock = false;
+
+    btn.addEventListener('click', () => {
+      if (tapLock) return;
+      tapLock = true;
+      setTimeout(() => tapLock = false, 450); // ignore rapid double-taps
+
+      if (listening) { 
+        rec.stop(); 
+        return; 
+      }
+      listening = true;
+      btn.setAttribute('aria-pressed', 'true');
+      $('#askFeedback').textContent = '[voz] a ouvir…';
+      try { 
+        rec.start(); 
+      } catch { 
+        listening = false; 
+        btn.setAttribute('aria-pressed','false'); 
+      }
     });
   }
 
@@ -163,16 +186,8 @@ const FX = {
 
     };
 
-    // Try to wait for the image, but don’t block the hearts if it’s slow/missing
-  let done = false;
-  const go = () => { if (!done){ done = true; show(); } };
-  if (img && img.decode) {
-    img.decode().then(go).catch(go);
-  } else if (img && (!img.complete || img.naturalWidth === 0)) {
-    img.onload = go; img.onerror = go;
-  } else {
-    go();
-  }
+    if(!img.getAttribute('src')){ img.onload=show; img.src=join('mirror.jpg'); }
+    else { show(); }
   }
 
   function roast(){
@@ -181,8 +196,6 @@ const FX = {
   }
 
   function handleAnswer(text){ isYes(text) ? reveal() : roast(); }
-
-  
 
   async function startCam(){
     try{
@@ -215,10 +228,7 @@ const FX = {
     startCam();
     const img = $('#groomBride');
     if (img && !img.src) {
-      // Prefer router-relative, fall back to absolute site-root
-      const preferred = join('img/mirror.jpg');
-      img.src = preferred;
-      img.onerror = () => { if (img.src !== '/museum-audio/img/mirror.jpg') img.src = '/museum-audio/img/mirror.jpg'; };
+      img.src = IMG_REVEAL;
     }
     document.addEventListener('page:leave', stopCam, { once:true });
     document.addEventListener('page:leave', stopBgm, { once:true });
