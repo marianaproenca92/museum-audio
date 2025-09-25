@@ -1,0 +1,34 @@
+<section class="panel">
+  <header class="kv" style="margin-bottom:10px">
+    <dt>Protocolo</dt><dd>CB-01 // Corte de Bolo Assistido</dd>
+    <dt>Operadores</dt><dd>MARIANA // TIAGO</dd>
+  </header>
+
+  <div id="cake-game" class="cake">
+    <div class="cake__tray">
+      <div class="cake__body">
+        <div class="cake__layer"></div>
+        <div class="cake__layer"></div>
+        <div class="cake__layer"></div>
+        <div class="cake__top"></div>
+      </div>
+      <div class="cake__knife" aria-hidden="true"></div>
+    </div>
+
+    <div class="meter" aria-label="Medidor de estabilidade">
+      <div class="meter__zone meter__bad"></div>
+      <div class="meter__zone meter__good" aria-hidden="true"></div>
+      <div class="meter__zone meter__bad"></div>
+      <div class="meter__needle" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+    </div>
+
+    <div class="cta">
+      <button id="btn-start" class="crt-btn run-btn crt-btn--lg">
+        <span class="glitch" data-text="CORTAR">CORTAR</span>
+      </button>
+      <small class="muted" id="hint">Acerte quando a agulha estiver no centro.</small>
+    </div>
+
+    <output id="result" class="cake__result" role="status" aria-live="polite"></output>
+  </div>
+</section>

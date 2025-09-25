@@ -17,6 +17,26 @@
   box-shadow: 0 0 0 1px rgba(39,255,140,.10), 0 24px 80px rgba(0,0,0,.55);
 }
 
+.mirror-question {
+  margin: 0 0 10px 0;
+  text-align: center;
+  font-size: clamp(14px, 2.6vw, 20px);
+  letter-spacing: 0.02em;
+  color: var(--neon-fore, #b3ffcc);
+  text-shadow: 0 0 8px rgba(24, 255, 128, 0.25);
+  opacity: 0.92;
+}
+
+/* Optional: subtle divider glow just under the question */
+.mirror-question::after {
+  content: "";
+  display: block;
+  height: 1px;
+  margin: 10px auto 6px;
+  width: min(560px, 90%);
+  background: linear-gradient(90deg, transparent, rgba(24,255,128,.25), transparent);
+}
+
 #mirrorCam,#groomBride,#mirrorFx{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover }
 #mirrorCam{ transform:scaleX(-1) }
 #groomBride{ transform:scaleX(-1); opacity:0; transition:opacity .35s ease }

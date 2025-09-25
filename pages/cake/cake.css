@@ -1,0 +1,68 @@
+/* Cake — minimal, mobile-first, CRT-friendly */
+.cake{ display:grid; gap:16px; }
+.cake__tray{
+  position:relative; height:160px;
+  background:rgba(2,18,8,.45);
+  border:1px solid var(--ghost); border-radius:10px;
+  display:flex; align-items:flex-end; justify-content:center; padding-bottom:18px;
+  overflow:hidden;
+}
+
+/* little cake */
+.cake__body{ position:relative; width:120px; height:88px; filter: drop-shadow(0 6px 12px rgba(0,0,0,.35)); }
+.cake__layer{
+  height:26px; background:linear-gradient(180deg, rgba(39,255,140,.12), rgba(39,255,140,.06));
+  border:1px solid var(--ghost); border-bottom:none; border-radius:8px 8px 0 0; margin-top:6px;
+  position:relative;
+}
+.cake__layer::after{
+  content:""; position:absolute; left:0; right:0; bottom:-6px; height:6px;
+  background:repeating-linear-gradient(90deg, var(--accent) 0 6px, rgba(39,255,140,.18) 6px 12px);
+  opacity:.35; filter: blur(.2px);
+}
+.cake__top{
+  position:absolute; left:50%; top:-8px; width:64px; height:16px; transform:translateX(-50%);
+  border:1px solid var(--ghost); border-radius:999px;
+  background:radial-gradient(ellipse at center, rgba(39,255,140,.26), rgba(39,255,140,.06));
+}
+
+/* knife */
+.cake__knife{
+  --x:0px; --y:0px; position:absolute; left:50%; top:10%;
+  width:140px; height:8px; transform:translate(calc(-50% + var(--x)), var(--y)) rotate(-6deg);
+  background:linear-gradient(90deg, rgba(255,255,255,.75), rgba(255,255,255,.1));
+  box-shadow:0 0 8px rgba(255,255,255,.2); border-radius:4px;
+  transition: transform .12s ease;
+}
+
+/* meter */
+.meter{
+  position:relative; height:36px; border:1px solid var(--ghost); border-radius:10px; overflow:hidden;
+  background:rgba(2,18,8,.45);
+}
+.meter__zone{ position:absolute; top:0; bottom:0; }
+.meter__bad:first-child{ left:0; width:35%; background:rgba(255,59,59,.08) }
+.meter__good{ left:35%; width:30%; background:rgba(39,255,140,.10) }
+.meter__bad:last-child{ right:0; width:35%; background:rgba(255,59,59,.08) }
+.meter__needle{
+  position:absolute; top:0; bottom:0; width:4px;
+  left:0%; transform:translateX(-2px);
+  background:linear-gradient(180deg, var(--accent), rgba(39,255,140,.35));
+  box-shadow:0 0 10px rgba(39,255,140,.25);
+}
+
+/* result */
+.cake__result{ display:block; min-height:1.4em; }
+.cake__result--ok{ color:var(--accent) }
+.cake__result--bad{ color:var(--danger) }
+
+/* responsive touch targets */
+.cta{ display:grid; gap:8px; justify-items:center; }
+#btn-start{ min-width:220px }
+
+/* gentle wiggle of cake when cutting */
+@keyframes wobble {
+  0%,100% { transform: translateX(-50%) rotate(-2deg); }
+  50%     { transform: translateX(-50%) rotate(2deg); }
+}
+.cake--armed .cake__body{ animation: wobble .6s ease-in-out infinite; }

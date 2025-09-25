@@ -1,11 +1,19 @@
-(function(){
-  const $=(q,el=document)=>el.querySelector(q);
-  let camStream=null, rec=null, listening=false, lastTap=0, sfx, bgm;
+// ===== helpers (near top) =====
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
 
-  const FX = {
-    particleSlow: 1.8, // 1 = original speed; higher = slower fall (e.g., 1.5–2.2)
-    stagger: 120       // ms between spawns; 0 = all at once, 80–120ms = gentle shower
-  };
+// Router-aware base for assets
+const pageBase = document.body?.dataset?.pageBase || '';
+const join = (u) => (/^([a-z]+:)?\/\//i.test(u) || u.startsWith('/')) ? u : (pageBase + u).replace(/\\/g,'/');
+
+const FX = {
+  stagger: 70,
+  particleSlow: 1,
+};
+
+
+(function(){
+  let camStream=null, rec=null, listening=false, lastTap=0, sfx, bgm;
 
   function prepareBgm(){
     if(bgm) return bgm;
@@ -63,23 +71,27 @@
   }
 
   function hearts(n=14){
-    const stage=$('.mirror-stage'); if(!stage) return;
-    setTimeout(()=>{
-        const h=document.createElement('span');
-        h.className='heart';
-        h.textContent='❤';
-        const size=18+Math.random()*24; h.style.fontSize=size+'px';
-        h.style.left=(10+Math.random()*80)+'%'; h.style.top=(20+Math.random()*20)+'%';
+    const stage = $('.mirror-stage'); if(!stage) return;
+    for (let i=0; i<n; i++) {
+      setTimeout(() => {
+        const h = document.createElement('span');
+        h.className = 'heart';
+        h.textContent = '❤';
+        const size = 18 + Math.random()*24; h.style.fontSize = size+'px';
+        h.style.left = (10 + Math.random()*80)+'%';
+        h.style.top  = (20 + Math.random()*20)+'%';
         stage.appendChild(h);
         const dx=(Math.random()*60-30), dy=80+Math.random()*40, rot=(Math.random()*120-60);
         const ms=(1300+Math.random()*900)*FX.particleSlow;
-        h.animate([
-          { transform:'translate(0,0) rotate(0deg)', opacity:.95 },
-          { transform:`translate(${dx}vw, ${dy}vh) rotate(${rot}deg)`, opacity:0 }
-        ], { duration: ms, easing:'cubic-bezier(.22,.7,.2,1)' })
-        .finished.finally(()=>h.remove());
+        h.animate(
+          [ { transform:'translate(0,0) rotate(0deg)', opacity:.95 },
+            { transform:`translate(${dx}vw, ${dy}vh) rotate(${rot}deg)`, opacity:0 } ],
+          { duration: ms, easing:'cubic-bezier(.22,.7,.2,1)' }
+        ).finished.finally(()=>h.remove());
       }, i*FX.stagger);
     }
+  }
+
 
   function flash(){
     const stage=$('.mirror-stage'); if(!stage) return;
@@ -101,7 +113,6 @@
       }
       return;
     }
-    btn.addEventListener('click', ()=>{ prepareBgm(); safePlayBgm(); }, { once:true });
 
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     rec = new SR(); rec.lang='pt-PT'; rec.interimResults=false; rec.maxAlternatives=4;
@@ -152,8 +163,13 @@
 
     };
 
-    if(!img.getAttribute('src')){ img.onload=show; img.src='img/mirror/mirror.jpg'; }
-    else { show(); }
+    if(!img.getAttribute('src')){
+      img.onload = show;
+      // put the file at /pages/mirror/img/mirror/mirror.jpg OR change the path below accordingly
+      img.src = join('img/mirror.jpg');
+    } else {
+      show();
+    }
   }
 
   function roast(){
@@ -181,11 +197,26 @@
     stage.addEventListener('click', ()=>{ const now=Date.now(); if(now-lastTap<400) reveal(); lastTap=now; });
   }
 
+  function setQuestionText(){
+    // Pull from the shell subtitle if present; default to your exact phrase
+    const fallback = 'espelho meu espelho meu, há noiva mais bela do que eu?';
+    const q = (document.querySelector('.subtitle')?.textContent || '').trim() || fallback;
+    const slot = $('#mirrorQuestion');
+    if (slot) slot.textContent = q;
+    // Keep a copy inside #askFeedback for any logic that reads from it
+    const ask = $('#askFeedback');
+    if (ask) ask.textContent = q;
+  }
+
   function start(){
-    bindUI(); bindVoice(); startCam();
+    setQuestionText();          // <-- add this line
+    bindUI(); 
+    bindVoice(); 
+    startCam();
     document.addEventListener('page:leave', stopCam, { once:true });
     document.addEventListener('page:leave', stopBgm, { once:true });
     window.addEventListener('visibilitychange', ()=>{ if(document.hidden) stopCam(); });
+    $('#btnListen')?.classList.add('cta-pulse');
   }
 
   const run=()=>{ try{ start(); }catch(e){ console.error('[mirror-espelho] init failed', e); } };
