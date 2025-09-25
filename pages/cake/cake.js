@@ -94,10 +94,25 @@ window.Cake = (function(){
   }
 
   function init(){
+    // run once, no matter who calls (router, DOM ready, loader:done)
+    if (init._done) return;
+    init._done = true;
     const btn = document.getElementById('btn-start');
     if(!btn) return;
-    btn.addEventListener('click', onStart);
+    btn.addEventListener('click', onStart, { passive: true });
   }
+
 
   return { init };
 })();
+
+// ---- resilient bootstrap: works with or without the router ----
+// 1) If loader fires an event, wire up then.
+window.addEventListener('loader:done', () => window.Cake?.init?.(), { once: true });
+// 2) Also wire on DOM ready (covers the "mirror" style pages that self-init).
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+  // next tick so #arena has time to be injected
+  setTimeout(() => window.Cake?.init?.(), 0);
+} else {
+  document.addEventListener('DOMContentLoaded', () => window.Cake?.init?.(), { once: true });
+}
