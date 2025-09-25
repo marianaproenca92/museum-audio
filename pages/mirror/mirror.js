@@ -163,12 +163,16 @@ const FX = {
 
     };
 
-    if (!img.complete || img.naturalWidth === 0) {
-      img.onload = show;
-      img.onerror = ()=>{ /* optional: fallback or message */ };
-      return;
-    }
-    show();
+    // Try to wait for the image, but don’t block the hearts if it’s slow/missing
+  let done = false;
+  const go = () => { if (!done){ done = true; show(); } };
+  if (img && img.decode) {
+    img.decode().then(go).catch(go);
+  } else if (img && (!img.complete || img.naturalWidth === 0)) {
+    img.onload = go; img.onerror = go;
+  } else {
+    go();
+  }
   }
 
   function roast(){
@@ -209,8 +213,13 @@ const FX = {
     bindUI(); 
     bindVoice(); 
     startCam();
-    const pre = $('#groomBride');
-    if (pre && !pre.getAttribute('src')) pre.src = join('img/mirror.jpg');
+    const img = $('#groomBride');
+    if (img && !img.src) {
+      // Prefer router-relative, fall back to absolute site-root
+      const preferred = join('img/mirror.jpg');
+      img.src = preferred;
+      img.onerror = () => { if (img.src !== '/museum-audio/img/mirror.jpg') img.src = '/museum-audio/img/mirror.jpg'; };
+    }
     document.addEventListener('page:leave', stopCam, { once:true });
     document.addEventListener('page:leave', stopBgm, { once:true });
     window.addEventListener('visibilitychange', ()=>{ if(document.hidden) stopCam(); });
