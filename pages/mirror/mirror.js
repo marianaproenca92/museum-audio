@@ -13,6 +13,23 @@ const FX = {
 
 const IMG_REVEAL = join('mirror.jpg');
 
+const FEEDBACK = {
+  miss: [
+    "✗ as sombras riem… tenta de novo",
+    "☠︎ não foi invocado… volta a tentar",
+    "⛧ o espelho permanece teimoso",
+    "⚰︎ o feitiço falhou por um fio",
+    "☒ a lua nega—refaz as palavras"
+  ],
+  success: [
+    "✦ véu rasgado—beleza revelada",
+    "☽ espelho concede passagem",
+    "⚜︎ prata sorri—é ela",
+    "✧ decreto selado: a mais bela"
+  ]
+};
+
+
 (function(){
   let camStream=null, rec=null, listening=false, lastTap=0, sfx, bgm;
 
@@ -151,7 +168,7 @@ const IMG_REVEAL = join('mirror.jpg');
   }
 
   function reveal(){
-    $('#askFeedback').innerHTML = '<span class="ok">FAIREST DETECTED // NOIVA CONFIRMADA</span>';
+    setFeedback('success');
 
     const img=$('#groomBride');
     const vid=$('#mirrorCam');
@@ -190,12 +207,20 @@ const IMG_REVEAL = join('mirror.jpg');
     else { show(); }
   }
 
-  function roast(){
-    const lines=['Sistema de vaidade a 110%… resposta incorreta!','Falha crítica: o espelho discorda 👀','Hmm… não foi isso que a fada disse.'];
-    $('#askFeedback').innerHTML = '<span class="nope">'+ lines[Math.floor(Math.random()*lines.length)] +'</span>';
+  // pick a random line, interpolate optional {name} etc
+  function gothicFeedback(key, vars = {}) {
+    const bag = FEEDBACK[key] || FEEDBACK.idle;
+    const line = bag[Math.floor(Math.random() * bag.length)];
+    return line.replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? "");
   }
 
-  function handleAnswer(text){ isYes(text) ? reveal() : roast(); }
+  function setFeedback(key, vars = {}) {
+    const el = document.querySelector('#askFeedback');
+    if (!el) return;
+    el.textContent = gothicFeedback(key, vars);
+  }
+
+  function handleAnswer(text){ isYes(text) ? reveal() : setFeedback('miss'); }
 
   async function startCam(){
     try{
