@@ -1,4 +1,12 @@
 // Tiny timing game: tap when needle is in the green center
+const pageBase = document.body?.dataset?.pageBase || '';
+const join = (u) => (/^([a-z]+:)?\/\//i.test(u) || u.startsWith('/')) ? u : (pageBase ? pageBase + u : u);
+
+// preload the cake song
+const sfxCake = new Audio(join('cake.mp3'));
+sfxCake.preload = 'auto';
+
+
 window.Cake = (function(){
   const $ = (q, el=document) => el.querySelector(q);
 
@@ -20,6 +28,24 @@ window.Cake = (function(){
 
   let raf=null, running=false, t0=0, speed=1.6;
 
+  function spawnCrumbs(count=16){
+    const tray = document.querySelector('.cake__tray');
+    if(!tray) return;
+    const box = document.createElement('div');
+    box.className = 'crumbs';
+    for(let i=0;i<count;i++){
+      const s = document.createElement('span');
+      s.className = 'crumb';
+      s.style.setProperty('--tx', (Math.random()*80 - 40).toFixed(1) + 'px');
+      s.style.setProperty('--dy', (50 + Math.random()*48).toFixed(1) + 'px');
+      s.style.setProperty('--delay', (Math.random()*0.08).toFixed(2) + 's');
+      box.appendChild(s);
+    }
+    tray.appendChild(box);
+    setTimeout(()=> box.remove(), 1200);
+  }
+
+
   function play(){
     const wrap = $('#cake-game');
     const needle = $('.meter__needle', wrap);
@@ -29,20 +55,19 @@ window.Cake = (function(){
 
     result.textContent = '';
     result.className = 'cake__result';
-    btn.setAttribute('aria-disabled', 'true');
+    // DO NOT disable the button here — we want the second tap to register
     wrap.classList.add('cake--armed');
     running = true;
-    t0 = performance.now() + Math.random()*400;      // slight random start
-    speed = 1.4 + Math.random()*0.8;                 // vary difficulty per round
+    t0 = performance.now() + Math.random()*400;
+    speed = 1.4 + Math.random()*0.8;
 
     const loop = (t)=>{
       if(!running) return;
-      const k = (Math.sin((t - t0) * 0.006 * speed) + 1) / 2; // 0..1
+      const k = (Math.sin((t - t0) * 0.006 * speed) + 1) / 2;
       const pct = k*100;
       needle.style.left = pct + '%';
       needle.setAttribute('aria-valuenow', String(pct|0));
-      // parallax the knife a tiny bit
-      const dx = (k - 0.5) * 40; // +-20px
+      const dx = (k - 0.5) * 40;
       knife.style.setProperty('--x', dx.toFixed(1) + 'px');
       raf = requestAnimationFrame(loop);
     };
@@ -65,26 +90,35 @@ window.Cake = (function(){
   }
 
   function onStart(){
-    if(this.getAttribute('aria-disabled') === 'true') return;
+    // REMOVE the aria-disabled guard so the second tap works
     if(!running){
       FX.beep(640, 80);
       play();
       this.textContent = 'CORTAR!';
       this.classList.add('crt-btn--danger');
     } else {
-      // user attempts the cut
       const ok = judge();
       stop();
       this.textContent = 'NOVO CORTE';
       this.classList.remove('crt-btn--danger');
       const out = document.getElementById('result');
       if(ok){
-        out.textContent = 'CORTE LIMPO — AUTORIZADO A SERVIR 🥂';
+        const wrap = document.getElementById('cake-game');
+        wrap.classList.remove('cake--armed');
+        wrap.classList.add('cake--cut');
+        spawnCrumbs(18);
+
+        out.textContent = 'CORTE LIMPO — PROTOCOLO VALIDADO';
         out.classList.add('cake__result--ok');
+        // play the cake song
+        try {
+          sfxCake.currentTime = 0;
+          sfxCake.play();
+        } catch(_) {}
+
         FX.beep(1000, 140);
         setTimeout(()=>FX.beep(1200, 120), 120);
-        // quick terminal glitch shimmer for drama (if your screen glitcher is active)
-        try{ window.TerminalGlitch?.glitchOnce?.('medium'); }catch(_){}
+        try { window.TerminalGlitch?.glitchOnce?.('medium'); } catch(_) {}
       }else{
         out.textContent = 'CORTE TORTO — TENTAR NOVAMENTE';
         out.classList.add('cake__result--bad');

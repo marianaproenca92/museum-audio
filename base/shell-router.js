@@ -89,7 +89,25 @@ function ensureRoomAudio(url, { autoplay, loop } = {}) {
     const body = document.body;
     if (data.title) setGlitchText($('.title'), data.title);
     if (data.subtitle) setGlitchText($('.subtitle'), data.subtitle);
-    if (data.description) $('#content').innerHTML = data.description;
+    if (data.description) {
+        const content = document.querySelector('#content');
+        if (content) {
+            let desc = content.querySelector('#description');
+            if (!desc) {
+            desc = document.createElement('div');
+            desc.id = 'description';
+            desc.className = 'terminal-description';
+            const arena = document.getElementById('arena');
+            if (arena && arena.parentElement === content) {
+                content.insertBefore(desc, arena); // put description above arena
+            } else {
+                content.appendChild(desc);
+            }
+            }
+            // use textContent so HTML in the JSON can't nuke markup
+            desc.textContent = data.description;
+        }
+    }
     await loadStyles(asArray(data.styles).map(u => joinUrl(base, u)));
     if (data.cssVars) setCssVars(data.cssVars);
     if (data.css) injectInlineCss(data.css);

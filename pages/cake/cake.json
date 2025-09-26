@@ -1,11 +1,7 @@
 {
-  "pageTitle": "MUSEU — CORTE DO BOLO",
   "title": "TERMINAL // CORTE DE BOLO",
   "subtitle": "Arquivo cerimonial – sessão única",
-  "description": "Para validar este corte histórico, execute o protocolo de precisão. Quando o medidor estiver alinhado, pressione CORTAR.",
-  "effects": "desync scantear pixel",
-  "drama": 2,
-  "typewriter": true,
+  "description": "Para validar este corte histórico, execute o protocolo de precisão.",
   "styles": ["cake.css"],
   "scripts": ["cake.js"],
   "arenaHtmlUrl": "cake.html",

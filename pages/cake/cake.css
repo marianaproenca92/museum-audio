@@ -66,3 +66,54 @@
   50%     { transform: translateX(-50%) rotate(2deg); }
 }
 .cake--armed .cake__body{ animation: wobble .6s ease-in-out infinite; }
+
+/* CUT sequence */
+.cake--cut .cake__body{ animation: cake-settle .45s ease-out forwards; }
+@keyframes cake-settle{
+  0%   { transform: translateY(0) }
+  40%  { transform: translateY(2px) }
+  100% { transform: translateY(0) }
+}
+
+/* vertical crack that grows */
+.cake__body::before{
+  content:""; position:absolute; top:0; bottom:0; left:50%; width:2px;
+  transform: translateX(-50%) scaleY(0); transform-origin: top;
+  background: repeating-linear-gradient(180deg, var(--accent) 0 6px, transparent 6px 12px);
+  filter: drop-shadow(0 0 4px rgba(39,255,140,.6));
+  opacity:0; pointer-events:none;
+}
+.cake--cut .cake__body::before{ animation: crack-in .28s ease-out forwards; }
+@keyframes crack-in{
+  0%   { opacity:0; transform: translateX(-50%) scaleY(0) }
+  30%  { opacity:1 }
+  100% { opacity:1; transform: translateX(-50%) scaleY(1) }
+}
+
+/* knife stab + rise */
+.cake--cut .cake__knife{ animation: knife-stab 220ms ease-in 1, knife-rise 300ms ease-out 1 230ms; }
+@keyframes knife-stab{
+  0%   { transform: translate(calc(-50% + var(--x)), 0) rotate(-6deg) }
+  100% { transform: translate(calc(-50% + var(--x)), 34px) rotate(-12deg) }
+}
+@keyframes knife-rise{
+  0%   { transform: translate(calc(-50% + var(--x)), 34px) rotate(-12deg) }
+  100% { transform: translate(calc(-50% + var(--x)), 0) rotate(-6deg) }
+}
+
+/* crumbs */
+.crumbs{ position:absolute; left:50%; bottom:74px; pointer-events:none; }
+.crumbs .crumb{
+  position:absolute; left:0; top:0; width:3px; height:3px; border-radius:1px;
+  background: var(--accent); transform: translateX(-50%);
+  animation: crumb-pop 0.9s ease-out forwards; animation-delay: var(--delay, 0s);
+  filter: drop-shadow(0 0 6px rgba(39,255,140,.7));
+}
+@keyframes crumb-pop{
+  0%   { opacity:1; transform: translate(-50%, 0) scale(1) }
+  70%  { opacity:1 }
+  100% { opacity:0; transform: translate(calc(-50% + var(--tx)), var(--dy)) scale(0.6) }
+}
+
+/* stop the idle wobble once we’re cutting */
+.cake--cut .cake__body{ animation-play-state: paused }
