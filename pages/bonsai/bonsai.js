@@ -305,7 +305,7 @@ const warn = (...a)=> console.warn('[Bonsai]', ...a);
     moisture=20; sun=55; temp=24; nutrients=55; pests=10; health=100; mood=50;
     timeLeft=40; shadeOn=false; pressWater=false; pressVent=false;
     shadeSnapTimer = 0;
-    ui.status.textContent = 'Ronda nova: o bonsai confia em ti… por agora. Mantém tudo na faixa zen.';
+    ui.status.textContent = 'Boa sorte...';
     setRunning(true);
     updateUI();
     lastTs=0; cancelAnimationFrame(rAF); rAF=requestAnimationFrame(tick);
