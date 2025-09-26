@@ -1,0 +1,8 @@
+{
+  "title": "ARQUIVO // BONSAI DO PEDIDO",
+  "subtitle": "Consegues mantê-lo vivo?",
+  "styles": ["bonsai.css"],
+  "scripts": ["bonsai.js"],
+  "arenaHtmlUrl": "bonsai.html",
+  "init": { "fn": "BonsaiGameInit", "when": "afterLoader" }
+}

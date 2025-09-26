@@ -1,0 +1,88 @@
+#bonsai-game { display: grid; gap: 12px }
+
+/* one-line HUD */
+.inline-hud { display: grid; grid-template-columns: auto 200px 1fr; gap: 10px; align-items: center }
+@media (max-width: 820px){ .inline-hud { grid-template-columns: 1fr; gap: 6px } }
+.mini-sub { color: var(--muted) }
+.mini-time { position: relative; height: 8px; border: 1px solid var(--ghost); border-radius: 6px; background: rgba(2,18,8,.45); overflow: hidden }
+.mini-fill { height: 100%; width: 0%; background: linear-gradient(90deg, rgba(255,59,59,.45), rgba(255,59,59,.18)) }
+.mini-status { min-height: 20px }
+
+/* layout */
+.game-top { display: grid; grid-template-columns: 1fr 1fr; gap: 12px }
+@media (max-width: 780px){ .game-top { grid-template-columns: 1fr } }
+
+/* bonsai visual */
+.bonsai-visual { display: grid; place-items: center; padding: 8px }
+.bonsai-pot { position: relative; width: 200px; height: 210px; border: 1px solid var(--ghost); border-radius: 12px; background: rgba(2,18,8,.35); overflow: hidden }
+.bonsai-pot::before { content: ""; position: absolute; left: 16px; right: 16px; bottom: 24px; height: 12px; background: linear-gradient(180deg, rgba(39,255,140,.18), rgba(39,255,140,.06)); border-radius: 6px }
+.sprout { position: absolute; left: 50%; bottom: 48px; width: 8px; height: 84px; transform: translateX(-50%); background: linear-gradient(180deg, var(--accent), rgba(39,255,140,.25)); border-radius: 6px }
+.sprout::before, .sprout::after { content: ""; position: absolute; width: 52px; height: 26px; border: 1px solid var(--ghost); border-radius: 50px; top: 10px; background: rgba(39,255,140,.06) }
+.sprout::before { right: 6px; transform: rotate(-16deg) } .sprout::after { left: 6px; transform: rotate(16deg) }
+.shine { position: absolute; inset: 0; background: radial-gradient(60% 40% at 50% 0%, rgba(255,255,200,.06), transparent 60%); pointer-events: none }
+.drips { position: absolute; inset: 0; pointer-events: none }
+.drip { position: absolute; width: 6px; height: 10px; background: var(--accent); border-radius: 4px; opacity: .9; filter: drop-shadow(0 0 6px rgba(39,255,140,.25)); animation: drip 900ms ease forwards }
+@keyframes drip { 0%{transform:translateY(-10px)} 80%{transform:translateY(140px);opacity:.8} 100%{transform:translateY(160px);opacity:0} }
+
+/* compact meters */
+.meters { display: grid; gap: 8px; align-content: start }
+.meter-row { display: grid; grid-template-columns: 100px 1fr 64px; gap: 8px; align-items: center }
+@media (max-width: 520px){ .meter-row { grid-template-columns: 80px 1fr 56px } }
+.meter-row .label { color: var(--muted) }
+.meter-row .bar { position: relative; height: 12px; border: 1px solid var(--ghost); border-radius: 8px; background: rgba(2,18,8,.45); overflow: hidden }
+.meter-row .fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), rgba(39,255,140,.22)) }
+.fill.temp { background: linear-gradient(90deg, rgba(255,180,80,.5), rgba(255,180,80,.18)) }
+.fill.sun { background: linear-gradient(90deg, rgba(255,255,120,.45), rgba(255,255,120,.12)) }
+.fill.nut { background: linear-gradient(90deg, rgba(160,120,255,.45), rgba(160,120,255,.12)) }
+.fill.pests { background: linear-gradient(90deg, rgba(255,80,160,.45), rgba(255,80,160,.12)) }
+.fill.mood { background: linear-gradient(90deg, rgba(120,255,200,.45), rgba(120,255,200,.12)) }
+.fill.health { background: linear-gradient(90deg, #6bd66b, rgba(39,255,140,.18)) }
+.zone-ok { position: absolute; inset: 0; background: rgba(39,255,140,.10); border-left: 1px dashed var(--ghost); border-right: 1px dashed var(--ghost) }
+.zone-low { position: absolute; top: 0; bottom: 0; left: 0; right: 70%; background: rgba(39,255,140,.08); border-right: 1px dashed var(--ghost) }
+.readout { text-align: right }
+
+/* toolbar grid */
+.toolbar { display: grid; grid-template-columns: 1fr; gap: 10px; align-items: center }
+/* after Start: 3x2 grid */
+#bonsai-game.playing .toolbar { grid-template-columns: repeat(3, 1fr) }
+
+/* terminal-style buttons */
+.term-btn{
+  display:grid; place-items:center;
+  min-height:48px; padding:10px 12px;
+  border:1px solid rgba(39,255,140,.65);
+  border-radius:8px;
+  background:linear-gradient(180deg, rgba(0,0,0,.55), rgba(0,0,0,.75));
+  color:#c9ffd8; text-shadow:0 0 6px rgba(39,255,140,.35);
+  font:600 14px/1.1 ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  box-shadow:0 0 0 1px rgba(39,255,140,.18), inset 0 0 0 1px rgba(39,255,140,.08);
+  transition:transform .05s ease, box-shadow .15s ease, border-color .15s ease;
+  cursor:pointer;
+}
+.term-btn .badge{
+  margin-inline-start:.5ch;
+  padding:.1em .5ch;
+  border:1px solid rgba(39,255,140,.45);
+  border-radius:6px;
+  font-weight:700;
+  font-size:12px;
+  color:#a9ffd0;
+  background:rgba(0,0,0,.35);
+}
+.term-btn:hover{ border-color:#27ff8c; box-shadow:0 0 12px rgba(39,255,140,.25), inset 0 0 0 1px rgba(39,255,140,.14) }
+.term-btn:active{ transform:translateY(1px) scale(.99) }
+.term-btn:focus-visible{
+  outline:none;
+  border-color:#27ff8c;
+  box-shadow:0 0 0 2px rgba(39,255,140,.35), 0 0 16px rgba(39,255,140,.35), inset 0 0 0 1px rgba(39,255,140,.16);
+}
+.term-btn[aria-disabled="true"]{ opacity:.45; cursor:not-allowed; filter:saturate(.5) }
+
+/* hide any element that has the hidden attribute */
+.toolbar button[hidden] { display: none !important }
+
+/* once playing, use a 3x2 grid and always hide the start button */
+#bonsai-game.playing .toolbar { grid-template-columns: repeat(3, 1fr) }
+#bonsai-game.playing #startBtn { display: none !important }

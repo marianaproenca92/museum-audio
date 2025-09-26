@@ -1,0 +1,74 @@
+<div id="bonsai-game" class="panel">
+
+  <div class="inline-hud">
+    <div id="subtitleInline" class="mini-sub">Consegues mantê-lo vivo?</div>
+    <div class="mini-time"><div class="mini-fill" id="timeFillMini"></div></div>
+    <div class="mini-status" id="status">Pronto quando tu estiveres.</div>
+  </div>
+
+  <div class="game-top">
+    <div class="bonsai-visual">
+      <div class="bonsai-pot">
+        <div class="sprout" aria-hidden="true"></div>
+        <div class="drips" aria-hidden="true"></div>
+        <div class="shine" aria-hidden="true"></div>
+      </div>
+    </div>
+
+    <div class="meters">
+      <div class="meter-row">
+        <div class="label">Humidade</div>
+        <div class="bar"><div class="fill" id="moistureFill"></div><div class="zone zone-ok" style="left:60%;right:25%"></div></div>
+        <div class="readout"><span id="moistureVal">0</span>%</div>
+      </div>
+
+      <div class="meter-row">
+        <div class="label">Luz</div>
+        <div class="bar"><div class="fill sun" id="sunFill"></div><div class="zone zone-ok" style="left:45%;right:35%"></div></div>
+        <div class="readout"><span id="sunVal">0</span>%</div>
+      </div>
+
+      <div class="meter-row">
+        <div class="label">Temperatura</div>
+        <div class="bar"><div class="fill temp" id="tempFill"></div><div class="zone zone-ok" style="left:36%;right:44%"></div></div>
+        <div class="readout"><span id="tempVal">24</span>°C</div>
+      </div>
+
+      <div class="meter-row">
+        <div class="label">Nutrientes</div>
+        <div class="bar"><div class="fill nut" id="nutFill"></div><div class="zone zone-ok" style="left:50%;right:30%"></div></div>
+        <div class="readout"><span id="nutVal">50</span>%</div>
+      </div>
+
+      <div class="meter-row">
+        <div class="label">Pragas</div>
+        <div class="bar"><div class="fill pests" id="pestFill"></div><div class="zone zone-low" title="Manter baixo"></div></div>
+        <div class="readout"><span id="pestVal">0</span>%</div>
+      </div>
+
+      <div class="meter-row">
+        <div class="label">Humor</div>
+        <div class="bar"><div class="fill mood" id="moodFill"></div></div>
+        <div class="readout"><span id="moodVal">0</span>%</div>
+      </div>
+
+      <div class="meter-row">
+        <div class="label">Raízes</div>
+        <div class="bar"><div class="fill health" id="healthFill"></div></div>
+        <div class="readout"><span id="healthVal">100</span>%</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+  <button id="startBtn" class="term-btn run-btn" aria-label="Iniciar">INICIAR</button>
+
+  <button id="waterBtn" class="term-btn" aria-label="Regar" hidden>REGAR</button>
+  <button id="shadeBtn" class="term-btn" aria-label="Sombra/Luz" hidden>SOMBRA</button>
+  <button id="ventBtn"  class="term-btn" aria-label="Ventilar" hidden>VENTO</button>
+  <button id="fertBtn"  class="term-btn" aria-label="Fertilizante" hidden>ADUBO</button>
+  <button id="sprayBtn" class="term-btn" aria-label="Spray Anti-pragas" hidden>SPRAY</button>
+</div>
+
+
+</div>
