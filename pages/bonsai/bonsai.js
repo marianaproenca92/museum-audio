@@ -16,17 +16,17 @@ const warn = (...a)=> console.warn('[Bonsai]', ...a);
   let moisture = 20, sun = 55, temp = 24, nutrients = 55, pests = 10, health = 100, mood = 50;
   let timeLeft = 40;
 
-  // target ranges (“zen” bands)
+  // target ranges
   const M_OK = [60,75], S_OK = [45,65], T_OK = [18,26], N_OK = [50,70], P_MAX = 30;
 
-  // unlimited charges now
+  // unlimited charges
   let fertUnlimited = true, sprayUnlimited = true;
 
-  // make shade feel snappier for a short window after toggling
+  // shade snap
   let shadeSnapTimer = 0;
 
   const ui = {};
-  let windLoop = null; // interval for vent wind effects
+  let windLoop = null;
 
   function lock(btn, on){ btn.setAttribute('aria-disabled', on ? 'true' : 'false'); }
 
@@ -35,10 +35,11 @@ const warn = (...a)=> console.warn('[Bonsai]', ...a);
     const controls = [ui.waterBtn, ui.shadeBtn, ui.ventBtn, ui.fertBtn, ui.sprayBtn];
     controls.forEach(b => { if (!b) return; b.hidden = !on; lock(b, !on); });
     if (ui.startBtn) ui.startBtn.hidden = on;
+    if (ui.retryBtn) ui.retryBtn.hidden = true;
     if (ui.root) ui.root.classList.toggle('playing', on);
   }
 
-  // ---------- VISUAL FX (auto-injected styles) ----------
+  // ---------- VISUAL FX ----------
   function injectFxStyles(){
     if(document.getElementById('bonsai-efx-style')) return;
     const css = `
@@ -48,7 +49,7 @@ const warn = (...a)=> console.warn('[Bonsai]', ...a);
     @keyframes bonsai-spark { 0%{transform:translateY(0) scale(.6);opacity:0}
                                20%{opacity:1}
                                100%{transform:translateY(-70px) scale(1);opacity:0} }
-    @keyframes bonsai-mist { 0%{transform:translate(0,0);opacity:.0}
+    @keyframes bonsai-mist { 0%{transform:translate(0,0);opacity:0}
                              10%{opacity:.5}
                              100%{transform:translate(80px,-10px);opacity:0} }
     .bonsai-efx-layer{position:absolute;inset:0;pointer-events:none;overflow:hidden}
@@ -76,13 +77,12 @@ const warn = (...a)=> console.warn('[Bonsai]', ...a);
   }
 
   function stageRect(){
-    const st = ui.root.querySelector('.bonsai-stage') || ui.root;
+    const st = ui.root.querySelector('.bonsai-stage)') || ui.root.querySelector('.bonsai-stage') || ui.root;
     return st.getBoundingClientRect();
   }
 
   function rand(min,max){ return Math.random()*(max-min)+min; }
 
-  // water drops (kept from before)
   function elDrip(){
     const area = ui.root.querySelector('.drips');
     if(!area) return;
@@ -94,7 +94,6 @@ const warn = (...a)=> console.warn('[Bonsai]', ...a);
     d.addEventListener('animationend', () => d.remove());
   }
 
-  // shade quick pulse
   function fxShadePulse(){
     const layer = efxLayer();
     const pulse = document.createElement('div');
@@ -103,7 +102,6 @@ const warn = (...a)=> console.warn('[Bonsai]', ...a);
     pulse.addEventListener('animationend', ()=> pulse.remove());
   }
 
-  // vent wind lines (spawn one)
   function fxWindOnce(){
     const layer = efxLayer();
     const w = document.createElement('div');
@@ -116,7 +114,6 @@ const warn = (...a)=> console.warn('[Bonsai]', ...a);
     w.addEventListener('animationend', ()=> w.remove());
   }
 
-  // fertilizer sparkles
   function fxSparkles(count=8){
     const layer = efxLayer();
     const r = stageRect();
@@ -133,7 +130,6 @@ const warn = (...a)=> console.warn('[Bonsai]', ...a);
     }
   }
 
-  // spray mist
   function fxMist(count=10){
     const layer = efxLayer();
     const r = stageRect();
@@ -148,7 +144,7 @@ const warn = (...a)=> console.warn('[Bonsai]', ...a);
       m.addEventListener('animationend', ()=> m.remove());
     }
   }
-  // ------------------------------------------------------
+  // ---------- /VISUAL FX ----------
 
   function updateUI(){
     const el = (id)=>document.getElementById(id);
@@ -178,9 +174,7 @@ const warn = (...a)=> console.warn('[Bonsai]', ...a);
     const fb = el('fertBadge');    if(fb) fb.textContent = fertUnlimited ? '∞' : '';
     const sb = el('sprayBadge');   if(sb) sb.textContent = sprayUnlimited ? '∞' : '';
 
-    if (ui.shadeBtn) {
-      ui.shadeBtn.setAttribute('aria-pressed', shadeOn ? 'true' : 'false');
-    }
+    if (ui.shadeBtn) ui.shadeBtn.setAttribute('aria-pressed', shadeOn ? 'true' : 'false');
   }
 
   function moodScore(){
@@ -202,13 +196,11 @@ const warn = (...a)=> console.warn('[Bonsai]', ...a);
   }
 
   function physics(dt, t){
-    // SUN with quick snap right after shade toggle
     const wave = Math.sin(t * 0.25) * 8;
     const sunTarget = (shadeOn ? 42 : 72) + wave;
     const fast = shadeSnapTimer > 0 ? 2.0 : 0.45;
     sun = lerp(sun, clamp(sunTarget, 0, 100), fast * dt);
 
-    // MOISTURE
     const evap = 3.4, pour = 22;
     if(pressWater){
       moisture = clamp(moisture + pour*dt, 0, 100);
@@ -219,15 +211,12 @@ const warn = (...a)=> console.warn('[Bonsai]', ...a);
       moisture = clamp(moisture - evap*sunBoost*dt, 0, 100);
     }
 
-    // TEMP
     let envTarget = lerp(17, 34, sun/100) - (shadeOn ? 1.4 : 0);
     temp = lerp(temp, envTarget, 0.38*dt);
     if(pressVent) temp = lerp(temp, 18, 1.25*dt);
 
-    // NUTRIENTS slow decay
     nutrients = clamp(nutrients - 2.0*dt, 0, 100);
 
-    // PESTS growth
     let pestGrowth = 0;
     pestGrowth += Math.max(0, (moisture-62)*0.05);
     pestGrowth += Math.max(0, (nutrients-58)*0.035);
@@ -236,7 +225,6 @@ const warn = (...a)=> console.warn('[Bonsai]', ...a);
     if (pressVent) pestGrowth *= 0.85;
     pests = clamp(pests + pestGrowth*dt, 0, 100);
 
-    // HEALTH penalties scale with distance from safe bands
     const mBad = bandFrac(moisture, M_OK[0], M_OK[1]);
     const sBad = bandFrac(sun, S_OK[0], S_OK[1]);
     const tUnder = underFrac(temp, T_OK[0]);
@@ -261,7 +249,6 @@ const warn = (...a)=> console.warn('[Bonsai]', ...a);
 
     health = clamp(health - totalPenalty * 0.9 * multi * dt, 0, 100);
 
-    // gentle recovery if comfy
     const comfy =
       moisture>20 && moisture<82 &&
       temp>16 && temp<28 &&
@@ -280,11 +267,25 @@ const warn = (...a)=> console.warn('[Bonsai]', ...a);
 
   function endRound(){
     cancelAnimationFrame(rAF); rAF = 0; running = false;
+
     [ui.waterBtn, ui.shadeBtn, ui.ventBtn, ui.fertBtn, ui.sprayBtn].forEach(b=>b && lock(b,true));
+
     const good = checkWin();
-    if(good){ ui.status.textContent = 'VITÓRIA ZEN…'; try{window.TerminalGlitch&&window.TerminalGlitch.glitchOnce('medium');}catch(_){} }
-    else if(health<=0){ ui.status.textContent='GAME OVER BOTÂNICO…'; try{window.TerminalGlitch&&window.TerminalGlitch.panic(900);}catch(_){} }
-    else { ui.status.textContent='Quase zen, mas não.'; try{window.TerminalGlitch&&window.TerminalGlitch.glitchOnce('subtle');}catch(_){} }
+    if(good){
+      ui.status.textContent = 'VITÓRIA ZEN…';
+      try{window.TerminalGlitch&&window.TerminalGlitch.glitchOnce('medium');}catch(_){}
+    }
+    else if(health<=0){
+      ui.status.textContent='GAME OVER BOTÂNICO… toca em Iniciar para tentar outra vez.';
+      try{window.TerminalGlitch&&window.TerminalGlitch.panic(900);}catch(_){}
+    }
+    else {
+      ui.status.textContent='Quase zen, mas não.';
+      try{window.TerminalGlitch&&window.TerminalGlitch.glitchOnce('subtle');}catch(_){}
+    }
+
+    // show Start again, hide controls
+    setRunning(false);
   }
 
   function tick(ts){
@@ -305,14 +306,15 @@ const warn = (...a)=> console.warn('[Bonsai]', ...a);
     moisture=20; sun=55; temp=24; nutrients=55; pests=10; health=100; mood=50;
     timeLeft=40; shadeOn=false; pressWater=false; pressVent=false;
     shadeSnapTimer = 0;
-    ui.status.textContent = 'Boa sorte...';
+
+    ui.status.textContent = 'Ronda nova: o bonsai confia em ti… por agora. Mantém tudo na faixa zen.';
+
     setRunning(true);
     updateUI();
     lastTs=0; cancelAnimationFrame(rAF); rAF=requestAnimationFrame(tick);
     dbg('round started. rAF=', rAF);
   }
 
-  // Pointer helpers (works on touch + mouse)
   function addHold(btn, onDown, onUp){
     btn.addEventListener('pointerdown', e => {
       if(btn.getAttribute('aria-disabled') === 'true') return;
@@ -341,20 +343,17 @@ const warn = (...a)=> console.warn('[Bonsai]', ...a);
     ui.sprayBtn = $('#sprayBtn');
     ui.status   = $('#status') || $('#statusText');
 
-    // build a drips area if not present
     if(!ui.root.querySelector('.drips')){
       const d = document.createElement('div');
       d.className = 'drips';
       ui.root.appendChild(d);
     }
 
-    // Hide/lock controls initially
     const controls = [ui.waterBtn, ui.shadeBtn, ui.ventBtn, ui.fertBtn, ui.sprayBtn].filter(Boolean);
     controls.forEach(b => { b.hidden = true; lock(b, true); });
     if(ui.startBtn) ui.startBtn.hidden = false;
     if(ui.retryBtn) ui.retryBtn.hidden = true;
 
-    // Start
     if(ui.startBtn){
       ui.startBtn.addEventListener('click', ()=>{ startRound(); });
       ui.startBtn.addEventListener('pointerdown', e=>{ e.preventDefault(); startRound(); });
@@ -363,12 +362,10 @@ const warn = (...a)=> console.warn('[Bonsai]', ...a);
       stage.addEventListener('click', ()=>{ if(!running) startRound(); });
     }
 
-    // Retry
     if(ui.retryBtn){
       ui.retryBtn.addEventListener('click', ()=>{ startRound(); });
     }
 
-    // Actions
     if(ui.waterBtn) addHold(
       ui.waterBtn,
       ()=>{ if(!running) return; pressWater = true; ui.status && (ui.status.textContent='Água a caminho…'); },
