@@ -1,0 +1,37 @@
+<section class="panel" style="padding:12px">
+  <style>
+    .mono { font-family: monospace }
+    .dim { opacity:.75 }
+    .row { display:flex; gap:6px; flex-wrap:wrap; align-items:center }
+    .line { height:14px; border-radius:3px; margin:6px 0; background: currentColor; opacity:.9 }
+    .line.thin { height:10px; opacity:.7 }
+    .gap { width:10px; height:1px }
+    .meta { margin-top:8px }
+    .badge { display:inline-block; padding:2px 6px; border:1px solid currentColor; border-radius:6px; margin-right:8px }
+    .blink { animation: blink 1s step-end infinite }
+    @keyframes blink { 50% { opacity: 0 } }
+    .bar { width:220px; height:8px; border:1px solid currentColor; border-radius:999px; overflow:hidden; position:relative; margin-top:8px }
+    .fill { position:absolute; left:0; top:0; height:100%; width:0%; background: currentColor; transition: width 140ms linear }
+  </style>
+
+  <div class="row">
+    <span class="badge mono">REDACTED</span>
+    <span class="mono dim">nível de sigilo: IV</span>
+  </div>
+
+  <div class="meta mono dim">autor: desconhecido • data: — • checksum: —</div>
+
+  <div class="line" style="width:88%"></div>
+  <div class="line thin" style="width:72%"></div>
+  <div class="line" style="width:94%"></div>
+  <div class="line thin" style="width:65%"></div>
+  <div class="line" style="width:91%"></div>
+  <div class="line thin" style="width:58%"></div>
+
+  <div class="mono dim" style="margin-top:10px">
+    reconstruindo excertos públicos: <span id="pct">0%</span><span class="blink">_</span>
+  </div>
+  <div class="bar"><div class="fill" id="fill"></div></div>
+
+  <div class="mono dim" id="status" style="margin-top:6px">política de retenção: 100 anos</div>
+</section>

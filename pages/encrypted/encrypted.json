@@ -1,0 +1,8 @@
+{
+  "title": "ARQUIVO // ENCRIPTADO",
+  "subtitle": "Chave de desencriptação necessária.",
+  "glitcher": { "on": true, "level": "low", "modes": "flicker" },
+  "arenaHtmlUrl": "encrypted.html",
+  "scripts": ["encrypted.js"],
+  "init": { "fn": "EncryptedInit", "when": "afterLoader" }
+}

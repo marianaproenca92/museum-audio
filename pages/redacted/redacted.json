@@ -1,0 +1,9 @@
+{
+  "title": "ARQUIVO // REDIGIDO",
+  "subtitle": "Conteúdo removido por ordem do Arquivo Central.",
+  "description": "Apenas metadados públicos disponíveis.",
+  "glitcher": { "on": true, "level": "low", "modes": "flicker tear" },
+  "arenaHtmlUrl": "redacted.html",
+  "scripts": ["redacted.js"],
+  "init": { "fn": "RedactedInit", "when": "afterLoader" }
+}

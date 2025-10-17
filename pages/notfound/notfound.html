@@ -1,0 +1,18 @@
+<section class="panel" id="nf-panel" style="padding:12px">
+  <style>
+    .mono { font-family: monospace }
+    .badge { display:inline-block; padding:2px 6px; border:1px solid currentColor; border-radius:6px; margin-right:8px }
+    .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap }
+    .dim { opacity:.75 }
+    .blink { animation: blink 1s step-end infinite }
+    @keyframes blink { 50% { opacity: 0 } }
+  </style>
+
+  <div class="row">
+    <span class="badge mono">404</span>
+    <span class="mono">ARQUIVO NÃO ENCONTRADO</span>
+  </div>
+
+  <p class="dim mono">O QR pode estar desatualizado ou o arquivo foi realocado.</p>
+  <p class="mono dim">resultado: referência inexistente (404)<span class="blink">_</span></p>
+</section>

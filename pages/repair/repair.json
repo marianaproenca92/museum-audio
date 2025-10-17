@@ -1,0 +1,8 @@
+{
+  "title": "ARQUIVO // REPARAÇÃO",
+  "subtitle": "A tentar corrigir checksums...",
+  "glitcher": { "on": true, "level": "medium", "modes": "tear flicker" },
+  "arenaHtmlUrl": "repair.html",
+  "scripts": ["repair.js"],
+  "init": { "fn": "RepairInit", "when": "afterLoader" }
+}

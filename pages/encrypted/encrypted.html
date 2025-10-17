@@ -1,0 +1,35 @@
+<section class="panel" style="padding:12px">
+  <style>
+    .mono { font-family: monospace }
+    .dim { opacity:.75 }
+    .btn {
+      color: inherit;
+      background: transparent;
+      border: 1px solid currentColor;
+      border-radius: 8px;
+      padding: 8px 10px;
+      font: inherit;
+      cursor: pointer;
+    }
+    .btn:active { transform: translateY(1px) }
+    input[type=text] {
+      color: inherit;
+      background: transparent;
+      border: 1px solid currentColor;
+      border-radius: 8px;
+      padding: 8px;
+      font: inherit;
+      min-width: 180px;
+    }
+    input::placeholder { color: currentColor; opacity: .6 }
+  </style>
+
+  <div class="mono dim">estado: bloqueado • método: AES-ARCANE</div>
+
+  <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:10px">
+    <input id="key" type="text" placeholder="introduzir passe" autocomplete="off">
+    <button class="btn" id="btn-des">Desencriptar</button>
+  </div>
+
+  <div id="msg" class="mono dim" style="margin-top:10px"></div>
+</section>

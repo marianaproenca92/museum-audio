@@ -1,0 +1,47 @@
+<section class="panel" style="padding:12px">
+  <style>
+    .mono { font-family: monospace }
+    .btn {
+      color: inherit;
+      background: transparent;
+      border: 1px solid currentColor;
+      border-radius: 8px;
+      padding: 8px 10px;
+      font: inherit;
+      cursor: pointer;
+    }
+    .btn:active { transform: translateY(1px) }
+
+    .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap }
+
+    .bar {
+      width: 260px;
+      height: 10px;
+      border: 1px solid currentColor;
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+    }
+    .fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 0%;
+      background: currentColor;
+      transition: width 120ms linear;
+    }
+    .dim { opacity:.75 }
+  </style>
+
+  <div class="row">
+    <div class="bar"><div class="fill" id="fill"></div></div>
+    <div class="mono" id="pct">0%</div>
+  </div>
+
+  <div class="mono dim" id="status" style="margin-top:8px">pronto para reparar</div>
+
+  <div style="margin-top:10px">
+    <button class="btn" id="btn-repair">Reparar</button>
+  </div>
+</section>

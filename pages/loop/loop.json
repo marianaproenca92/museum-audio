@@ -1,0 +1,14 @@
+{
+  "title": "ARQUIVO // LOOP INFINITO",
+  "subtitle": "A carregar eternamente…",
+  "description": "Este arquivo está corrompido. O terminal continuará a tentar reconstruir o índice.",
+  "glitcher": {
+    "on": true,
+    "level": "medium",
+    "modes": "tear flicker fringe"
+  },
+  "textTear": { "on": true },
+  "arenaHtml": "<div class='panel'><small class='muted'>Nada para ver aqui. Talvez no próximo ciclo…</small></div>",
+  "scripts": ["loop.js"],
+  "init": { "fn": "LoopLoaderInit", "when": "immediate" }
+}

@@ -1,0 +1,8 @@
+{
+  "title": "404 // ARQUIVO NÃO ENCONTRADO",
+  "subtitle": "O arquivo solicitado não existe neste terminal.",
+  "description": "O índice não possui referência para o identificador pedido.",
+  "glitcher": { "on": true, "level": "low", "modes": "flicker tear" },
+  "arenaHtmlUrl": "notfound.html",
+  "init": { "when": "afterLoader" }
+}
